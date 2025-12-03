@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MessageCircle, Share2, BarChart2, MoreHorizontal, CheckCircle2, TrendingUp } from 'lucide-react';
 import { PredictionMarket } from '../types';
@@ -54,6 +55,14 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ market, onBet }) => {
             <h2 className="text-[17px] leading-snug text-slate-100 font-semibold pr-4">
               {market.question}
             </h2>
+            
+            {/* Market Image if available */}
+            {market.image && (
+                <div className="mt-3 rounded-xl overflow-hidden border border-slate-800 bg-slate-900/50">
+                    <img src={market.image} alt="Market" className="w-full h-auto max-h-[300px] object-cover" />
+                </div>
+            )}
+
             <div className="mt-2.5 flex flex-wrap gap-2">
               <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800/50 text-slate-400 border border-slate-700/50">
                 {market.category}

@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, Info, Wallet } from 'lucide-react';
+import { X, Loader2, Info, Wallet, Sparkles, BrainCircuit } from 'lucide-react';
 import { PredictionMarket, BetType } from '../types';
 import { cn, formatCurrency } from '../utils';
+import { GoogleGenAI } from "@google/genai";
 
 interface BetModalProps {
   market: PredictionMarket | null;
@@ -15,6 +17,10 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
   const [amount, setAmount] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // AI Analysis State
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -22,6 +28,8 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
       setAmount('');
       setIsSubmitting(false);
       setError(null);
+      setAnalysis(null);
+      setIsAnalyzing(false);
     }
   }, [isOpen]);
 
@@ -31,14 +39,35 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
   const numericAmount = parseFloat(amount) || 0;
   
   // Potential return calculation (Simulated AMM logic)
-  // Return = Investment / Price
-  // Profit = Return - Investment
   const estimatedReturn = numericAmount > 0 ? numericAmount / price : 0;
   const potentialProfit = estimatedReturn - numericAmount;
   const returnPercentage = numericAmount > 0 ? (potentialProfit / numericAmount) * 100 : 0;
 
   const handleQuickAmount = (val: number) => {
     setAmount(val.toString());
+  };
+
+  const handleAnalyze = async () => {
+    setIsAnalyzing(true);
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        // Using gemini-2.5-flash for fast text analysis
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Analyze this prediction market question for a user who is considering betting ${betType}: "${market.question}". 
+            Category: ${market.category}. 
+            Current Stats: YES is ${market.outcomeStats.yesPercent}%, NO is ${market.outcomeStats.noPercent}%.
+            Provide a concise 2-sentence risk assessment and probability insight.`
+        });
+        if (response.text) {
+            setAnalysis(response.text);
+        }
+    } catch (err) {
+        console.error("AI Analysis failed", err);
+        setAnalysis("Could not generate analysis at this time.");
+    } finally {
+        setIsAnalyzing(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -51,25 +80,6 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
     setError(null);
 
     try {
-      // ---------------------------------------------------------
-      // WEB3 INTEGRATION POINT
-      // ---------------------------------------------------------
-      // Here is where we would normally interact with the blockchain.
-      // Example Ethers.js logic:
-      //
-      // const provider = new ethers.providers.Web3Provider(window.ethereum);
-      // const signer = provider.getSigner();
-      // const contract = new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, signer);
-      // 
-      // 1. Approve USDC spending
-      // await usdcContract.approve(MARKET_ADDRESS, ethers.utils.parseUnits(amount, 6));
-      //
-      // 2. Place Bet
-      // const outcomeIndex = betType === 'YES' ? 1 : 0;
-      // const tx = await contract.buyShares(outcomeIndex, ethers.utils.parseUnits(amount, 6));
-      // await tx.wait();
-      // ---------------------------------------------------------
-
       await onPlaceBet(market.id, numericAmount, betType);
       onClose();
     } catch (err) {
@@ -165,6 +175,34 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
               <span className="text-slate-400">Potential Profit</span>
               <span className={cn("font-mono font-bold", colorClass)}>+{formatCurrency(potentialProfit)}</span>
             </div>
+          </div>
+
+          {/* AI Analysis Section */}
+          <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-3">
+             <div className="flex items-center justify-between mb-2">
+                 <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+                     <BrainCircuit size={14} /> Gemini Intelligence
+                 </div>
+                 {!analysis && (
+                    <button 
+                        onClick={handleAnalyze}
+                        disabled={isAnalyzing}
+                        className="text-[10px] bg-indigo-500 hover:bg-indigo-400 text-white px-2 py-1 rounded-md transition-colors flex items-center gap-1"
+                    >
+                        {isAnalyzing ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                        Analyze Market
+                    </button>
+                 )}
+             </div>
+             {analysis ? (
+                 <p className="text-xs text-indigo-200 leading-relaxed animate-in fade-in">
+                     {analysis}
+                 </p>
+             ) : (
+                 <p className="text-[10px] text-slate-500 italic">
+                     Get AI-powered risk assessment before you bet.
+                 </p>
+             )}
           </div>
           
           {error && (

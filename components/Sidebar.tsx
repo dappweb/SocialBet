@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Home, Trophy, User, Bell, Search, PlusCircle, LogOut } from 'lucide-react';
+import { Home, Trophy, User, Bell, Search, PlusCircle, LogOut, Bot } from 'lucide-react';
 import { cn } from '../utils';
 
-type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile';
+type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant';
 
 interface SidebarProps {
   currentView: View;
@@ -65,6 +65,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onCreateClic
             label="Leaderboard" 
             active={currentView === 'leaderboard'} 
             onClick={() => onNavigate('leaderboard')} 
+        />
+        <NavItem 
+            icon={Bot} 
+            label="Assistant" 
+            active={currentView === 'assistant'} 
+            onClick={() => onNavigate('assistant')} 
         />
         <NavItem 
             icon={Bell} 

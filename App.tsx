@@ -7,12 +7,13 @@ import Leaderboard from './components/Leaderboard';
 import Profile from './components/Profile';
 import Explore from './components/Explore';
 import Notifications from './components/Notifications';
+import ChatInterface from './components/ChatInterface';
 import CreateMarketModal from './components/CreateMarketModal';
 import { MOCK_MARKETS } from './constants';
-import { Home, Search, Trophy, User, Bell, PlusSquare } from 'lucide-react';
+import { Home, Search, Trophy, User, Bell, PlusSquare, Bot } from 'lucide-react';
 import { cn } from './utils';
 
-type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile';
+type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -41,6 +42,7 @@ function App() {
         volume: 0,
         likes: 0,
         comments: 0,
+        image: newMarketData.image, // Add image if present
         outcomeStats: {
           yesPercent: 50,
           noPercent: 50,
@@ -65,6 +67,8 @@ function App() {
         return <Notifications />;
       case 'profile':
         return <Profile onBack={() => setCurrentView('home')} />;
+      case 'assistant':
+        return <ChatInterface />;
       default:
         return <Feed markets={markets} />;
     }
@@ -116,13 +120,14 @@ function App() {
         >
           <PlusSquare size={24} strokeWidth={2.5} />
         </button>
-
+        
         <button 
-             onClick={() => setCurrentView('notifications')}
-             className={cn("p-2 rounded-full transition-colors", currentView === 'notifications' ? "text-blue-500" : "text-slate-500")}
+             onClick={() => setCurrentView('assistant')}
+             className={cn("p-2 rounded-full transition-colors", currentView === 'assistant' ? "text-blue-500" : "text-slate-500")}
         >
-          <Bell size={24} strokeWidth={currentView === 'notifications' ? 2.5 : 2} />
+          <Bot size={24} strokeWidth={currentView === 'assistant' ? 2.5 : 2} />
         </button>
+
          <button 
              onClick={() => setCurrentView('profile')}
              className={cn("p-2 rounded-full transition-colors", currentView === 'profile' ? "text-blue-500" : "text-slate-500")}
