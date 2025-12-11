@@ -43,7 +43,7 @@ const Notifications = () => {
                     <p className="text-slate-200 text-[15px] leading-snug">
                         {notif.type === 'win' ? (
                              <span>
-                                 <span className="font-bold text-emerald-400">Payout confirmed!</span> You won $450.00 from "Bitcoin > 100k".
+                                 <span className="font-bold text-emerald-400">Payout confirmed!</span> You won $450.00 from "Bitcoin &gt; 100k".
                              </span>
                         ) : (
                             notif.content
