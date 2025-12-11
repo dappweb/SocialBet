@@ -5,48 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SocialBet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              background: '#020617', // slate-950
-              surface: '#0f172a', // slate-900
-              border: '#1e293b', // slate-800
-              primary: '#3b82f6', // blue-500
-              success: '#10b981', // emerald-500
-              danger: '#f43f5e', // rose-500
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            }
-          }
-        }
-      }
-    </script>
-    <script>
-      // Polyfill process for browser environment if not present
-      window.process = window.process || { env: {} };
-      if (!window.process.env) window.process.env = {};
-    </script>
-    <style>
-      body {
-        background-color: #000;
-        color: #fff;
-        font-family: 'Inter', sans-serif;
-      }
-      /* Hide scrollbar for Chrome, Safari and Opera */
-      .no-scrollbar::-webkit-scrollbar {
-          display: none;
-      }
-      /* Hide scrollbar for IE, Edge and Firefox */
-      .no-scrollbar {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-      }
-    </style>
   </head>
   <body>
     <div id="root"></div>
