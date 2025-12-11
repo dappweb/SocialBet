@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MessageCircle, Share2, BarChart2, MoreHorizontal, CheckCircle2, TrendingUp } from 'lucide-react';
 import { PredictionMarket } from '../types';
@@ -14,14 +13,17 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ market, onBet }) => {
   const noPercentage = Math.round(market.outcomeStats.noPercent);
 
   return (
-    <div className="border-b border-slate-800 hover:bg-slate-900/30 transition-all cursor-pointer group animate-in fade-in duration-500">
+    <div className="border-b border-slate-800 bg-slate-900/20 hover:bg-slate-900/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all cursor-pointer group animate-in fade-in duration-500 relative overflow-hidden">
+      {/* Glow Effect */}
+      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      
       <div className="p-5 flex gap-4">
         {/* Avatar Section */}
         <div className="flex-shrink-0">
           <img 
             src={market.creator.avatar} 
             alt={market.creator.name} 
-            className="w-12 h-12 rounded-full object-cover border-2 border-slate-900 ring-1 ring-slate-800"
+            className="w-12 h-12 rounded-full object-cover border-2 border-slate-900 ring-1 ring-slate-800 group-hover:ring-blue-500/30 transition-all"
           />
         </div>
 
@@ -48,23 +50,23 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ market, onBet }) => {
           {/* Question */}
           <div className="mb-4">
              {market.isHot && (
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[11px] font-bold text-amber-500 mb-2 tracking-wide uppercase">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[11px] font-bold text-amber-500 mb-2 tracking-wide uppercase shadow-[0_0_10px_rgba(245,158,11,0.2)]">
                 <TrendingUp size={12} strokeWidth={3} /> Trending
               </div>
              )}
-            <h2 className="text-[17px] leading-snug text-slate-100 font-semibold pr-4">
+            <h2 className="text-[17px] leading-snug text-slate-100 font-semibold pr-4 group-hover:text-blue-200 transition-colors">
               {market.question}
             </h2>
             
             {/* Market Image if available */}
             {market.image && (
-                <div className="mt-3 rounded-xl overflow-hidden border border-slate-800 bg-slate-900/50">
-                    <img src={market.image} alt="Market" className="w-full h-auto max-h-[300px] object-cover" />
+                <div className="mt-3 rounded-xl overflow-hidden border border-slate-800 bg-slate-900/50 shadow-lg">
+                    <img src={market.image} alt="Market" className="w-full h-auto max-h-[300px] object-cover hover:scale-105 transition-transform duration-500" />
                 </div>
             )}
 
             <div className="mt-2.5 flex flex-wrap gap-2">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800/50 text-slate-400 border border-slate-700/50">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-800 transition-colors">
                 {market.category}
               </span>
               <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800/50 text-slate-400 border border-slate-700/50">
@@ -74,25 +76,25 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ market, onBet }) => {
           </div>
 
           {/* Chart/Visual Bar */}
-          <div className="mb-4 relative h-10 bg-slate-800 rounded-lg overflow-hidden flex font-mono text-sm font-bold select-none ring-1 ring-slate-700/50">
+          <div className="mb-4 relative h-10 bg-slate-800 rounded-lg overflow-hidden flex font-mono text-sm font-bold select-none ring-1 ring-slate-700/50 shadow-inner">
             {/* YES Bar */}
             <div 
-              className="relative h-full bg-gradient-to-r from-emerald-900/40 to-emerald-500/20 text-emerald-400 flex items-center px-4 transition-all duration-500 group/bar hover:bg-emerald-500/30"
+              className="relative h-full bg-gradient-to-r from-emerald-900/60 to-emerald-500/40 text-emerald-300 flex items-center px-4 transition-all duration-500 group/bar hover:bg-emerald-500/50"
               style={{ width: `${yesPercentage}%` }}
             >
-              <div className="flex flex-col leading-none z-10">
-                <span className="text-[10px] text-emerald-500/70 font-sans font-bold uppercase tracking-wider mb-0.5">Yes</span>
+              <div className="flex flex-col leading-none z-10 drop-shadow-md">
+                <span className="text-[10px] text-emerald-400 font-sans font-bold uppercase tracking-wider mb-0.5">Yes</span>
                 <span className="text-lg">{yesPercentage}%</span>
               </div>
             </div>
             
             {/* NO Bar */}
             <div 
-              className="relative h-full bg-gradient-to-l from-rose-900/40 to-rose-500/20 text-rose-400 flex items-center justify-end px-4 ml-auto transition-all duration-500 group/bar hover:bg-rose-500/30"
+              className="relative h-full bg-gradient-to-l from-rose-900/60 to-rose-500/40 text-rose-300 flex items-center justify-end px-4 ml-auto transition-all duration-500 group/bar hover:bg-rose-500/50"
               style={{ width: `${noPercentage}%` }}
             >
-               <div className="flex flex-col items-end leading-none z-10">
-                <span className="text-[10px] text-rose-500/70 font-sans font-bold uppercase tracking-wider mb-0.5">No</span>
+               <div className="flex flex-col items-end leading-none z-10 drop-shadow-md">
+                <span className="text-[10px] text-rose-400 font-sans font-bold uppercase tracking-wider mb-0.5">No</span>
                 <span className="text-lg">{noPercentage}%</span>
               </div>
             </div>
@@ -101,7 +103,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ market, onBet }) => {
             <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-slate-700/50 -translate-x-1/2"></div>
             
             {/* Center VS Badge */}
-             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 rounded-full w-6 h-6 flex items-center justify-center text-[9px] font-black text-slate-500 shadow-sm z-20">
+             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 border border-slate-700 rounded-full w-6 h-6 flex items-center justify-center text-[9px] font-black text-slate-500 shadow-lg z-20">
                 VS
              </div>
           </div>
@@ -110,17 +112,17 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ market, onBet }) => {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <button 
               onClick={(e) => { e.stopPropagation(); onBet(market, 'YES'); }}
-              className="relative overflow-hidden flex flex-col items-center justify-center py-3 rounded-xl bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500/40 transition-all group/btn active:scale-[0.98]"
+              className="relative overflow-hidden flex flex-col items-center justify-center py-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/50 transition-all group/btn active:scale-[0.98] shadow-sm hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/5 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/10 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
               <span className="text-emerald-400 font-bold group-hover/btn:scale-105 transition-transform relative z-10">Bet YES</span>
               <span className="text-xs text-emerald-500/60 font-mono relative z-10 mt-0.5">Price: {Math.floor(market.outcomeStats.yesPrice * 100)}¢</span>
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); onBet(market, 'NO'); }}
-              className="relative overflow-hidden flex flex-col items-center justify-center py-3 rounded-xl bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 transition-all group/btn active:scale-[0.98]"
+              className="relative overflow-hidden flex flex-col items-center justify-center py-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/50 transition-all group/btn active:scale-[0.98] shadow-sm hover:shadow-[0_0_15px_rgba(244,63,94,0.2)]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-rose-500/5 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-rose-500/10 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
               <span className="text-rose-400 font-bold group-hover/btn:scale-105 transition-transform relative z-10">Bet NO</span>
               <span className="text-xs text-rose-500/60 font-mono relative z-10 mt-0.5">Price: {Math.floor(market.outcomeStats.noPrice * 100)}¢</span>
             </button>
