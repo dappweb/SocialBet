@@ -38,7 +38,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     walletAddress,
     connect: web3AuthConnect,
-    disconnect: web3AuthDisconnect
+    disconnect: web3AuthDisconnect,
+    provider
   } = useWeb3Auth();
 
   const [user, setUser] = useState<User | null>(null);
@@ -72,9 +73,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [isConnected, web3AuthUser, walletAddress, isLoading]);
 
-  // Load and sync Soul balance
+  // Load and sync Soul balance from both API and on-chain
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && walletAddress) {
       // Load from localStorage first for immediate display
       const savedBalance = localStorage.getItem(`soul_balance_${user.id}`);
       if (savedBalance) {
@@ -90,13 +91,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             localStorage.setItem(`soul_balance_${user.id}`, userData.sosTokenBalance.toString());
           }
         } catch (error) {
-          console.error('Failed to fetch Soul balance:', error);
-          // Keep using localStorage value if API fails
+          console.error('Failed to fetch Soul balance from API:', error);
         }
       };
+      
+      // Also try to fetch on-chain balance if provider is available
+      const fetchOnChainBalance = async () => {
+        try {
+          const { getBalance } = await import('../services/soulContractService');
+          if (provider && walletAddress) {
+            const balance = await getBalance(walletAddress, provider);
+            // Use on-chain balance if it's higher (more accurate)
+            setSoulBalance(prev => {
+              if (balance.balance > prev) {
+                localStorage.setItem(`soul_balance_${user.id}`, balance.balance.toString());
+                return balance.balance;
+              }
+              return prev;
+            });
+          }
+        } catch (error) {
+          console.error('Failed to fetch on-chain balance:', error);
+          // Fallback to API balance
+        }
+      };
+      
       fetchSoulBalance();
+      if (isConnected && provider) {
+        fetchOnChainBalance();
+      }
     }
-  }, [user]);
+  }, [user, walletAddress, isConnected, provider]);
 
   const updateSoulBalance = useCallback(async (amount: number) => {
     if (!user?.id) return;
