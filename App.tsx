@@ -162,7 +162,7 @@ const AppContent: React.FC = () => {
 
           {/* Main Feed / Content Area */}
           <main className="flex-1 max-w-[600px] min-h-screen relative border-r border-[#e5e5ea]/50">
-            {renderView()}
+            {renderView}
           </main>
 
           {/* Right Panel (Desktop) */}
