@@ -6,6 +6,7 @@ import { PredictionMarket, BetType } from '../types';
 import { cn } from '../utils';
 import { usersApi, betsApi, marketsApi } from '../services/api';
 import LazyImage from './LazyImage';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProfileProps {
   onBack?: () => void;
@@ -32,11 +33,29 @@ const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, lab
 TabButton.displayName = 'TabButton';
 
 const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
+  const { user: authUser, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<ProfileTab>('bets');
   const [userMarkets, setUserMarkets] = useState<PredictionMarket[]>([]);
   const [allMarkets, setAllMarkets] = useState<PredictionMarket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userStats, setUserStats] = useState({ betsCount: 0 });
+
+  // Use authenticated user data or fallback to mock data
+  const displayUser = useMemo(() => {
+    if (isAuthenticated && authUser) {
+      return {
+        name: authUser.name,
+        handle: authUser.handle,
+        avatar: authUser.avatar,
+      };
+    }
+    // Fallback to mock user for demo
+    return {
+      name: 'Degen Trader',
+      handle: '@degen_eth',
+      avatar: 'https://picsum.photos/id/100/200/200',
+    };
+  }, [isAuthenticated, authUser]);
 
   // Fetch user data and markets
   useEffect(() => {
@@ -120,7 +139,7 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
           <ArrowLeft size={20} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
         </button>
         <div>
-          <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f]">Degen Trader</h1>
+          <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f]">{displayUser.name}</h1>
           <p className="text-xs text-[#86868b]">{userStats.betsCount.toLocaleString()} Bets</p>
         </div>
       </div>
@@ -134,8 +153,8 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
       <div className="px-5 relative mb-4">
         <div className="absolute -top-14 sm:-top-16 left-5">
           <LazyImage
-            src="https://picsum.photos/id/100/200/200"
-            alt="Me"
+            src={displayUser.avatar}
+            alt={displayUser.name}
             className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white object-cover bg-white shadow-lg"
           />
         </div>
@@ -147,9 +166,14 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
 
         <div className="mt-3">
           <h2 className="text-2xl font-semibold text-[#1d1d1f] flex items-center gap-2">
-            Degen Trader
+            {displayUser.name}
+            {authUser?.isVerified && (
+              <svg className="w-5 h-5 text-[#ffd700]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            )}
           </h2>
-          <p className="text-[#86868b] font-medium">@degen_eth</p>
+          <p className="text-[#86868b] font-medium">{displayUser.handle}</p>
 
           <p className="mt-4 text-[#1d1d1f] text-[15px] leading-relaxed max-w-md">
             Full-time crypto speculator. Betting on volatility. <br />

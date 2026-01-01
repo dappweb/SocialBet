@@ -4,9 +4,11 @@ import { marketsRoutes } from './routes/markets';
 import { usersRoutes } from './routes/users';
 import { betsRoutes } from './routes/bets';
 import { socialRoutes } from './routes/social';
+import { aiRoutes } from './routes/ai';
 
 export interface Env {
     DB: D1Database;
+    AI: any; // Cloudflare AI binding
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -27,6 +29,7 @@ app.route('/api/markets', marketsRoutes);
 app.route('/api/users', usersRoutes);
 app.route('/api/bets', betsRoutes);
 app.route('/api/social', socialRoutes);
+app.route('/api/ai', aiRoutes);
 
 // 404 handler
 app.notFound((c) => {

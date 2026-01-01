@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
+import { aiApi, ChatMessage } from '../services/api';
 import { cn } from '../utils';
 
 const ChatInterface: React.FC = memo(() => {
-  const [messages, setMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([
-    { role: 'model', text: "Hello! I'm your SoulCast AI assistant. Ask me anything about KOL intent predictions, markets, or trending topics!" }
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([
+    { role: 'assistant', text: "Hello! I'm your SoulCast AI assistant powered by Cloudflare AI. Ask me anything about KOL intent predictions, markets, or trending topics!" }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentModel, setCurrentModel] = useState<string>('llama-3.1-8b-instruct');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -23,36 +24,47 @@ const ChatInterface: React.FC = memo(() => {
     if (!inputValue.trim() || isLoading) return;
 
     const userMessage = inputValue.trim();
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    const userMessageObj = { role: 'user' as const, text: userMessage };
+    
+    // Update messages with user message
+    setMessages(prev => {
+      const updatedMessages = [...prev, userMessageObj];
+      
+      // Convert messages to ChatMessage format for API
+      const chatMessages: ChatMessage[] = updatedMessages.map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.text,
+        text: msg.text,
+      }));
+
+      // Call Cloudflare AI API asynchronously
+      setIsLoading(true);
+      aiApi.chat(chatMessages)
+        .then(response => {
+          if (response.message) {
+            setMessages(prevMsgs => [...prevMsgs, { role: 'assistant', text: response.message }]);
+            if (response.model) {
+              setCurrentModel(response.model);
+            }
+          } else {
+            throw new Error('No response from AI');
+          }
+        })
+        .catch((error: any) => {
+          console.error("Chat error:", error);
+          const errorMessage = error.message?.includes('AI service not available') 
+            ? "AI service is currently unavailable. Please try again later."
+            : "Sorry, I encountered an error. Please try again.";
+          setMessages(prevMsgs => [...prevMsgs, { role: 'assistant', text: errorMessage }]);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+
+      return updatedMessages;
+    });
+    
     setInputValue('');
-    setIsLoading(true);
-
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      // Using gemini-3-pro-preview for complex text tasks/chat
-      const chat = ai.chats.create({
-        model: 'gemini-3-pro-preview',
-        config: {
-          systemInstruction: "You are a helpful assistant for a KOL Intent Prediction Market app called SoulCast. You help users understand prediction odds, KOL behavior trends, AI avatar creation, and market insights. Keep answers concise and helpful.",
-        }
-      });
-
-      // Replay history to context (simplified for this demo, ideally use chat.sendMessage with history properly)
-      // For this stateless demo, we'll just send the last message as a new chat prompt or construct a history string if needed.
-      // However, the GoogleGenAI chat object maintains history if we keep the instance, but here we re-create.
-      // Let's just send the user message for now as a single turn for simplicity or construct a history block.
-
-      const response = await chat.sendMessage({ message: userMessage });
-
-      if (response.text) {
-        setMessages(prev => [...prev, { role: 'model', text: response.text }]);
-      }
-    } catch (error) {
-      console.error("Chat error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: "Sorry, I encountered an error connecting to Gemini. Please try again." }]);
-    } finally {
-      setIsLoading(false);
-    }
   }, [inputValue, isLoading]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -72,9 +84,9 @@ const ChatInterface: React.FC = memo(() => {
         <div>
           <h1 className="text-xl font-semibold text-[#1d1d1f] flex items-center gap-2">
             AI Assistant
-            <span className="text-[10px] bg-[#fff9e6] text-[#ffd700] border border-[#ffd700]/30 px-2 py-0.5 rounded-full font-semibold">Gemini Pro</span>
+            <span className="text-[10px] bg-[#fff9e6] text-[#ffd700] border border-[#ffd700]/30 px-2 py-0.5 rounded-full font-semibold">Cloudflare AI</span>
           </h1>
-          <p className="text-xs text-[#86868b]">Powered by gemini-3-pro-preview</p>
+          <p className="text-xs text-[#86868b]">Powered by {currentModel}</p>
         </div>
       </div>
 
@@ -84,9 +96,9 @@ const ChatInterface: React.FC = memo(() => {
           <div key={idx} className={cn("flex gap-3 max-w-[85%]", msg.role === 'user' ? "ml-auto flex-row-reverse" : "")}>
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
-              msg.role === 'model' ? "bg-[#fff9e6] border border-[#ffd700]/30" : "bg-[#f5f5f7]"
+              msg.role === 'assistant' ? "bg-[#fff9e6] border border-[#ffd700]/30" : "bg-[#f5f5f7]"
             )}>
-              {msg.role === 'model' ? <Sparkles size={14} className="text-[#ffd700]" /> : <User size={14} className="text-[#86868b]" />}
+              {msg.role === 'assistant' ? <Sparkles size={14} className="text-[#ffd700]" /> : <User size={14} className="text-[#86868b]" />}
             </div>
             <div className={cn(
               "p-3 rounded-2xl text-sm leading-relaxed",

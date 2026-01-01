@@ -71,6 +71,24 @@ export interface UserStats {
     winRate: string;
 }
 
+export interface ChatMessage {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    text?: string; // For backward compatibility
+}
+
+export interface ChatResponse {
+    message: string;
+    model: string;
+    timestamp: string;
+}
+
+export interface MarketAnalysis {
+    analysis: string;
+    marketId?: string;
+    timestamp: string;
+}
+
 // API Error class
 export class ApiError extends Error {
     constructor(public status: number, message: string) {
@@ -267,6 +285,54 @@ export const healthApi = {
     },
 };
 
+// ==================== AI API ====================
+
+export interface ChatMessage {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    text?: string; // For backward compatibility
+}
+
+export interface ChatResponse {
+    message: string;
+    model: string;
+    timestamp: string;
+}
+
+export interface MarketAnalysis {
+    analysis: string;
+    marketId?: string;
+    timestamp: string;
+}
+
+export const aiApi = {
+    // Chat with AI assistant
+    async chat(messages: ChatMessage[], userId?: string): Promise<ChatResponse> {
+        return fetchApi<ChatResponse>('/api/ai/chat', {
+            method: 'POST',
+            body: JSON.stringify({ messages, userId }),
+        });
+    },
+
+    // Analyze a prediction market
+    async analyzeMarket(data: {
+        marketId?: string;
+        question: string;
+        category?: string;
+        currentOdds?: { yesPercent: number; noPercent: number };
+    }): Promise<MarketAnalysis> {
+        return fetchApi<MarketAnalysis>('/api/ai/analyze-market', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Get available AI models
+    async getModels(): Promise<{ models: Array<{ id: string; name: string; description: string }> }> {
+        return fetchApi<{ models: Array<{ id: string; name: string; description: string }> }>('/api/ai/models');
+    },
+};
+
 // Default export with all APIs
 const api = {
     markets: marketsApi,
@@ -274,6 +340,7 @@ const api = {
     bets: betsApi,
     social: socialApi,
     health: healthApi,
+    ai: aiApi,
 };
 
 export default api;

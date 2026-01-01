@@ -23,7 +23,7 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets = [] }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('foryou');
   const { showToast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user: authUser } = useAuth();
 
   // Sync with prop changes - always update when prop changes
   useEffect(() => {
@@ -155,9 +155,9 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets = [] }) => {
       {/* Post Input Teaser */}
       <div className="hidden sm:flex gap-4 p-4 border-b border-[#e5e5ea] bg-white">
         <LazyImage
-          src="https://picsum.photos/id/100/100/100"
+          src={authUser?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
           className="w-10 h-10 rounded-full border-2 border-[#e5e5ea]"
-          alt="avatar"
+          alt={authUser?.name || 'User avatar'}
         />
         <div className="flex-1">
           <div className="bg-[#f5f5f7] rounded-xl h-10 flex items-center px-4 text-[#86868b] font-medium cursor-text hover:bg-[#fff9e6] hover:border hover:border-[#ffd700]/30 transition-all duration-200">

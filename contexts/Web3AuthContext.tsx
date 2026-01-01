@@ -20,11 +20,18 @@ interface Web3AuthUser {
     email?: string;
     name?: string;
     profileImage?: string;
+    picture?: string; // Some providers use 'picture' instead of 'profileImage'
+    avatar_url?: string; // Some providers use 'avatar_url'
     verifier?: string;
     verifierId?: string;
     aggregateVerifier?: string;
     idToken?: string;
 }
+
+// Helper function to extract profile image from user info
+const getProfileImage = (userInfo: any): string | undefined => {
+    return userInfo?.profileImage || userInfo?.picture || userInfo?.avatar_url;
+};
 
 interface Web3AuthContextType {
     web3auth: Web3Auth | null;
@@ -96,7 +103,12 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
                     try {
                         const userInfo = await web3authInstance.getUserInfo();
                         if (mounted) {
-                            setUser(userInfo as Web3AuthUser);
+                            // Normalize profile image field
+                            const normalizedUser = {
+                                ...userInfo,
+                                profileImage: getProfileImage(userInfo),
+                            } as Web3AuthUser;
+                            setUser(normalizedUser);
                         }
                     } catch (e) {
                         console.log('No user info available');
@@ -152,7 +164,12 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
             if (web3authProvider) {
                 try {
                     const userInfo = await web3auth.getUserInfo();
-                    setUser(userInfo as Web3AuthUser);
+                    // Normalize profile image field
+                    const normalizedUser = {
+                        ...userInfo,
+                        profileImage: getProfileImage(userInfo),
+                    } as Web3AuthUser;
+                    setUser(normalizedUser);
                 } catch (e) {
                     console.log('No user info available');
                 }
@@ -197,7 +214,12 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
 
         try {
             const userInfo = await web3auth.getUserInfo();
-            return userInfo as Web3AuthUser;
+            // Normalize profile image field
+            const normalizedUser = {
+                ...userInfo,
+                profileImage: getProfileImage(userInfo),
+            } as Web3AuthUser;
+            return normalizedUser;
         } catch (error) {
             console.error('Get user info error:', error);
             return null;

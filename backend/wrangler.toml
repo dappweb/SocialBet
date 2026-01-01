@@ -10,3 +10,7 @@ ENVIRONMENT = "production"
 binding = "DB"
 database_name = "socialbet-db"
 database_id = "acf5ab8f-ea91-429c-bcd2-bf7899f91acc"
+
+# Cloudflare AI Workers binding
+[ai]
+binding = "AI"
