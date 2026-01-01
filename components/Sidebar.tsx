@@ -1,11 +1,11 @@
 
 import React, { memo, useCallback } from 'react';
-import { Home, Trophy, User, Bell, Search, PlusCircle, LogOut, Bot, Users, FileText, Wallet, LogIn } from 'lucide-react';
+import { Home, Trophy, User, Bell, Search, PlusCircle, LogOut, Bot, Users, FileText, Wallet, LogIn, Settings } from 'lucide-react';
 import { cn } from '../utils';
 import { useAuth } from '../contexts/AuthContext';
 import LazyImage from './LazyImage';
 
-type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper';
+type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper' | 'operations';
 
 interface SidebarProps {
   currentView: View;
@@ -130,13 +130,19 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
           onClick={() => onNavigate('profile')}
         />
 
-        {/* DAO Governance & White Paper (PC Platform Only) */}
+        {/* DAO Governance, Operations & White Paper (PC Platform Only) */}
         <div className="hidden xl:block mt-6 pt-6 border-t border-[#e5e5ea] space-y-1">
           <NavItem
             icon={Users}
             label="DAO Governance"
             active={currentView === 'dao'}
             onClick={() => onNavigate('dao')}
+          />
+          <NavItem
+            icon={Settings}
+            label="Operations"
+            active={currentView === 'operations'}
+            onClick={() => onNavigate('operations')}
           />
           <NavItem
             icon={FileText}

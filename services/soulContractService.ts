@@ -75,19 +75,33 @@ async function getContract(provider: BrowserProvider | any, address: string): Pr
  * Get contract address for current network
  */
 function getContractAddress(chainId?: number): string {
-  // Default to sepolia for now
-  if (!chainId) return SOUL_CONTRACT_CONFIG.addresses.sepolia;
-  
+  // Try environment variables first (more flexible)
+  const sepoliaAddress = import.meta.env.VITE_SOUL_TOKEN_SEPOLIA;
+  const mainnetAddress = import.meta.env.VITE_SOUL_TOKEN_MAINNET;
+  const localAddress = import.meta.env.VITE_SOUL_TOKEN_LOCAL;
+
+  if (!chainId) {
+    // Default to sepolia if no chainId provided
+    return sepoliaAddress || SOUL_CONTRACT_CONFIG.addresses.sepolia;
+  }
+
   // Mainnet
-  if (chainId === 1) return SOUL_CONTRACT_CONFIG.addresses.mainnet;
-  
+  if (chainId === 1) {
+    return mainnetAddress || SOUL_CONTRACT_CONFIG.addresses.mainnet;
+  }
+
   // Sepolia
-  if (chainId === 11155111) return SOUL_CONTRACT_CONFIG.addresses.sepolia;
-  
-  // Localhost
-  if (chainId === 31337 || chainId === 1337) return SOUL_CONTRACT_CONFIG.addresses.localhost;
-  
-  return SOUL_CONTRACT_CONFIG.addresses.sepolia;
+  if (chainId === 11155111) {
+    return sepoliaAddress || SOUL_CONTRACT_CONFIG.addresses.sepolia;
+  }
+
+  // Localhost / Hardhat
+  if (chainId === 31337 || chainId === 1337) {
+    return localAddress || SOUL_CONTRACT_CONFIG.addresses.localhost;
+  }
+
+  // Default to sepolia
+  return sepoliaAddress || SOUL_CONTRACT_CONFIG.addresses.sepolia;
 }
 
 /**

@@ -1,0 +1,20 @@
+Release Information
+==================
+
+Version: 1.2.3
+Tag: v1.2.3
+Date: 2026-01-02 02:14:29
+Build: cc07afc
+
+Features:
+- SOUL Token Trading System
+- Treasury Management
+- Web3Auth Integration
+- Sepolia Testnet Configuration
+- Monthly Deployment Policy
+
+Deployment:
+- Staging: npm run deploy:staging
+- Sepolia: npm run deploy:sepolia
+- Production: npm run deploy:production
+

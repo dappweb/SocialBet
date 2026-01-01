@@ -31,14 +31,18 @@ const LoginModal = lazy(() => import('./components/LoginModal'));
 const WalletBalance = lazy(() => import('./components/WalletBalance'));
 const SoulTokenTrading = lazy(() => import('./components/SoulTokenTrading'));
 const TreasuryManagement = lazy(() => import('./components/TreasuryManagement'));
+const SoulTokenBalance = lazy(() => import('./components/SoulTokenBalance'));
+const SoulTokenStaking = lazy(() => import('./components/SoulTokenStaking'));
+const OperationsDashboard = lazy(() => import('./components/OperationsDashboard'));
 
-type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper';
+type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper' | 'operations';
 
 const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTradingModalOpen, setIsTradingModalOpen] = useState(false);
+  const [isStakingModalOpen, setIsStakingModalOpen] = useState(false);
   const { showToast, toasts, removeToast } = useToast();
   const { user } = useAuth();
   // Initialize with mock data immediately, then try to fetch from API
@@ -108,6 +112,8 @@ const AppContent: React.FC = () => {
   const handleCloseLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
   const handleOpenTradingModal = useCallback(() => setIsTradingModalOpen(true), []);
   const handleCloseTradingModal = useCallback(() => setIsTradingModalOpen(false), []);
+  const handleOpenStakingModal = useCallback(() => setIsStakingModalOpen(true), []);
+  const handleCloseStakingModal = useCallback(() => setIsStakingModalOpen(false), []);
 
   // Navigation handlers for mobile nav
   const handleNavigateHome = useCallback(() => setCurrentView('home'), []);
@@ -164,6 +170,12 @@ const AppContent: React.FC = () => {
             <WhitePaper onBack={handleBack} />
           </Suspense>
         );
+      case 'operations':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading operations..." />}>
+            <OperationsDashboard />
+          </Suspense>
+        );
       default:
         return (
           <Suspense fallback={<LoadingSpinner text="Loading feed..." />}>
@@ -203,7 +215,10 @@ const AppContent: React.FC = () => {
                 <Suspense fallback={<div className="h-32 bg-white rounded-xl mb-4 animate-pulse" />}>
                   <WalletBalance />
                 </Suspense>
-                <RightPanel onTradeClick={handleOpenTradingModal} />
+                <RightPanel 
+                  onTradeClick={handleOpenTradingModal} 
+                  onStakeClick={handleOpenStakingModal}
+                />
               </div>
             </aside>
           )}
@@ -275,6 +290,15 @@ const AppContent: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <Suspense fallback={<LoadingSpinner text="Loading trading..." />}>
                 <SoulTokenTrading onClose={handleCloseTradingModal} />
+              </Suspense>
+            </div>
+          </div>
+        )}
+        {isStakingModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <Suspense fallback={<LoadingSpinner text="Loading staking..." />}>
+                <SoulTokenStaking onClose={handleCloseStakingModal} />
               </Suspense>
             </div>
           </div>

@@ -1,7 +1,12 @@
 import React, { useState, useMemo, memo, useCallback } from 'react';
-import { Search, MoreHorizontal, TrendingUp, Sparkles } from 'lucide-react';
+import { Search, MoreHorizontal, TrendingUp, Sparkles, Coins } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import LazyImage from './LazyImage';
+
+interface RightPanelProps {
+  onTradeClick?: () => void;
+  onStakeClick?: () => void;
+}
 
 const TrendingItem = ({ category, title, posts }: { category: string, title: string, posts: string }) => (
   <div className="py-3 px-4 hover:bg-[#f5f5f7] transition-colors duration-200 cursor-pointer relative">
@@ -14,7 +19,7 @@ const TrendingItem = ({ category, title, posts }: { category: string, title: str
   </div>
 );
 
-const RightPanel = memo(() => {
+const RightPanel = memo(({ onTradeClick, onStakeClick }: RightPanelProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const { showToast } = useToast();
 
@@ -44,6 +49,46 @@ const RightPanel = memo(() => {
           />
         </form>
       </div>
+
+      {/* SOUL Token Trading CTA */}
+      {(onTradeClick || onStakeClick) && (
+        <div className="mt-4 space-y-3">
+          {onTradeClick && (
+            <div className="bg-gradient-to-br from-[#ffd700] to-[#ffeb3b] rounded-2xl p-5 shadow-lg shadow-[#ffd700]/20 border border-[#ffd700]/30">
+              <div className="flex items-center gap-3 mb-3">
+                <Coins size={24} className="text-[#1d1d1f]" />
+                <h3 className="font-semibold text-[#1d1d1f]">Trade SOUL Tokens</h3>
+              </div>
+              <p className="text-sm text-[#1d1d1f]/80 mb-4">
+                Buy or sell SOUL tokens with fiat or crypto. Support platform operations.
+              </p>
+              <button
+                onClick={onTradeClick}
+                className="w-full bg-[#1d1d1f] hover:bg-[#2d2d2f] text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 active:scale-95"
+              >
+                Start Trading
+              </button>
+            </div>
+          )}
+          {onStakeClick && (
+            <div className="bg-gradient-to-br from-[#1d1d1f] to-[#2d2d2f] rounded-2xl p-5 shadow-lg border border-[#e5e5ea]">
+              <div className="flex items-center gap-3 mb-3">
+                <Sparkles size={24} className="text-[#ffd700]" />
+                <h3 className="font-semibold text-white">Stake SOUL Tokens</h3>
+              </div>
+              <p className="text-sm text-white/80 mb-4">
+                Earn rewards by staking your SOUL tokens. Support the platform and grow your holdings.
+              </p>
+              <button
+                onClick={onStakeClick}
+                className="w-full bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 active:scale-95"
+              >
+                Start Staking
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* AI Predictions Section */}
       <div className="mt-4 bg-white border border-[#e5e5ea] rounded-2xl overflow-hidden shadow-sm">

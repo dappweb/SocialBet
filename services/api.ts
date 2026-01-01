@@ -16,6 +16,7 @@ export interface User {
     primaryChain?: string;
     sosTokenBalance?: number;
     isCreator?: boolean;
+    isAdmin?: boolean;
 }
 
 export interface Market {
@@ -341,6 +342,115 @@ export const aiApi = {
     },
 };
 
+// ==================== Operations API ====================
+
+export interface TreasuryData {
+    totalRevenue: number;
+    monthlyRevenue: number;
+    operationalFund: number;
+    totalTrades: number;
+    monthlyTrades: number;
+    platformFeePercent: number;
+    allocations: {
+        [key: string]: {
+            allocated: number;
+            used: number;
+            percentage: number;
+        };
+    };
+    trends: {
+        revenueChange: string;
+        monthlyRevenueChange: string;
+        fundChange: string;
+        tradesChange: string;
+    };
+}
+
+export interface TreasuryTransaction {
+    id: string;
+    transactionType: 'trade_fee' | 'allocation' | 'withdrawal' | 'deposit';
+    amount: number;
+    currency: string;
+    description?: string;
+    category?: 'development' | 'operations' | 'marketing' | 'reserves' | 'partnerships';
+    status: 'pending' | 'completed' | 'failed';
+    createdAt: string;
+}
+
+export interface OperationsStats {
+    metrics: {
+        totalRevenue: number;
+        monthlyRevenue: number;
+        operationalFund: number;
+        totalTrades: number;
+        monthlyTrades: number;
+    };
+    transactionStats: Array<{
+        type: string;
+        count: number;
+        totalAmount: number;
+    }>;
+    allocations: Array<{
+        category: string;
+        allocated: number;
+        used: number;
+        percentage: number;
+    }>;
+}
+
+export const operationsApi = {
+    // Get treasury overview
+    async getTreasury(): Promise<TreasuryData> {
+        return fetchApi<TreasuryData>('/api/operations/treasury');
+    },
+
+    // Get treasury transactions
+    async getTransactions(options?: {
+        limit?: number;
+        offset?: number;
+        type?: string;
+        category?: string;
+    }): Promise<{ transactions: TreasuryTransaction[]; total: number }> {
+        const params = new URLSearchParams();
+        if (options?.limit) params.set('limit', String(options.limit));
+        if (options?.offset) params.set('offset', String(options.offset));
+        if (options?.type) params.set('type', options.type);
+        if (options?.category) params.set('category', options.category);
+
+        const query = params.toString() ? `?${params}` : '';
+        return fetchApi<{ transactions: TreasuryTransaction[]; total: number }>(`/api/operations/transactions${query}`);
+    },
+
+    // Record a treasury transaction
+    async createTransaction(data: {
+        transactionType: string;
+        amount: number;
+        currency?: string;
+        description?: string;
+        category?: string;
+        status?: string;
+        userId?: string;
+    }): Promise<{ success: boolean; id: string }> {
+        return fetchApi<{ success: boolean; id: string }>('/api/operations/transactions', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Get operations statistics
+    async getStats(): Promise<OperationsStats> {
+        return fetchApi<OperationsStats>('/api/operations/stats');
+    },
+
+    // Update fund allocations
+    async updateAllocations(allocations: Array<{ category: string; percentage: number }>, userId?: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>('/api/operations/allocations', {
+            method: 'PUT',
+            body: JSON.stringify({ allocations, userId }),
+        });
+    },
+};
+
 // Default export with all APIs
 const api = {
     markets: marketsApi,
@@ -349,6 +459,7 @@ const api = {
     social: socialApi,
     health: healthApi,
     ai: aiApi,
+    operations: operationsApi,
 };
 
 export default api;

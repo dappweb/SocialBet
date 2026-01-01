@@ -7,6 +7,7 @@ Welcome to the SoulCast documentation. This directory contains all project docum
 ```
 docs/
 ├── README.md                    # This file - documentation index
+├── EXECUTION_PLAN.md           # Current status, completed features, and roadmap
 ├── requirements/                # Requirements documentation
 │   └── REQUIREMENTS.md         # Complete requirements document
 ├── technical/                  # Technical documentation
@@ -16,6 +17,15 @@ docs/
 ```
 
 ## 📚 Documentation Overview
+
+### [Execution Plan](./EXECUTION_PLAN.md)
+Current project status and roadmap including:
+- Completed features
+- In-progress work
+- Planned features with priorities
+- Web3Auth integration roadmap
+- Performance optimizations
+- Next steps and timeline
 
 ### [Requirements Document](./requirements/REQUIREMENTS.md)
 Comprehensive requirements document covering:
@@ -70,6 +80,7 @@ For getting started with the project, see the main [README.md](../README.md) in 
 
 | Document | Status | Last Updated |
 |----------|--------|--------------|
+| EXECUTION_PLAN.md | ✅ Active | 2025-01-27 |
 | REQUIREMENTS.md | ✅ Complete | 2025 |
 | TECHNICAL_SPEC.md | ✅ Complete | 2025 |
 | USER_STORIES.md | ✅ Complete | 2025 |

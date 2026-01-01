@@ -5,6 +5,7 @@ import { usersRoutes } from './routes/users';
 import { betsRoutes } from './routes/bets';
 import { socialRoutes } from './routes/social';
 import { aiRoutes } from './routes/ai';
+import { operationsRoutes } from './routes/operations';
 
 export interface Env {
     DB: D1Database;
@@ -30,6 +31,7 @@ app.route('/api/users', usersRoutes);
 app.route('/api/bets', betsRoutes);
 app.route('/api/social', socialRoutes);
 app.route('/api/ai', aiRoutes);
+app.route('/api/operations', operationsRoutes);
 
 // 404 handler
 app.notFound((c) => {

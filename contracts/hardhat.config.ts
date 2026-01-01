@@ -3,9 +3,19 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import * as dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ path: '../.env.local' });
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
+// Handle private key format - strip 0x prefix if present
+const getPrivateKey = () => {
+    const key = process.env.PRIVATE_KEY;
+    if (!key) {
+        throw new Error("PRIVATE_KEY is not set in .env.local");
+    }
+    // Remove 0x prefix if present
+    return key.startsWith('0x') ? key.slice(2) : key;
+};
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY ? getPrivateKey() : undefined;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY || "";
 
@@ -32,7 +42,7 @@ const config: HardhatUserConfig = {
         // Ethereum
         sepolia: {
             url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
-            accounts: [PRIVATE_KEY],
+            accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             chainId: 11155111,
         },
         mainnet: {
@@ -43,14 +53,21 @@ const config: HardhatUserConfig = {
 
         // BSC (Binance Smart Chain)
         bsc: {
-            url: "https://bsc-dataseed.binance.org/",
+            url: process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/",
             accounts: [PRIVATE_KEY],
             chainId: 56,
         },
         bscTestnet: {
-            url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
+            url: process.env.BSC_TESTNET_RPC_URL || "https://data-seed-prebsc-1-s1.binance.org:8545/",
             accounts: [PRIVATE_KEY],
             chainId: 97,
+        },
+
+        // Moon Island ETH Testnet
+        moonisland: {
+            url: process.env.MOON_ISLAND_RPC_URL || "https://rpc.moonisland.eth",
+            accounts: [PRIVATE_KEY],
+            chainId: parseInt(process.env.MOON_ISLAND_CHAIN_ID || "0x123456", 16),
         },
     },
 

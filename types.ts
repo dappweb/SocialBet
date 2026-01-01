@@ -12,6 +12,7 @@ export interface User {
   primaryChain?: 'ethereum' | 'solana' | 'bsc';
   sosTokenBalance?: number;
   isCreator?: boolean;
+  isAdmin?: boolean;
 }
 
 export interface PredictionMarket {

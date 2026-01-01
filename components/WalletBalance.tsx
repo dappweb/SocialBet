@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Wallet, ChevronDown, Loader2, Coins } from 'lucide-react';
 import { useWallet } from '../contexts/WalletContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { cn, formatCurrency } from '../utils';
 import SoulPurchaseModal from './SoulPurchaseModal';
 
 const WalletBalance: React.FC = () => {
   const { isConnected, walletAddress, currentChain } = useWallet();
   const { isAuthenticated, soulBalance } = useAuth();
+  const { provider } = useWeb3Auth();
   const [balance, setBalance] = useState<number | null>(null);
+  const [onChainSoulBalance, setOnChainSoulBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
@@ -26,10 +29,12 @@ const WalletBalance: React.FC = () => {
     
     setIsLoading(true);
     try {
-      // Mock balance fetch - In production, this would query the blockchain
+      // Fetch native token balance (ETH/BNB/SOL)
+      // This would query the blockchain for native token balance
+      // For now, using a placeholder - in production, use ethers/web3.js
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Mock balances based on chain
+      // Mock balances based on chain (replace with actual blockchain queries)
       const mockBalances: Record<string, number> = {
         ethereum: 1.24,
         bsc: 2.5,
@@ -37,6 +42,18 @@ const WalletBalance: React.FC = () => {
       };
       
       setBalance(mockBalances[currentChain] || 0);
+      
+      // Fetch SOUL token balance from blockchain if provider is available
+      if (provider && currentChain === 'ethereum') {
+        try {
+          const { getBalance } = await import('../services/soulContractService');
+          const soulBalanceResult = await getBalance(walletAddress, provider);
+          setOnChainSoulBalance(soulBalanceResult.balance);
+        } catch (error) {
+          console.error('Failed to fetch on-chain SOUL balance:', error);
+          // Keep using API balance
+        }
+      }
     } catch (error) {
       console.error('Failed to fetch balance:', error);
       setBalance(null);
@@ -117,10 +134,26 @@ const WalletBalance: React.FC = () => {
                 <Coins size={16} className="text-[#ffd700]" />
                 <span className="text-sm font-medium text-[#1d1d1f]">Soul Balance</span>
               </div>
-              <span className="text-lg font-bold text-[#1d1d1f]">
-                {soulBalance.toFixed(2)} SOUL
-              </span>
+              <div className="text-right">
+                {onChainSoulBalance !== null ? (
+                  <div>
+                    <span className="text-lg font-bold text-[#1d1d1f]">
+                      {onChainSoulBalance.toFixed(2)} SOUL
+                    </span>
+                    <span className="text-xs text-[#86868b] block">On-chain</span>
+                  </div>
+                ) : (
+                  <span className="text-lg font-bold text-[#1d1d1f]">
+                    {soulBalance.toFixed(2)} SOUL
+                  </span>
+                )}
+              </div>
             </div>
+            {onChainSoulBalance !== null && Math.abs(onChainSoulBalance - soulBalance) > 0.01 && (
+              <div className="text-xs text-[#86868b] mb-2">
+                API: {soulBalance.toFixed(2)} SOUL (syncing...)
+              </div>
+            )}
             <div className="flex items-center justify-between mt-2">
               <p className="text-xs text-[#86868b]">
                 Required to create prediction markets

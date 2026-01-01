@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   primary_chain TEXT,
   sos_token_balance REAL DEFAULT 0,
   is_creator INTEGER DEFAULT 0,
+  is_admin INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -75,6 +76,40 @@ CREATE TABLE IF NOT EXISTS comments (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- Operations and Treasury Management Tables
+CREATE TABLE IF NOT EXISTS treasury_transactions (
+  id TEXT PRIMARY KEY,
+  transaction_type TEXT NOT NULL CHECK(transaction_type IN ('trade_fee', 'allocation', 'withdrawal', 'deposit')),
+  amount REAL NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  description TEXT,
+  category TEXT CHECK(category IN ('development', 'operations', 'marketing', 'reserves', 'partnerships')),
+  status TEXT DEFAULT 'completed' CHECK(status IN ('pending', 'completed', 'failed')),
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS operations_metrics (
+  id TEXT PRIMARY KEY,
+  metric_date TEXT NOT NULL,
+  total_revenue REAL DEFAULT 0,
+  monthly_revenue REAL DEFAULT 0,
+  operational_fund REAL DEFAULT 0,
+  total_trades INTEGER DEFAULT 0,
+  monthly_trades INTEGER DEFAULT 0,
+  platform_fee_percent REAL DEFAULT 2.5,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS fund_allocations (
+  id TEXT PRIMARY KEY,
+  category TEXT NOT NULL CHECK(category IN ('development', 'operations', 'marketing', 'reserves', 'partnerships')),
+  allocated_amount REAL NOT NULL,
+  used_amount REAL DEFAULT 0,
+  percentage REAL NOT NULL,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_markets_category ON markets(category);
 CREATE INDEX IF NOT EXISTS idx_markets_creator ON markets(creator_id);
@@ -82,3 +117,6 @@ CREATE INDEX IF NOT EXISTS idx_markets_end_date ON markets(end_date);
 CREATE INDEX IF NOT EXISTS idx_bets_user ON bets(user_id);
 CREATE INDEX IF NOT EXISTS idx_bets_market ON bets(market_id);
 CREATE INDEX IF NOT EXISTS idx_comments_market ON comments(market_id);
+CREATE INDEX IF NOT EXISTS idx_treasury_transactions_date ON treasury_transactions(created_at);
+CREATE INDEX IF NOT EXISTS idx_treasury_transactions_type ON treasury_transactions(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_operations_metrics_date ON operations_metrics(metric_date);

@@ -6,8 +6,10 @@ import { cn } from '../utils';
 import { GoogleGenAI } from "@google/genai";
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import SoulPurchaseModal from './SoulPurchaseModal';
 import { usersApi } from '../services/api';
+import { transferWithIssuanceFee } from '../services/soulContractService';
 
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -112,15 +114,45 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
     
     setIsSubmitting(true);
     try {
-        // Deduct Soul tokens locally for immediate feedback
-        const deducted = await deductSoul(SOUL_REQUIRED_FOR_MARKET);
-        if (!deducted) {
-          showToast('Failed to deduct Soul tokens. Please try again.', 'error');
-          setIsSubmitting(false);
-          return;
+        // If wallet is connected, use on-chain transfer with issuance fee
+        if (isConnected && provider && walletAddress) {
+          try {
+            // Platform address for market creation fees (should be set in env)
+            const platformAddress = import.meta.env.VITE_PLATFORM_ADDRESS || walletAddress; // Fallback for now
+            
+            // Transfer with issuance fee on-chain
+            const result = await transferWithIssuanceFee(
+              platformAddress,
+              SOUL_REQUIRED_FOR_MARKET,
+              provider
+            );
+            
+            showToast(`Transaction sent! Hash: ${result.txHash.slice(0, 10)}...`, 'info');
+            
+            // Wait for transaction confirmation
+            await result.receipt;
+            
+            showToast(`Transaction confirmed! ${SOUL_REQUIRED_FOR_MARKET} SOUL transferred with fee.`, 'success');
+          } catch (error: any) {
+            console.error('On-chain transfer failed:', error);
+            // Fallback to backend-only if on-chain fails
+            showToast('On-chain transfer failed, using backend only...', 'warning');
+            const deducted = await deductSoul(SOUL_REQUIRED_FOR_MARKET);
+            if (!deducted) {
+              throw new Error('Failed to deduct Soul tokens');
+            }
+          }
+        } else {
+          // No wallet connected, use backend-only
+          const deducted = await deductSoul(SOUL_REQUIRED_FOR_MARKET);
+          if (!deducted) {
+            showToast('Failed to deduct Soul tokens. Please try again.', 'error');
+            setIsSubmitting(false);
+            return;
+          }
         }
 
-        // Create market (backend will also deduct Soul and validate balance)
+        // Create market (backend will also validate and deduct Soul)
         await onCreate({ 
             question, 
             category, 
@@ -129,13 +161,25 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             image: imagePreview 
         });
         
-        // Refresh Soul balance from backend
+        // Refresh Soul balance from both backend and on-chain
         if (isAuthenticated && user?.id) {
           try {
+            // Refresh from backend
             const userData = await usersApi.getById(user.id);
-            // Update local balance to match backend
             if (userData.sosTokenBalance !== undefined) {
               localStorage.setItem(`soul_balance_${user.id}`, userData.sosTokenBalance.toString());
+            }
+            
+            // Refresh from on-chain if connected
+            if (isConnected && provider && walletAddress) {
+              try {
+                const { getBalance } = await import('../services/soulContractService');
+                const balance = await getBalance(walletAddress, provider);
+                // Update to on-chain balance (more accurate)
+                localStorage.setItem(`soul_balance_${user.id}`, balance.balance.toString());
+              } catch (error) {
+                console.error('Failed to refresh on-chain balance:', error);
+              }
             }
           } catch (error) {
             console.error('Failed to refresh Soul balance:', error);

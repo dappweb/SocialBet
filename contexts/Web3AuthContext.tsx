@@ -4,17 +4,64 @@ import { CHAIN_NAMESPACES, WEB3AUTH_NETWORK, IProvider } from '@web3auth/base';
 import { EthereumPrivateKeyProvider } from '@web3auth/ethereum-provider';
 
 // Web3Auth Configuration
-const WEB3AUTH_CLIENT_ID = 'BIOs17cxzZnl_s0Q9Z74auNpFKrkCZPn7Q8XeizkqVTxul4UiPoWOfaukQell95OALH7QPz0reeeYwZMhiO5VIA';
+const WEB3AUTH_CLIENT_ID = import.meta.env.VITE_WEB3AUTH_CLIENT_ID || 'BIOs17cxzZnl_s0Q9Z74auNpFKrkCZPn7Q8XeizkqVTxul4UiPoWOfaukQell95OALH7QPz0reeeYwZMhiO5VIA';
 
-const chainConfig = {
-    chainNamespace: CHAIN_NAMESPACES.EIP155 as const,
-    chainId: '0x1', // Ethereum Mainnet
-    rpcTarget: 'https://rpc.ankr.com/eth',
-    displayName: 'Ethereum Mainnet',
-    blockExplorerUrl: 'https://etherscan.io',
-    ticker: 'ETH',
-    tickerName: 'Ethereum',
+// Get chain configuration from environment or use defaults
+const getChainConfig = () => {
+    const defaultChain = import.meta.env.VITE_DEFAULT_CHAIN || 'sepolia'; // Default to Sepolia testnet
+    
+    // Sepolia Testnet Configuration (Default)
+    if (defaultChain === 'sepolia') {
+        return {
+            chainNamespace: CHAIN_NAMESPACES.EIP155 as const,
+            chainId: '0xaa36a7', // Sepolia chain ID (11155111 in decimal)
+            rpcTarget: import.meta.env.VITE_SEPOLIA_RPC_URL || 'https://rpc.sepolia.org',
+            displayName: 'Sepolia Testnet',
+            blockExplorerUrl: 'https://sepolia.etherscan.io',
+            ticker: 'ETH',
+            tickerName: 'Ethereum',
+        };
+    }
+    
+    // Moon Island Testnet Configuration
+    if (defaultChain === 'moonisland') {
+        return {
+            chainNamespace: CHAIN_NAMESPACES.EIP155 as const,
+            chainId: import.meta.env.VITE_MOON_ISLAND_CHAIN_ID || '0x123456', // Update with actual chain ID
+            rpcTarget: import.meta.env.VITE_MOON_ISLAND_RPC_URL || 'https://rpc.moonisland.eth',
+            displayName: 'Moon Island Testnet',
+            blockExplorerUrl: import.meta.env.VITE_MOON_ISLAND_BLOCK_EXPLORER || 'https://explorer.moonisland.eth',
+            ticker: 'ETH',
+            tickerName: 'Ethereum',
+        };
+    }
+    
+    // Ethereum Mainnet
+    if (defaultChain === 'mainnet') {
+        return {
+            chainNamespace: CHAIN_NAMESPACES.EIP155 as const,
+            chainId: '0x1', // Ethereum Mainnet
+            rpcTarget: import.meta.env.VITE_ETH_MAINNET_RPC_URL || 'https://rpc.ankr.com/eth',
+            displayName: 'Ethereum Mainnet',
+            blockExplorerUrl: 'https://etherscan.io',
+            ticker: 'ETH',
+            tickerName: 'Ethereum',
+        };
+    }
+    
+    // Default: Sepolia Testnet
+    return {
+        chainNamespace: CHAIN_NAMESPACES.EIP155 as const,
+        chainId: '0xaa36a7', // Sepolia chain ID
+        rpcTarget: import.meta.env.VITE_SEPOLIA_RPC_URL || 'https://rpc.sepolia.org',
+        displayName: 'Sepolia Testnet',
+        blockExplorerUrl: 'https://sepolia.etherscan.io',
+        ticker: 'ETH',
+        tickerName: 'Ethereum',
+    };
 };
+
+const chainConfig = getChainConfig();
 
 interface Web3AuthUser {
     email?: string;
@@ -76,9 +123,13 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
                     config: { chainConfig },
                 });
 
+                // Get Web3Auth network from environment or use default
+                const web3AuthNetwork = (import.meta.env.VITE_WEB3AUTH_NETWORK || 'sapphire_devnet').toUpperCase() as keyof typeof WEB3AUTH_NETWORK;
+                const network = WEB3AUTH_NETWORK[web3AuthNetwork] || WEB3AUTH_NETWORK.SAPPHIRE_DEVNET;
+
                 const web3authInstance = new Web3Auth({
                     clientId: WEB3AUTH_CLIENT_ID,
-                    web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+                    web3AuthNetwork: network,
                     privateKeyProvider,
                     uiConfig: {
                         appName: 'SocialBet',

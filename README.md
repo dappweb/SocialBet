@@ -17,6 +17,7 @@ SoulCast bridges the gap between social prediction markets and AI avatar technol
 
 Comprehensive project documentation is available in the [`docs/`](./docs/) directory:
 
+- **[Execution Plan](./docs/EXECUTION_PLAN.md)** - Current status, completed features, and roadmap
 - **[Requirements](./docs/requirements/REQUIREMENTS.md)** - Complete functional and non-functional requirements
 - **[Technical Specifications](./docs/technical/TECHNICAL_SPEC.md)** - Architecture, tech stack, and implementation details
 - **[User Stories](./docs/user-stories/USER_STORIES.md)** - User-centric feature descriptions and acceptance criteria

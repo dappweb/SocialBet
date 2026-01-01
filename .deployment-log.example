@@ -1,0 +1,8 @@
+# Deployment Log
+# Format: YYYY-MM VERSION DATE TIME USER
+# This file tracks monthly production deployments
+# Only one deployment per month is allowed
+
+2025-01 v1.0.0 2025-01-15 10:30:00 developer
+2025-02 v1.1.0 2025-02-05 14:20:00 developer
+

@@ -1,0 +1,224 @@
+.soul-token-staking {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.soul-token-staking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e5e7;
+}
+
+.soul-token-staking-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.soul-token-staking-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #86868b;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.soul-token-staking-close:hover {
+  background: #f5f5f7;
+  color: #1d1d1f;
+}
+
+.soul-token-staking-balance {
+  margin-bottom: 24px;
+}
+
+.soul-token-staking-chains {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.soul-token-staking-chain {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e5e5e7;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #86868b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.soul-token-staking-chain:hover {
+  border-color: #ffd700;
+  color: #1d1d1f;
+}
+
+.soul-token-staking-chain.active {
+  border-color: #ffd700;
+  background: #fffef0;
+  color: #1d1d1f;
+}
+
+.soul-token-staking-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.soul-token-staking-action {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e5e5e7;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #86868b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.soul-token-staking-action:hover:not(:disabled) {
+  border-color: #ffd700;
+  color: #1d1d1f;
+}
+
+.soul-token-staking-action.active {
+  border-color: #ffd700;
+  background: #fffef0;
+  color: #1d1d1f;
+}
+
+.soul-token-staking-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.soul-token-staking-info {
+  background: #f5f5f7;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.soul-token-staking-info-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.soul-token-staking-info-item span:first-child {
+  color: #86868b;
+}
+
+.soul-token-staking-info-item span:last-child {
+  color: #1d1d1f;
+  font-weight: 600;
+}
+
+.soul-token-staking-input {
+  margin-bottom: 24px;
+}
+
+.soul-token-staking-input label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 8px;
+}
+
+.soul-token-staking-input input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e5e7;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #1d1d1f;
+  background: #ffffff;
+  transition: all 0.2s;
+}
+
+.soul-token-staking-input input:focus {
+  outline: none;
+  border-color: #ffd700;
+}
+
+.soul-token-staking-input input:disabled {
+  background: #f5f5f7;
+  cursor: not-allowed;
+}
+
+.soul-token-staking-max {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 1px solid #e5e5e7;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  color: #86868b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.soul-token-staking-max:hover {
+  border-color: #ffd700;
+  color: #1d1d1f;
+}
+
+.soul-token-staking-submit {
+  margin-top: 24px;
+}
+
+.soul-token-staking-submit-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 8px;
+  background: #ffd700;
+  color: #1d1d1f;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.soul-token-staking-submit-btn:hover:not(:disabled) {
+  background: #ffed4e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.soul-token-staking-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.soul-token-staking-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #86868b;
+}
+

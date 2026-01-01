@@ -1,0 +1,185 @@
+.soul-token-balance {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.soul-token-balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e5e7;
+}
+
+.soul-token-balance-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.soul-token-total {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.soul-token-total-label {
+  font-size: 14px;
+  color: #86868b;
+}
+
+.soul-token-total-amount {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffd700;
+}
+
+.soul-token-balance-chains {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.soul-token-chain-balance {
+  background: #f5f5f7;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.soul-token-chain-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.soul-token-chain-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.soul-token-chain-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.soul-token-chain-network {
+  font-size: 12px;
+  color: #86868b;
+  text-transform: uppercase;
+}
+
+.soul-token-chain-amount {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffd700;
+}
+
+.soul-token-staking-info {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e5e7;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.soul-token-staking-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.soul-token-staking-item span:first-child {
+  color: #86868b;
+}
+
+.soul-token-staking-item span:last-child {
+  color: #1d1d1f;
+  font-weight: 500;
+}
+
+.soul-token-no-balance {
+  text-align: center;
+  padding: 40px 20px;
+  color: #86868b;
+}
+
+.soul-token-no-balance p {
+  margin: 8px 0;
+}
+
+.soul-token-hint {
+  font-size: 12px;
+  color: #86868b;
+}
+
+.soul-token-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 16px;
+}
+
+.soul-token-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e5e7;
+  border-top-color: #ffd700;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.soul-token-balance-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f5f5f7;
+  border-radius: 8px;
+}
+
+.soul-token-icon {
+  font-size: 24px;
+}
+
+.soul-token-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.soul-token-label {
+  font-size: 12px;
+  color: #86868b;
+  font-weight: 500;
+}
+
+.soul-token-amount {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffd700;
+}
+
+.soul-token-amount.loading {
+  color: #86868b;
+}
+
+.loading {
+  color: #86868b;
+  font-style: italic;
+}
+
