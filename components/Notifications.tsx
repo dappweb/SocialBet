@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bell, Heart, UserPlus, DollarSign, Star, Zap, MoreHorizontal } from 'lucide-react';
+import LazyImage from './LazyImage';
 
 const NOTIFICATIONS = [
   { id: 1, type: 'win', content: 'You won $450.00 from "Bitcoin > 100k"', time: '2m', read: false },
@@ -11,45 +12,45 @@ const NOTIFICATIONS = [
 
 const Notifications = () => {
   return (
-    <div className="min-h-screen pb-20 sm:pb-0 border-x border-slate-800">
-      <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-slate-800 px-4 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-white">Notifications</h1>
-        <button className="p-2 hover:bg-slate-900 rounded-full text-slate-500 transition-colors">
+    <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-[#e5e5ea] px-4 py-4 flex justify-between items-center shadow-sm">
+        <h1 className="text-xl font-semibold text-[#1d1d1f]">Notifications</h1>
+        <button className="p-2 hover:bg-[#f5f5f7] rounded-full text-[#86868b] transition-colors duration-200">
             <MoreHorizontal size={20} />
         </button>
       </div>
       
-      <div className="divide-y divide-slate-800">
+      <div className="divide-y divide-[#e5e5ea]">
         {NOTIFICATIONS.map((notif) => (
             <div 
                 key={notif.id} 
-                className={`px-5 py-5 hover:bg-slate-900/40 transition-colors flex gap-4 cursor-pointer relative ${!notif.read ? 'bg-slate-900/20' : ''}`}
+                className={`px-5 py-5 hover:bg-[#f5f5f7] transition-colors duration-200 flex gap-4 cursor-pointer relative ${!notif.read ? 'bg-[#fff9e6]' : ''}`}
             >
                 {!notif.read && (
-                    <div className="absolute top-5 right-5 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+                    <div className="absolute top-5 right-5 w-2 h-2 rounded-full bg-[#ffd700] shadow-sm"></div>
                 )}
 
                 <div className="shrink-0 mt-0.5">
-                    {notif.type === 'win' && <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20"><DollarSign className="w-5 h-5 text-emerald-500" /></div>}
-                    {notif.type === 'like' && <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20"><Heart className="w-5 h-5 text-rose-500 fill-rose-500" /></div>}
-                    {notif.type === 'follow' && <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20"><UserPlus className="w-5 h-5 text-blue-500 fill-blue-500/20" /></div>}
-                    {notif.type === 'new_market' && <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20"><Zap className="w-5 h-5 text-purple-500 fill-purple-500" /></div>}
+                    {notif.type === 'win' && <div className="w-10 h-10 rounded-full bg-[#34c759]/10 flex items-center justify-center border border-[#34c759]/20"><DollarSign className="w-5 h-5 text-[#34c759]" /></div>}
+                    {notif.type === 'like' && <div className="w-10 h-10 rounded-full bg-[#ff3b30]/10 flex items-center justify-center border border-[#ff3b30]/20"><Heart className="w-5 h-5 text-[#ff3b30]" /></div>}
+                    {notif.type === 'follow' && <div className="w-10 h-10 rounded-full bg-[#ffd700]/10 flex items-center justify-center border border-[#ffd700]/20"><UserPlus className="w-5 h-5 text-[#ffd700]" /></div>}
+                    {notif.type === 'new_market' && <div className="w-10 h-10 rounded-full bg-[#ffd700]/10 flex items-center justify-center border border-[#ffd700]/20"><Zap className="w-5 h-5 text-[#ffd700]" /></div>}
                 </div>
                 
                 <div className="flex-1 pr-4">
                     <div className="flex items-center gap-2 mb-1">
-                        <img src={`https://picsum.photos/id/${10 + notif.id}/50/50`} className="w-6 h-6 rounded-full border border-slate-700" alt="Avatar" />
+                        <LazyImage src={`https://picsum.photos/id/${10 + notif.id}/50/50`} className="w-6 h-6 rounded-full border border-[#e5e5ea]" alt="Avatar" />
                     </div>
-                    <p className="text-slate-200 text-[15px] leading-snug">
+                    <p className="text-[#1d1d1f] text-[15px] leading-snug">
                         {notif.type === 'win' ? (
                              <span>
-                                 <span className="font-bold text-emerald-400">Payout confirmed!</span> You won $450.00 from "Bitcoin &gt; 100k".
+                                 <span className="font-semibold text-[#34c759]">Payout confirmed!</span> You won $450.00 from "Bitcoin &gt; 100k".
                              </span>
                         ) : (
                             notif.content
                         )}
                     </p>
-                    <p className="text-slate-500 text-xs mt-2 font-medium">{notif.time} ago</p>
+                    <p className="text-[#86868b] text-xs mt-2 font-medium">{notif.time} ago</p>
                 </div>
             </div>
         ))}

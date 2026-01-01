@@ -1,14 +1,19 @@
 
 import React from 'react';
-import { Home, Trophy, User, Bell, Search, PlusCircle, LogOut, Bot } from 'lucide-react';
+import { Home, Trophy, User, Bell, Search, PlusCircle, LogOut, Bot, Users, FileText } from 'lucide-react';
 import { cn } from '../utils';
+import WalletButton from './WalletButton';
+import { useWallet } from '../contexts/WalletContext';
+import LazyImage from './LazyImage';
 
-type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant';
+type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper';
 
 interface SidebarProps {
   currentView: View;
   onNavigate: (view: View) => void;
   onCreateClick: () => void;
+  onWalletClick: () => void;
+  onSocialClick: () => void;
 }
 
 const NavItem = ({ 
@@ -25,29 +30,59 @@ const NavItem = ({
   <button 
     onClick={onClick}
     className={cn(
-      "flex items-center gap-4 px-4 py-3 text-xl rounded-full w-fit transition-all group relative overflow-hidden",
-      active ? "font-bold text-white bg-slate-800/50 shadow-inner" : "text-slate-400 hover:bg-slate-900/50 hover:text-slate-200"
+      "flex items-center gap-4 px-4 py-3 rounded-xl w-fit transition-all duration-200 group relative",
+      active 
+        ? "font-semibold text-[#1d1d1f] bg-[#fff9e6]" 
+        : "text-[#86868b] hover:bg-[#f5f5f7] hover:text-[#1d1d1f]"
     )}
   >
-    {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-blue-500 rounded-r-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>}
-    <Icon size={26} strokeWidth={active ? 3 : 2} className={cn("transition-transform group-hover:scale-110 relative z-10", active && "text-blue-400 scale-105")} />
-    <span className="hidden xl:inline relative z-10">{label}</span>
+    <Icon 
+      size={24} 
+      strokeWidth={active ? 2.5 : 2} 
+      className={cn(
+        "transition-all duration-200 relative z-10", 
+        active && "text-[#ffd700]",
+        "group-hover:scale-105"
+      )} 
+    />
+    <span className="hidden xl:inline relative z-10 text-[15px]">{label}</span>
   </button>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onCreateClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onCreateClick, onWalletClick, onSocialClick }) => {
+  const { isConnected, user } = useWallet();
+  
   return (
-    <div className="h-screen sticky top-0 flex flex-col justify-between py-4 pl-4 pr-4">
+    <div className="h-screen sticky top-0 flex flex-col justify-between py-6 pl-6 pr-4">
       <div className="space-y-1">
-        <div className="px-3 py-2 mb-4">
+        <div className="px-2 py-2 mb-6">
            {/* Logo */}
            <div 
-             className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/20 cursor-pointer hover:scale-105 transition-transform"
+             className="w-10 h-10 bg-[#ffd700] rounded-2xl flex items-center justify-center text-[#1d1d1f] font-bold text-lg shadow-md shadow-[#ffd700]/20 cursor-pointer hover:scale-105 transition-all duration-200"
              onClick={() => onNavigate('home')}
            >
              SB
            </div>
         </div>
+        
+        {/* Authentication Buttons */}
+        {!isConnected && (
+          <div className="px-2 mb-4 space-y-2">
+            <WalletButton onClick={onWalletClick} />
+            <button
+              onClick={onSocialClick}
+              className="w-full px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 bg-white hover:bg-[#f5f5f7] text-[#1d1d1f] border border-[#e5e5ea] active:scale-95"
+            >
+              Social Login
+            </button>
+          </div>
+        )}
+        
+        {isConnected && (
+          <div className="px-2 mb-4">
+            <WalletButton onClick={onWalletClick} />
+          </div>
+        )}
         
         <NavItem 
             icon={Home} 
@@ -86,32 +121,57 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onCreateClic
             onClick={() => onNavigate('profile')} 
         />
         
+        {/* DAO Governance & White Paper (PC Platform Only) */}
+        <div className="hidden xl:block mt-6 pt-6 border-t border-[#e5e5ea] space-y-1">
+          <NavItem 
+              icon={Users} 
+              label="DAO Governance" 
+              active={currentView === 'dao'} 
+              onClick={() => onNavigate('dao')} 
+          />
+          <NavItem 
+              icon={FileText} 
+              label="White Paper" 
+              active={currentView === 'whitepaper'} 
+              onClick={() => onNavigate('whitepaper')} 
+          />
+        </div>
+        
+        {/* Create Market Button - Bright Yellow */}
         <button 
             onClick={onCreateClick}
-            className="w-full xl:w-56 mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 rounded-full shadow-lg shadow-blue-500/20 transition-all active:scale-95 hidden xl:block"
+            className="w-full xl:w-56 mt-8 bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] font-semibold py-3.5 rounded-xl shadow-md shadow-[#ffd700]/20 transition-all duration-200 active:scale-95 hidden xl:block"
         >
           New Prediction
         </button>
         <button 
             onClick={onCreateClick}
-            className="xl:hidden mt-8 bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg shadow-blue-500/20 flex items-center justify-center"
+            className="xl:hidden mt-8 bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] p-3 rounded-xl shadow-md shadow-[#ffd700]/20 flex items-center justify-center transition-all duration-200 active:scale-95"
         >
             <PlusCircle size={24} />
         </button>
       </div>
 
       <div className="mb-4">
-        <button 
-            onClick={() => onNavigate('profile')}
-            className="flex items-center gap-3 p-3 rounded-full hover:bg-slate-900 w-full text-left transition-colors"
-        >
-            <img src="https://picsum.photos/id/100/100/100" className="w-10 h-10 rounded-full border border-slate-700" alt="Me" />
-            <div className="hidden xl:block overflow-hidden">
-                <p className="font-bold text-sm text-white truncate">Degen Trader</p>
-                <p className="text-slate-500 text-sm truncate">@degen_eth</p>
-            </div>
-            <LogOut size={16} className="ml-auto text-slate-500 hidden xl:block" />
-        </button>
+        {isConnected && user ? (
+          <button 
+              onClick={() => onNavigate('profile')}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#f5f5f7] w-full text-left transition-colors duration-200"
+          >
+              <LazyImage src={user.avatar} className="w-10 h-10 rounded-full border-2 border-[#e5e5ea]" alt={user.name} />
+              <div className="hidden xl:block overflow-hidden">
+                  <p className="font-semibold text-sm text-[#1d1d1f] truncate">{user.name}</p>
+                  <p className="text-[#86868b] text-sm truncate">{user.handle}</p>
+              </div>
+              <LogOut size={16} className="ml-auto text-[#86868b] hidden xl:block" />
+          </button>
+        ) : (
+          <div className="px-2">
+            <p className="text-xs text-[#86868b] text-center hidden xl:block mb-2">
+              Connect wallet to access your profile
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

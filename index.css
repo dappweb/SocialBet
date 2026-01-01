@@ -1,23 +1,69 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #020617;
-  --color-surface: #0f172a;
-  --color-border: #1e293b;
-  --color-primary: #3b82f6;
-  --color-success: #10b981;
-  --color-danger: #f43f5e;
+  /* Apple-Inspired Color Palette with Bright Yellow */
+  --color-background: #ffffff;
+  --color-background-secondary: #f5f5f7;
+  --color-background-tertiary: #fafafa;
+  --color-surface: #ffffff;
+  --color-border: #e5e5ea;
+  --color-divider: #f2f2f7;
   
-  --font-sans: "Inter", sans-serif;
+  /* Primary - Bright Yellow */
+  --color-primary: #ffd700;
+  --color-primary-light: #ffeb3b;
+  --color-primary-dark: #ffc107;
+  --color-primary-tint: #fff9e6;
+  
+  /* Text Colors */
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #86868b;
+  --color-text-tertiary: #c7c7cc;
+  
+  /* Status Colors */
+  --color-success: #34c759;
+  --color-error: #ff3b30;
+  --color-warning: #ff9500;
+  --color-info: #007aff;
+  
+  /* Font */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
 }
 
 @layer base {
+  * {
+    @apply antialiased;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
-    @apply bg-slate-950 text-white font-sans;
-    background-image: 
-      radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.1) 0%, transparent 30%);
-    background-attachment: fixed;
+    @apply bg-white text-[#1d1d1f] font-sans;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Optimize image rendering */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  /* Selection */
+  ::selection {
+    @apply bg-[#ffd700]/30 text-[#1d1d1f];
+  }
+  
+  /* Focus styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-[#ffd700] ring-offset-2;
   }
 }
 
@@ -29,4 +75,37 @@
 .no-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+}
+
+/* Performance optimizations */
+@layer utilities {
+  /* GPU acceleration for transforms */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Optimize font rendering */
+  .optimize-text {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Content visibility for off-screen elements */
+  .content-visibility-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 200px;
+  }
 }
