@@ -13,21 +13,25 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       nodePolyfills({
-        include: ['process', 'buffer'],
+        include: ['process', 'buffer', 'util'],
         globals: {
           process: true,
           Buffer: true,
         },
+        protocolImports: true,
       }),
     ],
     define: {
       'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env': '{}',
       'global': 'globalThis',
     },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        'process': 'process/browser',
+        'buffer': 'buffer',
       }
     },
     build: {
