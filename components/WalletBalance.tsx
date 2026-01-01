@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, ChevronDown, Loader2 } from 'lucide-react';
+import { Wallet, ChevronDown, Loader2, Coins } from 'lucide-react';
 import { useWallet } from '../contexts/WalletContext';
 import { useAuth } from '../contexts/AuthContext';
 import { cn, formatCurrency } from '../utils';
+import SoulPurchaseModal from './SoulPurchaseModal';
 
 const WalletBalance: React.FC = () => {
   const { isConnected, walletAddress, currentChain } = useWallet();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, soulBalance } = useAuth();
   const [balance, setBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
   useEffect(() => {
     if (isConnected && walletAddress && currentChain) {
@@ -106,20 +108,48 @@ const WalletBalance: React.FC = () => {
         />
       </button>
 
-      {isExpanded && balance !== null && (
-        <div className="mt-4 pt-4 border-t border-[#e5e5ea] space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-[#86868b]">USD Value</span>
-            <span className="font-semibold text-[#1d1d1f]">
-              ${formatCurrency(getUSDBalance())}
-            </span>
+      {isExpanded && (
+        <div className="mt-4 pt-4 border-t border-[#e5e5ea] space-y-3">
+          {/* Soul Balance */}
+          <div className="bg-[#fff9e6] border border-[#ffd700]/30 rounded-lg p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Coins size={16} className="text-[#ffd700]" />
+                <span className="text-sm font-medium text-[#1d1d1f]">Soul Balance</span>
+              </div>
+              <span className="text-lg font-bold text-[#1d1d1f]">
+                {soulBalance.toFixed(2)} SOUL
+              </span>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-[#86868b]">
+                Required to create prediction markets
+              </p>
+              <button
+                onClick={() => setIsPurchaseModalOpen(true)}
+                className="text-xs font-semibold text-[#1d1d1f] bg-[#ffd700] hover:bg-[#ffeb3b] px-3 py-1.5 rounded-lg transition-all duration-200"
+              >
+                Buy Soul
+              </button>
+            </div>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-[#86868b]">Network</span>
-            <span className="font-semibold text-[#1d1d1f] capitalize">
-              {currentChain}
-            </span>
-          </div>
+
+          {balance !== null && (
+            <>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#86868b]">USD Value</span>
+                <span className="font-semibold text-[#1d1d1f]">
+                  ${formatCurrency(getUSDBalance())}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#86868b]">Network</span>
+                <span className="font-semibold text-[#1d1d1f] capitalize">
+                  {currentChain}
+                </span>
+              </div>
+            </>
+          )}
           {walletAddress && (
             <div className="pt-2">
               <div className="text-xs text-[#86868b] mb-1">Address</div>
@@ -130,6 +160,12 @@ const WalletBalance: React.FC = () => {
           )}
         </div>
       )}
+
+      <SoulPurchaseModal
+        isOpen={isPurchaseModalOpen}
+        onClose={() => setIsPurchaseModalOpen(false)}
+        onPurchaseSuccess={() => setIsPurchaseModalOpen(false)}
+      />
     </div>
   );
 };

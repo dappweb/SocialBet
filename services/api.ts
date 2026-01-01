@@ -189,6 +189,14 @@ export const usersApi = {
         const query = params.toString() ? `?${params}` : '';
         return fetchApi<User[]>(`/api/users${query}`);
     },
+
+    // Add Soul tokens (for purchases)
+    async addSoul(id: string, amount: number): Promise<{ success: boolean; newBalance: number }> {
+        return fetchApi<{ success: boolean; newBalance: number }>(`/api/users/${id}/soul`, {
+            method: 'POST',
+            body: JSON.stringify({ amount }),
+        });
+    },
 };
 
 // ==================== Bets API ====================

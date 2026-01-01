@@ -126,6 +126,30 @@ marketsRoutes.post('/', async (c) => {
         return c.json({ error: 'Missing required fields: question, category, endDate' }, 400);
     }
 
+    // Check and deduct Soul balance (10 SOUL required)
+    const SOUL_REQUIRED = 10;
+    const user = await c.env.DB.prepare('SELECT sos_token_balance FROM users WHERE id = ?').bind(creatorId).first();
+    
+    if (!user) {
+        return c.json({ error: 'User not found' }, 404);
+    }
+
+    const userBalance: any = user;
+    if (userBalance.sos_token_balance < SOUL_REQUIRED) {
+        return c.json({ 
+            error: `Insufficient Soul balance. ${SOUL_REQUIRED} SOUL required to create a market.`,
+            required: SOUL_REQUIRED,
+            current: userBalance.sos_token_balance
+        }, 400);
+    }
+
+    // Deduct Soul tokens
+    await c.env.DB.prepare(`
+        UPDATE users 
+        SET sos_token_balance = sos_token_balance - ?
+        WHERE id = ?
+    `).bind(SOUL_REQUIRED, creatorId).run();
+
     const id = crypto.randomUUID();
 
     await c.env.DB.prepare(`

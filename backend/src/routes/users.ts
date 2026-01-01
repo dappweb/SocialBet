@@ -124,3 +124,35 @@ usersRoutes.put('/:id', async (c) => {
 
     return c.json({ success: true });
 });
+
+// POST /api/users/:id/soul - Add Soul tokens (for purchases)
+usersRoutes.post('/:id/soul', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const { amount } = body;
+
+    if (!amount || amount <= 0) {
+        return c.json({ error: 'Invalid amount' }, 400);
+    }
+
+    const existing = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(id).first();
+    if (!existing) {
+        return c.json({ error: 'User not found' }, 404);
+    }
+
+    // Add Soul tokens
+    await c.env.DB.prepare(`
+        UPDATE users 
+        SET sos_token_balance = sos_token_balance + ?
+        WHERE id = ?
+    `).bind(amount, id).run();
+
+    // Fetch updated balance
+    const user = await c.env.DB.prepare('SELECT sos_token_balance FROM users WHERE id = ?').bind(id).first();
+    const u: any = user;
+
+    return c.json({ 
+        success: true, 
+        newBalance: u.sos_token_balance 
+    });
+});

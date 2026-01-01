@@ -1,9 +1,13 @@
 
 import React, { useState, useRef } from 'react';
-import { X, Loader2, Calendar, Tag, DollarSign, HelpCircle, Image as ImageIcon, Sparkles, Upload } from 'lucide-react';
+import { X, Loader2, Calendar, Tag, DollarSign, HelpCircle, Image as ImageIcon, Sparkles, Upload, Coins, AlertCircle } from 'lucide-react';
 import { MarketCategory } from '../types';
 import { cn } from '../utils';
 import { GoogleGenAI } from "@google/genai";
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
+import SoulPurchaseModal from './SoulPurchaseModal';
+import { usersApi } from '../services/api';
 
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -12,13 +16,17 @@ interface CreateMarketModalProps {
 }
 
 const CATEGORIES: MarketCategory[] = ['Crypto', 'Sports', 'Pop Culture', 'Politics', 'Tech'];
+const SOUL_REQUIRED_FOR_MARKET = 10; // 10 SOUL tokens required to create a market
 
 const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, onCreate }) => {
+  const { soulBalance, deductSoul, isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   const [question, setQuestion] = useState('');
   const [category, setCategory] = useState<MarketCategory>('Crypto');
   const [endDate, setEndDate] = useState('');
   const [liquidity, setLiquidity] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   
   // Image Generation/Editing State
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -88,10 +96,31 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if(!question || !endDate || !liquidity) return;
+
+    // Check authentication
+    if (!isAuthenticated) {
+      showToast('Please sign in to create a market', 'warning');
+      return;
+    }
+
+    // Check Soul balance
+    if (soulBalance < SOUL_REQUIRED_FOR_MARKET) {
+      showToast(`Insufficient Soul balance. ${SOUL_REQUIRED_FOR_MARKET} SOUL required to create a market.`, 'error');
+      setIsPurchaseModalOpen(true);
+      return;
+    }
     
     setIsSubmitting(true);
     try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Deduct Soul tokens locally for immediate feedback
+        const deducted = await deductSoul(SOUL_REQUIRED_FOR_MARKET);
+        if (!deducted) {
+          showToast('Failed to deduct Soul tokens. Please try again.', 'error');
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Create market (backend will also deduct Soul and validate balance)
         await onCreate({ 
             question, 
             category, 
@@ -99,6 +128,21 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             liquidity: parseFloat(liquidity),
             image: imagePreview 
         });
+        
+        // Refresh Soul balance from backend
+        if (isAuthenticated && user?.id) {
+          try {
+            const userData = await usersApi.getById(user.id);
+            // Update local balance to match backend
+            if (userData.sosTokenBalance !== undefined) {
+              localStorage.setItem(`soul_balance_${user.id}`, userData.sosTokenBalance.toString());
+            }
+          } catch (error) {
+            console.error('Failed to refresh Soul balance:', error);
+          }
+        }
+        
+        showToast(`Market created! ${SOUL_REQUIRED_FOR_MARKET} SOUL deducted.`, 'success');
         
         // Reset form
         setQuestion('');
@@ -109,20 +153,76 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
         onClose();
     } catch (error) {
         console.error(error);
+        showToast('Failed to create market. Please try again.', 'error');
     } finally {
         setIsSubmitting(false);
     }
   };
 
+  const handlePurchaseSuccess = () => {
+    setIsPurchaseModalOpen(false);
+    showToast('Soul tokens purchased successfully!', 'success');
+  };
+
+  const hasEnoughSoul = soulBalance >= SOUL_REQUIRED_FOR_MARKET;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
-      <div className="w-full max-w-lg bg-white border border-[#e5e5ea] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-8">
-        <div className="flex items-center justify-between p-5 border-b border-[#e5e5ea]">
-          <h3 className="text-lg font-semibold text-[#1d1d1f]">Create New Market</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200">
-            <X size={20} className="text-[#86868b]" />
-          </button>
-        </div>
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+        <div className="w-full max-w-lg bg-white border border-[#e5e5ea] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-8">
+          <div className="flex items-center justify-between p-5 border-b border-[#e5e5ea]">
+            <h3 className="text-lg font-semibold text-[#1d1d1f]">Create New Market</h3>
+            <button onClick={onClose} className="p-1.5 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200">
+              <X size={20} className="text-[#86868b]" />
+            </button>
+          </div>
+
+          {/* Soul Balance Warning */}
+          {!hasEnoughSoul && isAuthenticated && (
+            <div className="mx-5 mt-5 p-4 bg-[#fff3cd] border border-[#ffd700] rounded-xl flex items-start gap-3">
+              <AlertCircle size={20} className="text-[#ff9800] flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="font-semibold text-sm text-[#1d1d1f] mb-1">
+                  Insufficient Soul Balance
+                </div>
+                <p className="text-xs text-[#86868b] mb-2">
+                  You need {SOUL_REQUIRED_FOR_MARKET} SOUL to create a market. Your current balance: {soulBalance.toFixed(2)} SOUL
+                </p>
+                <button
+                  onClick={() => setIsPurchaseModalOpen(true)}
+                  className="text-sm font-semibold text-[#1d1d1f] bg-[#ffd700] hover:bg-[#ffeb3b] px-4 py-2 rounded-lg transition-all duration-200"
+                >
+                  Purchase Soul
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Soul Balance Display */}
+          {isAuthenticated && (
+            <div className="mx-5 mt-5 p-3 bg-[#fff9e6] border border-[#ffd700]/30 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Coins size={18} className="text-[#ffd700]" />
+                <span className="text-sm font-medium text-[#1d1d1f]">Soul Balance</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={cn(
+                  "text-lg font-bold",
+                  hasEnoughSoul ? "text-[#1d1d1f]" : "text-[#ff3b30]"
+                )}>
+                  {soulBalance.toFixed(2)} SOUL
+                </span>
+                {!hasEnoughSoul && (
+                  <button
+                    onClick={() => setIsPurchaseModalOpen(true)}
+                    className="text-xs font-semibold text-[#1d1d1f] bg-[#ffd700] hover:bg-[#ffeb3b] px-3 py-1.5 rounded-lg transition-all duration-200"
+                  >
+                    Buy
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="space-y-2">
@@ -243,23 +343,34 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
                 <p className="text-xs text-[#86868b]">You must provide initial liquidity to bootstrap the market.</p>
             </div>
 
-            <button
-                type="submit"
-                disabled={isSubmitting || isProcessingImage}
-                className={cn(
-                  "w-full py-4 rounded-xl font-semibold text-lg text-[#1d1d1f] shadow-md flex items-center justify-center gap-2 bg-[#ffd700] hover:bg-[#ffeb3b] transition-all duration-200 active:scale-[0.97]",
-                  (isSubmitting || isProcessingImage) && "opacity-50 cursor-not-allowed"
-                )}
-            >
-                {isSubmitting ? (
-                    <>
-                        <Loader2 size={20} className="animate-spin" /> Creating...
-                    </>
-                ) : 'Create Market'}
-            </button>
+            <div className="space-y-2">
+              <button
+                  type="submit"
+                  disabled={isSubmitting || isProcessingImage || !hasEnoughSoul || !isAuthenticated}
+                  className={cn(
+                    "w-full py-4 rounded-xl font-semibold text-lg text-[#1d1d1f] shadow-md flex items-center justify-center gap-2 bg-[#ffd700] hover:bg-[#ffeb3b] transition-all duration-200 active:scale-[0.97]",
+                    (isSubmitting || isProcessingImage || !hasEnoughSoul || !isAuthenticated) && "opacity-50 cursor-not-allowed"
+                  )}
+              >
+                  {isSubmitting ? (
+                      <>
+                          <Loader2 size={20} className="animate-spin" /> Creating...
+                      </>
+                  ) : 'Create Market'}
+              </button>
+              <p className="text-xs text-center text-[#86868b]">
+                {SOUL_REQUIRED_FOR_MARKET} SOUL will be deducted when you create this market
+              </p>
+            </div>
         </form>
       </div>
     </div>
+    <SoulPurchaseModal
+      isOpen={isPurchaseModalOpen}
+      onClose={() => setIsPurchaseModalOpen(false)}
+      onPurchaseSuccess={handlePurchaseSuccess}
+    />
+    </>
   );
 };
 

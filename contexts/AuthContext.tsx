@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useWeb3Auth } from './Web3AuthContext';
 import { User } from '../types';
+import { usersApi } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -9,6 +10,9 @@ interface AuthContextType {
   connect: () => Promise<void>;
   logout: () => Promise<void>;
   walletAddress: string | null;
+  soulBalance: number;
+  updateSoulBalance: (amount: number) => void;
+  deductSoul: (amount: number) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const [user, setUser] = useState<User | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [soulBalance, setSoulBalance] = useState<number>(0);
 
   // Sync Web3Auth user with app user
   useEffect(() => {
@@ -51,6 +56,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         avatar: web3AuthUser.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress || 'default'}`,
         isVerified: !!web3AuthUser.email,
         walletAddressEth: walletAddress || undefined,
+        sosTokenBalance: 0, // Will be fetched from API
       };
       setUser(appUser);
 
@@ -61,9 +67,78 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }));
     } else if (!isConnected && !isLoading) {
       setUser(null);
+      setSoulBalance(0);
       localStorage.removeItem('socialbet_auth');
     }
   }, [isConnected, web3AuthUser, walletAddress, isLoading]);
+
+  // Load and sync Soul balance
+  useEffect(() => {
+    if (user?.id) {
+      // Load from localStorage first for immediate display
+      const savedBalance = localStorage.getItem(`soul_balance_${user.id}`);
+      if (savedBalance) {
+        setSoulBalance(parseFloat(savedBalance) || 0);
+      }
+
+      // Fetch from API
+      const fetchSoulBalance = async () => {
+        try {
+          const userData = await usersApi.getById(user.id);
+          if (userData.sosTokenBalance !== undefined) {
+            setSoulBalance(userData.sosTokenBalance);
+            localStorage.setItem(`soul_balance_${user.id}`, userData.sosTokenBalance.toString());
+          }
+        } catch (error) {
+          console.error('Failed to fetch Soul balance:', error);
+          // Keep using localStorage value if API fails
+        }
+      };
+      fetchSoulBalance();
+    }
+  }, [user]);
+
+  const updateSoulBalance = useCallback(async (amount: number) => {
+    if (!user?.id) return;
+    
+    try {
+      // Update backend
+      const result = await usersApi.addSoul(user.id, amount);
+      setSoulBalance(result.newBalance);
+      localStorage.setItem(`soul_balance_${user.id}`, result.newBalance.toString());
+    } catch (error) {
+      console.error('Failed to update Soul balance:', error);
+      // Fallback to local update
+      setSoulBalance(prev => {
+        const newBalance = Math.max(0, prev + amount);
+        localStorage.setItem(`soul_balance_${user.id}`, newBalance.toString());
+        return newBalance;
+      });
+    }
+  }, [user]);
+
+  const deductSoul = useCallback(async (amount: number): Promise<boolean> => {
+    if (soulBalance < amount || !user?.id) {
+      return false;
+    }
+    
+    try {
+      // The backend will deduct Soul when creating market
+      // We update locally for immediate UI feedback
+      setSoulBalance(prev => {
+        const newBalance = Math.max(0, prev - amount);
+        localStorage.setItem(`soul_balance_${user.id}`, newBalance.toString());
+        return newBalance;
+      });
+      
+      // Fetch updated balance from backend after market creation
+      // (This will be done by the market creation API)
+      return true;
+    } catch (error) {
+      console.error('Failed to deduct Soul:', error);
+      return false;
+    }
+  }, [soulBalance, user]);
 
   // Load saved auth on mount (for UI consistency before Web3Auth initializes)
   useEffect(() => {
@@ -112,6 +187,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         connect,
         logout,
         walletAddress,
+        soulBalance,
+        updateSoulBalance,
+        deductSoul,
       }}
     >
       {children}

@@ -6,6 +6,7 @@ import { WalletProvider } from './contexts/WalletContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { ToastContainer } from './components/Toast';
 import { useToast } from './contexts/ToastContext';
+import { useAuth } from './contexts/AuthContext';
 import Sidebar from './components/Sidebar';
 import RightPanel from './components/RightPanel';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -28,6 +29,8 @@ const DAOGovernance = lazy(() => import('./components/DAOGovernance'));
 const WhitePaper = lazy(() => import('./components/WhitePaper'));
 const LoginModal = lazy(() => import('./components/LoginModal'));
 const WalletBalance = lazy(() => import('./components/WalletBalance'));
+const SoulTokenTrading = lazy(() => import('./components/SoulTokenTrading'));
+const TreasuryManagement = lazy(() => import('./components/TreasuryManagement'));
 
 type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper';
 
@@ -35,7 +38,9 @@ const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isTradingModalOpen, setIsTradingModalOpen] = useState(false);
   const { showToast, toasts, removeToast } = useToast();
+  const { user } = useAuth();
   // Initialize with mock data immediately, then try to fetch from API
   const [markets, setMarkets] = useState<PredictionMarket[]>(MOCK_MARKETS);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,13 +72,16 @@ const AppContent: React.FC = () => {
 
   const handleCreateMarket = useCallback(async (newMarketData: any) => {
     try {
+      // Get current user ID from auth context
+      const creatorId = user?.id || 'me';
+      
       // Create market via API
       const newMarket = await marketsApi.create({
         question: newMarketData.question,
         category: newMarketData.category,
         endDate: newMarketData.endDate,
         image: newMarketData.image,
-        creatorId: 'me',
+        creatorId,
       });
 
       // Add to top of feed
@@ -83,7 +91,7 @@ const AppContent: React.FC = () => {
       console.error('Failed to create market:', error);
       showToast('Failed to create market. Please try again.', 'error');
     }
-  }, [showToast]);
+  }, [showToast, user]);
 
   const handleNavigate = useCallback((view: View) => {
     setCurrentView(view);
@@ -98,6 +106,8 @@ const AppContent: React.FC = () => {
   const handleCloseCreateModal = useCallback(() => setIsCreateModalOpen(false), []);
   const handleOpenLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
   const handleCloseLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
+  const handleOpenTradingModal = useCallback(() => setIsTradingModalOpen(true), []);
+  const handleCloseTradingModal = useCallback(() => setIsTradingModalOpen(false), []);
 
   // Navigation handlers for mobile nav
   const handleNavigateHome = useCallback(() => setCurrentView('home'), []);
@@ -193,7 +203,7 @@ const AppContent: React.FC = () => {
                 <Suspense fallback={<div className="h-32 bg-white rounded-xl mb-4 animate-pulse" />}>
                   <WalletBalance />
                 </Suspense>
-                <RightPanel />
+                <RightPanel onTradeClick={handleOpenTradingModal} />
               </div>
             </aside>
           )}
@@ -259,6 +269,15 @@ const AppContent: React.FC = () => {
               onClose={handleCloseLoginModal}
             />
           </Suspense>
+        )}
+        {isTradingModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <Suspense fallback={<LoadingSpinner text="Loading trading..." />}>
+                <SoulTokenTrading onClose={handleCloseTradingModal} />
+              </Suspense>
+            </div>
+          </div>
         )}
         <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
