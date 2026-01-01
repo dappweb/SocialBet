@@ -27,6 +27,7 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
   const [error, setError] = useState<string | null>(null);
   const [connectingWallet, setConnectingWallet] = useState<string | null>(null);
 
+  // Early return AFTER all hooks
   if (!isOpen) return null;
 
   const handleConnect = async (chain: 'ethereum' | 'solana' | 'bsc', walletType: string) => {

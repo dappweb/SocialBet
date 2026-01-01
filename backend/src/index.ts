@@ -16,7 +16,13 @@ const app = new Hono<{ Bindings: Env }>();
 
 // CORS middleware
 app.use('*', cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173', 'https://socialbet.pages.dev'],
+    origin: [
+        'http://localhost:3000', 
+        'http://localhost:5173', 
+        'https://socialbet.pages.dev',
+        'https://51218b34.socialbet.pages.dev',
+        'https://*.socialbet.pages.dev'
+    ],
     credentials: true,
 }));
 

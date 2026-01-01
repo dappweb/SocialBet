@@ -48,17 +48,17 @@ const ChatInterface: React.FC = memo(() => {
             }
           } else {
             throw new Error('No response from AI');
-          }
+      }
         })
         .catch((error: any) => {
-          console.error("Chat error:", error);
+      console.error("Chat error:", error);
           const errorMessage = error.message?.includes('AI service not available') 
             ? "AI service is currently unavailable. Please try again later."
             : "Sorry, I encountered an error. Please try again.";
           setMessages(prevMsgs => [...prevMsgs, { role: 'assistant', text: errorMessage }]);
         })
         .finally(() => {
-          setIsLoading(false);
+      setIsLoading(false);
         });
 
       return updatedMessages;
@@ -83,9 +83,9 @@ const ChatInterface: React.FC = memo(() => {
         </div>
         <div>
           <h1 className="text-xl font-semibold text-[#1d1d1f] flex items-center gap-2">
-            AI Assistant
+             AI Assistant
             <span className="text-[10px] bg-[#fff9e6] text-[#ffd700] border border-[#ffd700]/30 px-2 py-0.5 rounded-full font-semibold">Cloudflare AI</span>
-          </h1>
+           </h1>
           <p className="text-xs text-[#86868b]">Powered by {currentModel}</p>
         </div>
       </div>
@@ -102,7 +102,7 @@ const ChatInterface: React.FC = memo(() => {
             </div>
             <div className={cn(
               "p-3 rounded-2xl text-sm leading-relaxed",
-              msg.role === 'user'
+              msg.role === 'user' 
                 ? "bg-[#ffd700] text-[#1d1d1f] rounded-tr-sm"
                 : "bg-white border border-[#e5e5ea] text-[#1d1d1f] rounded-tl-sm shadow-sm"
             )}>
@@ -111,15 +111,15 @@ const ChatInterface: React.FC = memo(() => {
           </div>
         ))}
         {isLoading && (
-          <div className="flex gap-3 max-w-[85%]">
+            <div className="flex gap-3 max-w-[85%]">
             <div className="w-8 h-8 rounded-full bg-[#fff9e6] border border-[#ffd700]/30 flex items-center justify-center shrink-0 mt-1">
               <Sparkles size={14} className="text-[#ffd700]" />
-            </div>
+                </div>
             <div className="bg-white border border-[#e5e5ea] p-3 rounded-2xl rounded-tl-sm flex items-center gap-2 shadow-sm">
               <Loader2 size={16} className="text-[#ffd700] animate-spin" />
               <span className="text-xs text-[#86868b]">Thinking...</span>
+                </div>
             </div>
-          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -137,7 +137,7 @@ const ChatInterface: React.FC = memo(() => {
             style={{ minHeight: '44px' }}
             aria-label="Chat input"
           />
-          <button
+          <button 
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
             className="p-2.5 bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-0.5"

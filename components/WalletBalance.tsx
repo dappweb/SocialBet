@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Wallet, ChevronDown, Loader2, Coins } from 'lucide-react';
 import { useWallet } from '../contexts/WalletContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,15 +16,7 @@ const WalletBalance: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (isConnected && walletAddress && currentChain) {
-      fetchBalance();
-    } else {
-      setBalance(null);
-    }
-  }, [isConnected, walletAddress, currentChain]);
-
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     if (!walletAddress || !currentChain) return;
     
     setIsLoading(true);
@@ -49,8 +41,13 @@ const WalletBalance: React.FC = () => {
           const { getBalance } = await import('../services/soulContractService');
           const soulBalanceResult = await getBalance(walletAddress, provider);
           setOnChainSoulBalance(soulBalanceResult.balance);
-        } catch (error) {
-          console.error('Failed to fetch on-chain SOUL balance:', error);
+        } catch (error: any) {
+          // If contract not configured, that's okay
+          if (error.message?.includes('contract address not configured')) {
+            console.warn('SOUL contract not configured, skipping on-chain balance');
+          } else {
+            console.error('Failed to fetch on-chain SOUL balance:', error);
+          }
           // Keep using API balance
         }
       }
@@ -60,7 +57,16 @@ const WalletBalance: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [walletAddress, currentChain, provider]);
+
+  useEffect(() => {
+    if (isConnected && walletAddress && currentChain) {
+      fetchBalance();
+    } else {
+      setBalance(null);
+      setOnChainSoulBalance(null);
+    }
+  }, [isConnected, walletAddress, currentChain, fetchBalance]);
 
   if (!isConnected && !isAuthenticated) {
     return null;
@@ -134,20 +140,9 @@ const WalletBalance: React.FC = () => {
                 <Coins size={16} className="text-[#ffd700]" />
                 <span className="text-sm font-medium text-[#1d1d1f]">Soul Balance</span>
               </div>
-              <div className="text-right">
-                {onChainSoulBalance !== null ? (
-                  <div>
-                    <span className="text-lg font-bold text-[#1d1d1f]">
-                      {onChainSoulBalance.toFixed(2)} SOUL
-                    </span>
-                    <span className="text-xs text-[#86868b] block">On-chain</span>
-                  </div>
-                ) : (
-                  <span className="text-lg font-bold text-[#1d1d1f]">
-                    {soulBalance.toFixed(2)} SOUL
-                  </span>
-                )}
-              </div>
+              <span className="text-lg font-bold text-[#1d1d1f]">
+                {soulBalance.toFixed(2)} SOUL
+              </span>
             </div>
             {onChainSoulBalance !== null && Math.abs(onChainSoulBalance - soulBalance) > 0.01 && (
               <div className="text-xs text-[#86868b] mb-2">

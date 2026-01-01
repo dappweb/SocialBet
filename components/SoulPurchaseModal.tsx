@@ -25,6 +25,7 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
   const [paymentMethod, setPaymentMethod] = useState<'fiat' | 'crypto'>('fiat');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Early return AFTER all hooks
   if (!isOpen) return null;
 
   const soulAmount = amount ? calculateSoulTokensFromFiat(parseFloat(amount) || 0) : 0;

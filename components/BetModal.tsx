@@ -35,6 +35,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
     }
   }, [isOpen]);
 
+  // Early return AFTER all hooks
   if (!isOpen || !market || !betType) return null;
 
   const price = betType === 'YES' ? market.outcomeStats.yesPrice : market.outcomeStats.noPrice;

@@ -6,10 +6,8 @@ import { cn } from '../utils';
 import { GoogleGenAI } from "@google/genai";
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import SoulPurchaseModal from './SoulPurchaseModal';
 import { usersApi } from '../services/api';
-import { transferWithIssuanceFee } from '../services/soulContractService';
 
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -21,7 +19,7 @@ const CATEGORIES: MarketCategory[] = ['Crypto', 'Sports', 'Pop Culture', 'Politi
 const SOUL_REQUIRED_FOR_MARKET = 10; // 10 SOUL tokens required to create a market
 
 const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, onCreate }) => {
-  const { soulBalance, deductSoul, isAuthenticated } = useAuth();
+  const { soulBalance, deductSoul, isAuthenticated, user } = useAuth();
   const { showToast } = useToast();
   const [question, setQuestion] = useState('');
   const [category, setCategory] = useState<MarketCategory>('Crypto');
@@ -36,6 +34,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Early return AFTER all hooks
   if (!isOpen) return null;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,45 +113,15 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
     
     setIsSubmitting(true);
     try {
-        // If wallet is connected, use on-chain transfer with issuance fee
-        if (isConnected && provider && walletAddress) {
-          try {
-            // Platform address for market creation fees (should be set in env)
-            const platformAddress = import.meta.env.VITE_PLATFORM_ADDRESS || walletAddress; // Fallback for now
-            
-            // Transfer with issuance fee on-chain
-            const result = await transferWithIssuanceFee(
-              platformAddress,
-              SOUL_REQUIRED_FOR_MARKET,
-              provider
-            );
-            
-            showToast(`Transaction sent! Hash: ${result.txHash.slice(0, 10)}...`, 'info');
-            
-            // Wait for transaction confirmation
-            await result.receipt;
-            
-            showToast(`Transaction confirmed! ${SOUL_REQUIRED_FOR_MARKET} SOUL transferred with fee.`, 'success');
-          } catch (error: any) {
-            console.error('On-chain transfer failed:', error);
-            // Fallback to backend-only if on-chain fails
-            showToast('On-chain transfer failed, using backend only...', 'warning');
-            const deducted = await deductSoul(SOUL_REQUIRED_FOR_MARKET);
-            if (!deducted) {
-              throw new Error('Failed to deduct Soul tokens');
-            }
-          }
-        } else {
-          // No wallet connected, use backend-only
-          const deducted = await deductSoul(SOUL_REQUIRED_FOR_MARKET);
-          if (!deducted) {
-            showToast('Failed to deduct Soul tokens. Please try again.', 'error');
-            setIsSubmitting(false);
-            return;
-          }
+        // Deduct Soul tokens locally for immediate feedback
+        const deducted = await deductSoul(SOUL_REQUIRED_FOR_MARKET);
+        if (!deducted) {
+          showToast('Failed to deduct Soul tokens. Please try again.', 'error');
+          setIsSubmitting(false);
+          return;
         }
 
-        // Create market (backend will also validate and deduct Soul)
+        // Create market (backend will also deduct Soul and validate balance)
         await onCreate({ 
             question, 
             category, 
@@ -161,25 +130,13 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             image: imagePreview 
         });
         
-        // Refresh Soul balance from both backend and on-chain
+        // Refresh Soul balance from backend
         if (isAuthenticated && user?.id) {
           try {
-            // Refresh from backend
             const userData = await usersApi.getById(user.id);
+            // Update local balance to match backend
             if (userData.sosTokenBalance !== undefined) {
               localStorage.setItem(`soul_balance_${user.id}`, userData.sosTokenBalance.toString());
-            }
-            
-            // Refresh from on-chain if connected
-            if (isConnected && provider && walletAddress) {
-              try {
-                const { getBalance } = await import('../services/soulContractService');
-                const balance = await getBalance(walletAddress, provider);
-                // Update to on-chain balance (more accurate)
-                localStorage.setItem(`soul_balance_${user.id}`, balance.balance.toString());
-              } catch (error) {
-                console.error('Failed to refresh on-chain balance:', error);
-              }
             }
           } catch (error) {
             console.error('Failed to refresh Soul balance:', error);
@@ -218,8 +175,8 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             <h3 className="text-lg font-semibold text-[#1d1d1f]">Create New Market</h3>
             <button onClick={onClose} className="p-1.5 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200">
               <X size={20} className="text-[#86868b]" />
-            </button>
-          </div>
+          </button>
+        </div>
 
           {/* Soul Balance Warning */}
           {!hasEnoughSoul && isAuthenticated && (
@@ -388,20 +345,20 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             </div>
 
             <div className="space-y-2">
-              <button
-                  type="submit"
+            <button
+                type="submit"
                   disabled={isSubmitting || isProcessingImage || !hasEnoughSoul || !isAuthenticated}
-                  className={cn(
+                className={cn(
                     "w-full py-4 rounded-xl font-semibold text-lg text-[#1d1d1f] shadow-md flex items-center justify-center gap-2 bg-[#ffd700] hover:bg-[#ffeb3b] transition-all duration-200 active:scale-[0.97]",
                     (isSubmitting || isProcessingImage || !hasEnoughSoul || !isAuthenticated) && "opacity-50 cursor-not-allowed"
-                  )}
-              >
-                  {isSubmitting ? (
-                      <>
-                          <Loader2 size={20} className="animate-spin" /> Creating...
-                      </>
-                  ) : 'Create Market'}
-              </button>
+                )}
+            >
+                {isSubmitting ? (
+                    <>
+                        <Loader2 size={20} className="animate-spin" /> Creating...
+                    </>
+                ) : 'Create Market'}
+            </button>
               <p className="text-xs text-center text-[#86868b]">
                 {SOUL_REQUIRED_FOR_MARKET} SOUL will be deducted when you create this market
               </p>

@@ -4,12 +4,12 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, '.', '');
-  return {
-    server: {
-      port: 3000,
-      host: '0.0.0.0',
-    },
+    const env = loadEnv(mode, '.', '');
+    return {
+      server: {
+        port: 3000,
+        host: '0.0.0.0',
+      },
     plugins: [
       react(),
       nodePolyfills({
@@ -21,18 +21,18 @@ export default defineConfig(({ mode }) => {
         protocolImports: true,
       }),
     ],
-    define: {
-      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      define: {
+        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env': '{}',
       'global': 'globalThis',
-    },
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
+      },
+      resolve: {
+        alias: {
+          '@': path.resolve(__dirname, '.'),
         'process': 'process/browser',
         'buffer': 'buffer',
-      }
+        }
     },
     build: {
       rollupOptions: {
@@ -54,5 +54,5 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-  };
+    };
 });

@@ -44,6 +44,7 @@ const SocialLoginModal: React.FC<SocialLoginModalProps> = ({ isOpen, onClose }) 
   const [error, setError] = useState<string | null>(null);
   const [connectingProvider, setConnectingProvider] = useState<string | null>(null);
 
+  // Early return AFTER all hooks
   if (!isOpen) return null;
 
   const handleSocialLogin = async (provider: string) => {

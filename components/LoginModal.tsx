@@ -12,6 +12,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     const { connect, isConnecting } = useAuth();
     const { showToast } = useToast();
 
+    // Early return AFTER all hooks
     if (!isOpen) return null;
 
     const handleConnect = async () => {

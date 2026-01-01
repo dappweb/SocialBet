@@ -20,8 +20,8 @@ const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) =
         {/* Avatar Section */}
         <div className="flex-shrink-0">
           <LazyImage
-            src={market.creator.avatar}
-            alt={market.creator.name}
+            src={market.creator.avatar} 
+            alt={market.creator.name} 
             className="w-12 h-12 rounded-full object-cover border-2 border-[#e5e5ea] group-hover:border-[#ffd700]/30 transition-all duration-200"
           />
         </div>

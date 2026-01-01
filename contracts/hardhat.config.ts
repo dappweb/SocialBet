@@ -44,6 +44,8 @@ const config: HardhatUserConfig = {
             url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
             accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             chainId: 11155111,
+            timeout: 120000, // 120 seconds
+            gasPrice: "auto",
         },
         mainnet: {
             url: process.env.ETH_MAINNET_RPC_URL || "https://eth.llamarpc.com",

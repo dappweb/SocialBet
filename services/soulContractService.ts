@@ -4,7 +4,7 @@
  * Aligns all on-chain functions with web page functionality
  */
 
-import { ethers, Contract, BrowserProvider, ContractTransactionReceipt, formatEther, parseEther } from 'ethers';
+import { Contract, BrowserProvider, ContractTransactionReceipt, formatEther, parseEther } from 'ethers';
 import { IProvider } from '@web3auth/base';
 // Import ABI - will use dynamic import if needed
 let SoulCastTokenABI: any = null;
@@ -68,6 +68,9 @@ async function loadABI() {
  */
 async function getContract(provider: BrowserProvider | any, address: string): Promise<Contract> {
   const abi = await loadABI();
+  if (!abi) {
+    throw new Error('Contract ABI not available. Please compile contracts first.');
+  }
   return new Contract(address, abi.abi || abi, provider);
 }
 
@@ -120,9 +123,21 @@ export async function getBalance(
   chainId?: number
 ): Promise<{ balance: number; formatted: string; raw: string }> {
   try {
-    const contractAddress = getContractAddress(chainId);
-    if (!contractAddress) {
-      throw new Error('SOUL token contract address not configured');
+    // Get chainId from provider if not provided
+    let actualChainId = chainId;
+    if (!actualChainId) {
+      try {
+        const ethersProvider = await getEthersProvider(provider);
+        const network = await ethersProvider.getNetwork();
+        actualChainId = Number(network.chainId);
+      } catch (error) {
+        console.warn('Could not get chainId from provider, using default');
+      }
+    }
+
+    const contractAddress = getContractAddress(actualChainId);
+    if (!contractAddress || contractAddress === '') {
+      throw new Error(`SOUL token contract address not configured for chain ${actualChainId || 'unknown'}. Please set VITE_SOUL_TOKEN_SEPOLIA, VITE_SOUL_TOKEN_MAINNET, or VITE_SOUL_TOKEN_LOCAL in your .env file.`);
     }
 
     const ethersProvider = await getEthersProvider(provider);
@@ -138,7 +153,11 @@ export async function getBalance(
     };
   } catch (error: any) {
     console.error('Error getting balance:', error);
-    throw new Error(`Failed to get balance: ${error.message}`);
+    // Return a more user-friendly error
+    if (error.message?.includes('contract address not configured')) {
+      throw error;
+    }
+    throw new Error(`Failed to get balance: ${error.message || 'Unknown error'}`);
   }
 }
 

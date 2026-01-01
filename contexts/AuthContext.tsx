@@ -100,18 +100,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           const { getBalance } = await import('../services/soulContractService');
           if (provider && walletAddress) {
-            const balance = await getBalance(walletAddress, provider);
-            // Use on-chain balance if it's higher (more accurate)
-            setSoulBalance(prev => {
-              if (balance.balance > prev) {
-                localStorage.setItem(`soul_balance_${user.id}`, balance.balance.toString());
-                return balance.balance;
+            try {
+              const balance = await getBalance(walletAddress, provider);
+              // Use on-chain balance if it's higher (more accurate)
+              setSoulBalance(prev => {
+                if (balance.balance > prev) {
+                  localStorage.setItem(`soul_balance_${user.id}`, balance.balance.toString());
+                  return balance.balance;
+                }
+                return prev;
+              });
+            } catch (balanceError: any) {
+              // If contract not configured, that's okay - use API balance
+              if (balanceError.message?.includes('contract address not configured')) {
+                console.warn('Contract address not configured, using API balance only');
+              } else {
+                console.error('Failed to fetch on-chain balance:', balanceError);
               }
-              return prev;
-            });
+            }
           }
         } catch (error) {
-          console.error('Failed to fetch on-chain balance:', error);
+          console.error('Failed to import soulContractService:', error);
           // Fallback to API balance
         }
       };
@@ -148,31 +157,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     
     try {
-      // If wallet is connected, prefer on-chain operations
-      // Otherwise, use backend-only
-      if (isConnected && provider && walletAddress) {
-        // On-chain transfer will be handled by the calling component
-        // Just update local state for immediate feedback
-        setSoulBalance(prev => {
-          const newBalance = Math.max(0, prev - amount);
-          localStorage.setItem(`soul_balance_${user.id}`, newBalance.toString());
-          return newBalance;
-        });
-        return true;
-      } else {
-        // Backend-only: update local state
-        setSoulBalance(prev => {
-          const newBalance = Math.max(0, prev - amount);
-          localStorage.setItem(`soul_balance_${user.id}`, newBalance.toString());
-          return newBalance;
-        });
-        return true;
-      }
+      // The backend will deduct Soul when creating market
+      // We update locally for immediate UI feedback
+      setSoulBalance(prev => {
+        const newBalance = Math.max(0, prev - amount);
+        localStorage.setItem(`soul_balance_${user.id}`, newBalance.toString());
+        return newBalance;
+      });
+      
+      // Fetch updated balance from backend after market creation
+      // (This will be done by the market creation API)
+      return true;
     } catch (error) {
       console.error('Failed to deduct Soul:', error);
       return false;
     }
-  }, [soulBalance, user, isConnected, provider, walletAddress]);
+  }, [soulBalance, user]);
 
   // Load saved auth on mount (for UI consistency before Web3Auth initializes)
   useEffect(() => {
