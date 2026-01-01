@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Bell, Heart, UserPlus, DollarSign, Star, Zap, MoreHorizontal } from 'lucide-react';
 import LazyImage from './LazyImage';
 
@@ -10,18 +10,23 @@ const NOTIFICATIONS = [
   { id: 5, type: 'win', content: 'You won $120.50 from "Lakers vs Warriors"', time: '1d', read: true },
 ];
 
-const Notifications = () => {
+const Notifications = memo(() => {
+  const notifications = useMemo(() => NOTIFICATIONS, []);
+
   return (
     <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-[#e5e5ea] px-4 py-4 flex justify-between items-center shadow-sm">
         <h1 className="text-xl font-semibold text-[#1d1d1f]">Notifications</h1>
-        <button className="p-2 hover:bg-[#f5f5f7] rounded-full text-[#86868b] transition-colors duration-200">
+        <button 
+          className="p-2 hover:bg-[#f5f5f7] rounded-full text-[#86868b] transition-colors duration-200"
+          aria-label="More options"
+        >
             <MoreHorizontal size={20} />
         </button>
       </div>
       
       <div className="divide-y divide-[#e5e5ea]">
-        {NOTIFICATIONS.map((notif) => (
+        {notifications.map((notif) => (
             <div 
                 key={notif.id} 
                 className={`px-5 py-5 hover:bg-[#f5f5f7] transition-colors duration-200 flex gap-4 cursor-pointer relative ${!notif.read ? 'bg-[#fff9e6]' : ''}`}
@@ -57,6 +62,8 @@ const Notifications = () => {
       </div>
     </div>
   );
-};
+});
+
+Notifications.displayName = 'Notifications';
 
 export default Notifications;

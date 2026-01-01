@@ -1,40 +1,88 @@
-import React, { useState } from 'react';
-import { FileText, Download, ArrowLeft, TrendingUp, Users, Coins, Zap, Shield, BarChart3, Globe, Lock, Gift } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
+import { FileText, Download, ArrowLeft, TrendingUp, Users, Coins, Zap, Shield, BarChart3, Globe, Lock, Gift, ChevronUp } from 'lucide-react';
 import { cn } from '../utils';
+import './WhitePaper.css';
 
 interface WhitePaperProps {
   onBack?: () => void;
 }
 
-const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
+const WhitePaper: React.FC<WhitePaperProps> = memo(({ onBack }) => {
   const [activeSection, setActiveSection] = useState<string>('overview');
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const sections = [
+  const sections = useMemo(() => [
     { id: 'overview', label: 'Overview', icon: FileText },
     { id: 'economics', label: 'Token Economics', icon: Coins },
     { id: 'distribution', label: 'Distribution', icon: Gift },
     { id: 'utility', label: 'Utility', icon: Zap },
     { id: 'governance', label: 'Governance', icon: Users },
     { id: 'roadmap', label: 'Roadmap', icon: TrendingUp },
-  ];
+  ], []);
 
-  const scrollToSection = (sectionId: string) => {
+  // Scroll spy to detect active section and calculate progress
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 200;
+      setShowScrollTop(scrollPosition > 500);
+
+      // Calculate scroll progress
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const progress = (scrollTop / (documentHeight - windowHeight)) * 100;
+      setScrollProgress(Math.min(100, Math.max(0, progress)));
+
+      // Find which section is currently in view
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
+        const element = sectionRefs.current[section.id];
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(section.id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [sections]);
+
+  const scrollToSection = useCallback((sectionId: string) => {
     setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
+    const element = sectionRefs.current[sectionId] || document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
+      const headerOffset = 120;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
-  const handleDownload = () => {
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleDownload = useCallback(() => {
     // In production, this would download a PDF version
     window.print();
-  };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white white-paper-content">
       {/* Mobile Message */}
-      <div className="lg:hidden flex items-center justify-center min-h-screen p-6">
+      <div className="lg:hidden flex items-center justify-center min-h-screen p-6 no-print">
         <div className="text-center max-w-md">
           <FileText className="text-[#ffd700] mx-auto mb-4" size={48} />
           <h2 className="text-xl font-semibold text-[#1d1d1f] mb-2">White Paper</h2>
@@ -54,8 +102,16 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
 
       {/* Desktop View */}
       <div className="hidden lg:block">
+        {/* Reading Progress Bar */}
+        <div className="fixed top-0 left-0 right-0 h-1 bg-[#e5e5ea] z-50 no-print">
+          <div 
+            className="h-full bg-[#ffd700] transition-all duration-150 ease-out"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
+
         {/* Header */}
-        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#e5e5ea] shadow-sm">
+        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#e5e5ea] shadow-sm white-paper-header no-print" style={{ top: '4px' }}>
           <div className="max-w-6xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {onBack && (
@@ -88,72 +144,111 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
 
         <div className="max-w-6xl mx-auto px-8 py-10">
         {/* Table of Contents - Desktop Sidebar */}
-        <div className="fixed left-0 top-0 h-screen w-72 bg-[#f5f5f7] border-r border-[#e5e5ea] pt-28 overflow-y-auto no-scrollbar">
+        <div className="fixed left-0 top-0 h-screen w-72 bg-[#f5f5f7] border-r border-[#e5e5ea] pt-28 overflow-y-auto no-scrollbar white-paper-sidebar no-print">
           <div className="px-4 py-6 space-y-1">
-            <h3 className="text-sm font-semibold text-[#1d1d1f] mb-4 px-2">Table of Contents</h3>
-            {sections.map((section) => {
+            <h3 className="text-sm font-semibold text-[#1d1d1f] mb-4 px-2 uppercase tracking-wide">Table of Contents</h3>
+            {sections.map((section, index) => {
               const Icon = section.icon;
+              const isActive = activeSection === section.id;
               return (
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.id)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all duration-200",
-                    activeSection === section.id
-                      ? "bg-[#fff9e6] text-[#1d1d1f] border border-[#ffd700]/30"
-                      : "text-[#86868b] hover:bg-white hover:text-[#1d1d1f]"
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 relative group",
+                    isActive
+                      ? "bg-[#fff9e6] text-[#1d1d1f] border border-[#ffd700]/30 shadow-sm"
+                      : "text-[#86868b] hover:bg-white hover:text-[#1d1d1f] border border-transparent"
                   )}
+                  aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon size={16} />
-                  <span className="text-sm font-medium">{section.label}</span>
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#ffd700] rounded-r-full" />
+                  )}
+                  <Icon 
+                    size={18} 
+                    className={cn(
+                      "transition-colors duration-200",
+                      isActive ? "text-[#ffd700]" : "text-[#86868b] group-hover:text-[#1d1d1f]"
+                    )} 
+                  />
+                  <span className={cn(
+                    "text-sm font-medium transition-colors duration-200",
+                    isActive && "font-semibold"
+                  )}>
+                    {section.label}
+                  </span>
                 </button>
               );
             })}
+            <div className="mt-6 pt-6 border-t border-[#e5e5ea] px-2">
+              <p className="text-xs text-[#86868b] mb-2">Keyboard Shortcuts</p>
+              <div className="space-y-1 text-xs text-[#86868b]">
+                <div className="flex items-center justify-between">
+                  <span>Print</span>
+                  <kbd className="px-1.5 py-0.5 bg-white border border-[#e5e5ea] rounded text-[10px]">Ctrl+P</kbd>
+                </div>
+                {onBack && (
+                  <div className="flex items-center justify-between">
+                    <span>Go Back</span>
+                    <kbd className="px-1.5 py-0.5 bg-white border border-[#e5e5ea] rounded text-[10px]">Esc</kbd>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="ml-72">
           {/* Overview Section */}
-          <section id="overview" className="mb-20 scroll-mt-32">
+          <section 
+            id="overview" 
+            ref={(el) => (sectionRefs.current['overview'] = el)}
+            className="mb-20 scroll-mt-32 white-paper-section"
+          >
             <div className="bg-gradient-to-br from-[#fff9e6] to-white rounded-2xl p-10 border border-[#ffd700]/20 mb-8 shadow-sm">
               <h2 className="text-3xl font-semibold text-[#1d1d1f] mb-4 flex items-center gap-3">
                 <FileText className="text-[#ffd700]" size={28} />
                 Executive Summary
               </h2>
-              <p className="text-[#1d1d1f] leading-relaxed text-lg mb-4">
+              <p className="text-[#1d1d1f] leading-relaxed text-lg mb-6 max-w-4xl">
                 The SOS (SocialBet Token) is the native utility token of the SocialBet platform, 
                 designed to power a decentralized social prediction market ecosystem. With a total 
                 supply of 2.1 billion tokens, SOS serves as the economic backbone for betting, 
                 governance, rewards, and platform participation.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div className="bg-white rounded-xl p-4 border border-[#e5e5ea]">
-                  <div className="text-2xl font-bold text-[#ffd700] mb-1">2.1B</div>
-                  <div className="text-sm text-[#86868b]">Total Supply</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                <div className="bg-white rounded-xl p-5 border border-[#e5e5ea] hover:border-[#ffd700]/30 transition-colors duration-200">
+                  <div className="text-3xl font-bold text-[#ffd700] mb-2">2.1B</div>
+                  <div className="text-sm font-medium text-[#86868b]">Total Supply</div>
                 </div>
-                <div className="bg-white rounded-xl p-4 border border-[#e5e5ea]">
-                  <div className="text-2xl font-bold text-[#ffd700] mb-1">Multi-Chain</div>
-                  <div className="text-sm text-[#86868b]">ETH, SOL, BSC</div>
+                <div className="bg-white rounded-xl p-5 border border-[#e5e5ea] hover:border-[#ffd700]/30 transition-colors duration-200">
+                  <div className="text-3xl font-bold text-[#ffd700] mb-2">Multi-Chain</div>
+                  <div className="text-sm font-medium text-[#86868b]">ETH, SOL, BSC</div>
                 </div>
-                <div className="bg-white rounded-xl p-4 border border-[#e5e5ea]">
-                  <div className="text-2xl font-bold text-[#ffd700] mb-1">DAO</div>
-                  <div className="text-sm text-[#86868b]">Governance</div>
+                <div className="bg-white rounded-xl p-5 border border-[#e5e5ea] hover:border-[#ffd700]/30 transition-colors duration-200">
+                  <div className="text-3xl font-bold text-[#ffd700] mb-2">DAO</div>
+                  <div className="text-sm font-medium text-[#86868b]">Governance</div>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Token Economics Section */}
-          <section id="economics" className="mb-20 scroll-mt-32">
+          <section 
+            id="economics" 
+            ref={(el) => (sectionRefs.current['economics'] = el)}
+            className="mb-20 scroll-mt-32 white-paper-section"
+          >
             <h2 className="text-3xl font-semibold text-[#1d1d1f] mb-8 flex items-center gap-3">
               <Coins className="text-[#ffd700]" size={24} />
               Token Economics
             </h2>
             
             <div className="space-y-6">
-              <div className="bg-white border border-[#e5e5ea] rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-[#1d1d1f] mb-4">Token Specifications</h3>
+              <div className="bg-white border border-[#e5e5ea] rounded-xl p-8 shadow-sm white-paper-card">
+                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-6">Token Specifications</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <div className="text-sm text-[#86868b] mb-1">Token Name</div>
@@ -174,9 +269,9 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
                 </div>
               </div>
 
-              <div className="bg-white border border-[#e5e5ea] rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-[#1d1d1f] mb-4">Economic Model</h3>
-                <p className="text-[#1d1d1f] leading-relaxed mb-4">
+              <div className="bg-white border border-[#e5e5ea] rounded-xl p-8 shadow-sm white-paper-card">
+                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-6">Economic Model</h3>
+                <p className="text-[#1d1d1f] leading-relaxed mb-6 text-base">
                   The SOS token follows a deflationary economic model with multiple mechanisms 
                   designed to create sustainable value:
                 </p>
@@ -214,7 +309,11 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
           </section>
 
           {/* Distribution Section */}
-          <section id="distribution" className="mb-20 scroll-mt-32">
+          <section 
+            id="distribution" 
+            ref={(el) => (sectionRefs.current['distribution'] = el)}
+            className="mb-20 scroll-mt-32 white-paper-section"
+          >
             <h2 className="text-3xl font-semibold text-[#1d1d1f] mb-8 flex items-center gap-3">
               <Gift className="text-[#ffd700]" size={24} />
               Token Distribution
@@ -261,14 +360,18 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
           </section>
 
           {/* Utility Section */}
-          <section id="utility" className="mb-20 scroll-mt-32">
+          <section 
+            id="utility" 
+            ref={(el) => (sectionRefs.current['utility'] = el)}
+            className="mb-20 scroll-mt-32 white-paper-section"
+          >
             <h2 className="text-3xl font-semibold text-[#1d1d1f] mb-8 flex items-center gap-3">
               <Zap className="text-[#ffd700]" size={24} />
               Token Utility
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[
+              {useMemo(() => [
                 {
                   icon: Coins,
                   title: 'Betting & Payments',
@@ -299,10 +402,10 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
                   title: 'Liquidity Provision',
                   description: 'Provide liquidity to SOS trading pairs and earn rewards while supporting token stability and market depth.',
                 },
-              ].map((utility, index) => {
+              ], []).map((utility, index) => {
                 const Icon = utility.icon;
                 return (
-                  <div key={index} className="bg-white border border-[#e5e5ea] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <div key={index} className="bg-white border border-[#e5e5ea] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200 white-paper-card">
                     <div className="w-12 h-12 rounded-xl bg-[#fff9e6] flex items-center justify-center mb-4">
                       <Icon className="text-[#ffd700]" size={24} />
                     </div>
@@ -315,7 +418,11 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
           </section>
 
           {/* Governance Section */}
-          <section id="governance" className="mb-20 scroll-mt-32">
+          <section 
+            id="governance" 
+            ref={(el) => (sectionRefs.current['governance'] = el)}
+            className="mb-20 scroll-mt-32 white-paper-section"
+          >
             <h2 className="text-3xl font-semibold text-[#1d1d1f] mb-8 flex items-center gap-3">
               <Users className="text-[#ffd700]" size={24} />
               DAO Governance
@@ -357,14 +464,18 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
           </section>
 
           {/* Roadmap Section */}
-          <section id="roadmap" className="mb-20 scroll-mt-32">
+          <section 
+            id="roadmap" 
+            ref={(el) => (sectionRefs.current['roadmap'] = el)}
+            className="mb-20 scroll-mt-32 white-paper-section"
+          >
             <h2 className="text-3xl font-semibold text-[#1d1d1f] mb-8 flex items-center gap-3">
               <TrendingUp className="text-[#ffd700]" size={24} />
               Development Roadmap
             </h2>
             
             <div className="space-y-6">
-              {[
+              {useMemo(() => [
                 {
                   phase: 'Phase 1: Launch',
                   quarter: 'Q1 2024',
@@ -405,8 +516,8 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
                     'Global market expansion',
                   ],
                 },
-              ].map((phase, index) => (
-                <div key={index} className="bg-white border border-[#e5e5ea] rounded-xl p-6 shadow-sm">
+              ], []).map((phase, index) => (
+                <div key={index} className="bg-white border border-[#e5e5ea] rounded-xl p-6 shadow-sm white-paper-card">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-[#1d1d1f]">{phase.phase}</h3>
                     <span className="px-3 py-1 bg-[#fff9e6] border border-[#ffd700]/30 rounded-lg text-sm font-semibold text-[#ffc107]">
@@ -437,10 +548,23 @@ const WhitePaper: React.FC<WhitePaperProps> = ({ onBack }) => {
           </div>
         </div>
         </div>
+
+        {/* Scroll to Top Button */}
+        {showScrollTop && (
+          <button
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 w-12 h-12 bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] rounded-full shadow-lg shadow-[#ffd700]/30 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 z-40 no-print"
+            aria-label="Scroll to top"
+          >
+            <ChevronUp size={24} />
+          </button>
+        )}
       </div>
     </div>
   );
-};
+});
+
+WhitePaper.displayName = 'WhitePaper';
 
 export default WhitePaper;
 

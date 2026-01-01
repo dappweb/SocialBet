@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense, useCallback, useMemo } from 'react';
 import { WalletProvider } from './contexts/WalletContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -7,22 +7,25 @@ import { ToastContainer } from './components/Toast';
 import { useToast } from './contexts/ToastContext';
 import Sidebar from './components/Sidebar';
 import RightPanel from './components/RightPanel';
-import Feed from './components/Feed';
-import Leaderboard from './components/Leaderboard';
-import Profile from './components/Profile';
-import Explore from './components/Explore';
-import Notifications from './components/Notifications';
-import ChatInterface from './components/ChatInterface';
-import CreateMarketModal from './components/CreateMarketModal';
-import DAOGovernance from './components/DAOGovernance';
-import WhitePaper from './components/WhitePaper';
-import WalletLoginModal from './components/WalletLoginModal';
-import SocialLoginModal from './components/SocialLoginModal';
-import WalletBalance from './components/WalletBalance';
 import ErrorBoundary from './components/ErrorBoundary';
+import LoadingSpinner from './components/LoadingSpinner';
 import { MOCK_MARKETS } from './constants';
 import { Home, Search, Trophy, User, Bell, PlusSquare, Bot } from 'lucide-react';
 import { cn } from './utils';
+
+// Lazy load components for code splitting
+const Feed = lazy(() => import('./components/Feed'));
+const Leaderboard = lazy(() => import('./components/Leaderboard'));
+const Profile = lazy(() => import('./components/Profile'));
+const Explore = lazy(() => import('./components/Explore'));
+const Notifications = lazy(() => import('./components/Notifications'));
+const ChatInterface = lazy(() => import('./components/ChatInterface'));
+const CreateMarketModal = lazy(() => import('./components/CreateMarketModal'));
+const DAOGovernance = lazy(() => import('./components/DAOGovernance'));
+const WhitePaper = lazy(() => import('./components/WhitePaper'));
+const WalletLoginModal = lazy(() => import('./components/WalletLoginModal'));
+const SocialLoginModal = lazy(() => import('./components/SocialLoginModal'));
+const WalletBalance = lazy(() => import('./components/WalletBalance'));
 
 type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper';
 
@@ -35,7 +38,7 @@ const AppContent: React.FC = () => {
   // In a real app, this would modify the global market state
   const [markets, setMarkets] = useState(MOCK_MARKETS);
 
-  const handleCreateMarket = async (newMarketData: any) => {
+  const handleCreateMarket = useCallback(async (newMarketData: any) => {
     try {
       // Mock adding market to state
       console.log("Creating market:", newMarketData);
@@ -72,30 +75,74 @@ const AppContent: React.FC = () => {
     } catch (error) {
       showToast('Failed to create market. Please try again.', 'error');
     }
-  };
+  }, [markets, showToast]);
 
-  const renderView = () => {
+  const handleNavigate = useCallback((view: View) => {
+    setCurrentView(view);
+  }, []);
+
+  const handleBack = useCallback(() => {
+    setCurrentView('home');
+  }, []);
+
+  const renderView = useMemo(() => {
     switch (currentView) {
       case 'home':
-        return <Feed markets={markets} />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading feed..." />}>
+            <Feed markets={markets} />
+          </Suspense>
+        );
       case 'explore':
-        return <Explore />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading explore..." />}>
+            <Explore />
+          </Suspense>
+        );
       case 'leaderboard':
-        return <Leaderboard />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading leaderboard..." />}>
+            <Leaderboard />
+          </Suspense>
+        );
       case 'notifications':
-        return <Notifications />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading notifications..." />}>
+            <Notifications />
+          </Suspense>
+        );
       case 'profile':
-        return <Profile onBack={() => setCurrentView('home')} />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading profile..." />}>
+            <Profile onBack={handleBack} />
+          </Suspense>
+        );
       case 'assistant':
-        return <ChatInterface />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading assistant..." />}>
+            <ChatInterface />
+          </Suspense>
+        );
       case 'dao':
-        return <DAOGovernance />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading DAO..." />}>
+            <DAOGovernance />
+          </Suspense>
+        );
       case 'whitepaper':
-        return <WhitePaper onBack={() => setCurrentView('home')} />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading white paper..." />}>
+            <WhitePaper onBack={handleBack} />
+          </Suspense>
+        );
       default:
-        return <Feed markets={markets} />;
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading feed..." />}>
+            <Feed markets={markets} />
+          </Suspense>
+        );
     }
-  };
+  }, [currentView, markets, handleBack]);
 
   return (
     <>
@@ -106,10 +153,10 @@ const AppContent: React.FC = () => {
           <header className="hidden sm:flex flex-col w-[80px] xl:w-[275px] shrink-0 bg-white/80 backdrop-blur-xl border-r border-[#e5e5ea]">
             <Sidebar 
               currentView={currentView} 
-              onNavigate={setCurrentView} 
-              onCreateClick={() => setIsCreateModalOpen(true)}
-              onWalletClick={() => setIsWalletModalOpen(true)}
-              onSocialClick={() => setIsSocialModalOpen(true)}
+              onNavigate={handleNavigate} 
+              onCreateClick={useCallback(() => setIsCreateModalOpen(true), [])}
+              onWalletClick={useCallback(() => setIsWalletModalOpen(true), [])}
+              onSocialClick={useCallback(() => setIsSocialModalOpen(true), [])}
             />
           </header>
 
@@ -121,7 +168,9 @@ const AppContent: React.FC = () => {
           {/* Right Panel (Desktop) */}
           <div className="hidden lg:block w-[350px] shrink-0 bg-[#f5f5f7]">
             <div className="sticky top-0 h-screen overflow-y-auto no-scrollbar py-6 px-4">
-              <WalletBalance />
+              <Suspense fallback={<div className="h-32 bg-white rounded-xl mb-4 animate-pulse" />}>
+                <WalletBalance />
+              </Suspense>
               <RightPanel />
             </div>
           </div>
@@ -130,55 +179,72 @@ const AppContent: React.FC = () => {
         {/* Mobile Bottom Nav */}
         <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-[#e5e5ea] flex justify-around px-2 py-3 z-40 safe-area-pb shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
           <button 
-              onClick={() => setCurrentView('home')}
+              onClick={useCallback(() => setCurrentView('home'), [])}
               className={cn("p-2 rounded-full transition-all duration-200", currentView === 'home' ? "text-[#ffd700]" : "text-[#86868b]")}
+              aria-label="Home"
           >
             <Home size={24} strokeWidth={currentView === 'home' ? 2.5 : 2} />
           </button>
           <button 
-              onClick={() => setCurrentView('explore')}
+              onClick={useCallback(() => setCurrentView('explore'), [])}
               className={cn("p-2 rounded-full transition-all duration-200", currentView === 'explore' ? "text-[#ffd700]" : "text-[#86868b]")}
+              aria-label="Explore"
           >
             <Search size={24} strokeWidth={currentView === 'explore' ? 2.5 : 2} />
           </button>
           
           {/* Mobile Create Button (Center) - Bright Yellow */}
           <button 
-               onClick={() => setIsCreateModalOpen(true)}
+               onClick={useCallback(() => setIsCreateModalOpen(true), [])}
                className="p-2 -mt-4 bg-[#ffd700] text-[#1d1d1f] rounded-full shadow-lg shadow-[#ffd700]/30 hover:bg-[#ffeb3b] transition-all duration-200 active:scale-95"
+               aria-label="Create Market"
           >
             <PlusSquare size={24} strokeWidth={2.5} />
           </button>
           
           <button 
-               onClick={() => setCurrentView('assistant')}
+               onClick={useCallback(() => setCurrentView('assistant'), [])}
                className={cn("p-2 rounded-full transition-all duration-200", currentView === 'assistant' ? "text-[#ffd700]" : "text-[#86868b]")}
+              aria-label="AI Assistant"
           >
             <Bot size={24} strokeWidth={currentView === 'assistant' ? 2.5 : 2} />
           </button>
 
           <button 
-               onClick={() => setIsWalletModalOpen(true)}
+               onClick={useCallback(() => setIsWalletModalOpen(true), [])}
                className={cn("p-2 rounded-full transition-all duration-200", "text-[#86868b]")}
+               aria-label="Wallet"
           >
             <User size={24} strokeWidth={2} />
           </button>
         </nav>
 
         {/* Modals */}
-        <CreateMarketModal 
-          isOpen={isCreateModalOpen} 
-          onClose={() => setIsCreateModalOpen(false)} 
-          onCreate={handleCreateMarket}
-        />
-        <WalletLoginModal 
-          isOpen={isWalletModalOpen} 
-          onClose={() => setIsWalletModalOpen(false)} 
-        />
-        <SocialLoginModal 
-          isOpen={isSocialModalOpen} 
-          onClose={() => setIsSocialModalOpen(false)} 
-        />
+        {isCreateModalOpen && (
+          <Suspense fallback={null}>
+            <CreateMarketModal 
+              isOpen={isCreateModalOpen} 
+              onClose={useCallback(() => setIsCreateModalOpen(false), [])} 
+              onCreate={handleCreateMarket}
+            />
+          </Suspense>
+        )}
+        {isWalletModalOpen && (
+          <Suspense fallback={null}>
+            <WalletLoginModal 
+              isOpen={isWalletModalOpen} 
+              onClose={useCallback(() => setIsWalletModalOpen(false), [])} 
+            />
+          </Suspense>
+        )}
+        {isSocialModalOpen && (
+          <Suspense fallback={null}>
+            <SocialLoginModal 
+              isOpen={isSocialModalOpen} 
+              onClose={useCallback(() => setIsSocialModalOpen(false), [])} 
+            />
+          </Suspense>
+        )}
         <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
     </>

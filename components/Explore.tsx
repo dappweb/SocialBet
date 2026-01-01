@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Search, Hash, TrendingUp, Music, Trophy, Coins, Monitor, Globe, Star } from 'lucide-react';
 
 const CATEGORIES = [
@@ -10,7 +10,14 @@ const CATEGORIES = [
   { name: 'Featured', icon: Star, gradient: 'from-yellow-500 to-amber-300', shadow: 'shadow-yellow-500/20' },
 ];
 
-const Explore = () => {
+const Explore = memo(() => {
+  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // Search functionality would be implemented here
+    console.log('Search:', e.target.value);
+  }, []);
+
+  const trendingItems = useMemo(() => [1, 2, 3, 4, 5], []);
+
   return (
     <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
       {/* Search Header */}
@@ -21,8 +28,10 @@ const Explore = () => {
           </div>
           <input
             type="text"
+            onChange={handleSearch}
             className="block w-full pl-11 pr-4 py-3 rounded-xl leading-5 bg-[#f5f5f7] text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white border border-[#e5e5ea] focus:border-[#ffd700] transition-all duration-200 shadow-sm"
             placeholder="Search markets, users, topics..."
+            aria-label="Search markets"
           />
         </div>
       </div>
@@ -57,7 +66,7 @@ const Explore = () => {
                  <button className="text-xs font-semibold text-[#ffd700] hover:text-[#ffc107] transition-colors duration-200">View All</button>
              </div>
              <div>
-                 {[1, 2, 3, 4, 5].map((i) => (
+                 {trendingItems.map((i) => (
                      <div key={i} className="px-6 py-4 hover:bg-[#f5f5f7] cursor-pointer border-b border-[#e5e5ea] last:border-0 flex items-start gap-4 transition-colors duration-200 group">
                          <div className="text-[#86868b] font-mono text-sm mt-1 font-semibold w-4 text-center group-hover:text-[#ffd700] transition-colors duration-200">{i}</div>
                          <div className="flex-1">
@@ -80,6 +89,8 @@ const Explore = () => {
       </div>
     </div>
   );
-};
+});
+
+Explore.displayName = 'Explore';
 
 export default Explore;

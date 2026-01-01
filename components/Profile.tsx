@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback, useMemo } from 'react';
 import { Calendar, Link as LinkIcon, MapPin, ArrowLeft, Ghost } from 'lucide-react';
 import { MOCK_MARKETS } from '../constants';
 import PredictionCard from './PredictionCard';
@@ -12,13 +12,13 @@ interface ProfileProps {
 
 type ProfileTab = 'bets' | 'created' | 'likes';
 
-const Profile: React.FC<ProfileProps> = ({ onBack }) => {
+const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
   const [activeTab, setActiveTab] = useState<ProfileTab>('bets');
 
   // Mock Data Logic
-  const userBets = MOCK_MARKETS.slice(0, 3);
-  const createdMarkets = MOCK_MARKETS.filter(m => m.creator.handle === '@degen_eth');
-  const likedMarkets = [MOCK_MARKETS[2], MOCK_MARKETS[4]]; // Random selection
+  const userBets = useMemo(() => MOCK_MARKETS.slice(0, 3), []);
+  const createdMarkets = useMemo(() => MOCK_MARKETS.filter(m => m.creator.handle === '@degen_eth'), []);
+  const likedMarkets = useMemo(() => [MOCK_MARKETS[2], MOCK_MARKETS[4]], []); // Random selection
 
   const handleBet = (market: PredictionMarket, type: BetType) => {
     console.log("Bet clicked on profile", market.id, type);
@@ -60,10 +60,11 @@ const Profile: React.FC<ProfileProps> = ({ onBack }) => {
     ));
   };
 
-  const TabButton = ({ id, label }: { id: ProfileTab, label: string }) => (
+  const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, label: string, activeTab: ProfileTab, onClick: (id: ProfileTab) => void }) => (
       <button 
-        onClick={() => setActiveTab(id)}
+        onClick={() => onClick(id)}
         className="flex-1 py-4 hover:bg-[#f5f5f7] transition-colors duration-200 relative"
+        aria-label={label}
       >
           <span className={cn("font-semibold text-sm transition-colors duration-200", activeTab === id ? "text-[#1d1d1f]" : "text-[#86868b]")}>
             {label}
@@ -72,7 +73,7 @@ const Profile: React.FC<ProfileProps> = ({ onBack }) => {
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-[#ffd700] rounded-full"></div>
           )}
       </button>
-  );
+  ));
 
   return (
     <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
@@ -143,9 +144,9 @@ const Profile: React.FC<ProfileProps> = ({ onBack }) => {
 
       {/* Tabs */}
       <div className="flex border-b border-[#e5e5ea] bg-white">
-          <TabButton id="bets" label="Bets" />
-          <TabButton id="created" label="Created" />
-          <TabButton id="likes" label="Likes" />
+        <TabButton id="bets" label="Bets" activeTab={activeTab} onClick={handleTabChange} />
+        <TabButton id="created" label="Created" activeTab={activeTab} onClick={handleTabChange} />
+        <TabButton id="likes" label="Likes" activeTab={activeTab} onClick={handleTabChange} />
       </div>
 
       {/* Content List */}
@@ -154,6 +155,8 @@ const Profile: React.FC<ProfileProps> = ({ onBack }) => {
       </div>
     </div>
   );
-};
+});
+
+Profile.displayName = 'Profile';
 
 export default Profile;

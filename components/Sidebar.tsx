@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { Home, Trophy, User, Bell, Search, PlusCircle, LogOut, Bot, Users, FileText } from 'lucide-react';
 import { cn } from '../utils';
 import WalletButton from './WalletButton';
@@ -49,7 +49,7 @@ const NavItem = ({
   </button>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onCreateClick, onWalletClick, onSocialClick }) => {
+const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreateClick, onWalletClick, onSocialClick }) => {
   const { isConnected, user } = useWallet();
   
   return (
@@ -175,6 +175,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onCreateClic
       </div>
     </div>
   );
-};
+});
+
+Sidebar.displayName = 'Sidebar';
 
 export default Sidebar;

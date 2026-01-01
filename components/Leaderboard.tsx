@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback, useMemo } from 'react';
 import { Trophy, TrendingUp, ArrowUpRight, ArrowDownRight, Medal, Crown } from 'lucide-react';
 import { cn, formatCurrency } from '../utils';
 import LazyImage from './LazyImage';
@@ -13,8 +13,14 @@ const LEADERBOARD_DATA = [
   { rank: 7, name: 'Moon Boi', handle: '@lambo_soon', profit: -8900, winRate: 15, avatar: 'https://picsum.photos/id/77/200/200' },
 ];
 
-const Leaderboard = () => {
+const Leaderboard = memo(() => {
   const [timeframe, setTimeframe] = useState<'weekly' | 'alltime'>('weekly');
+
+  const handleTimeframeChange = useCallback((tf: 'weekly' | 'alltime') => {
+    setTimeframe(tf);
+  }, []);
+
+  const leaderboardData = useMemo(() => LEADERBOARD_DATA, []);
 
   return (
     <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
@@ -24,14 +30,16 @@ const Leaderboard = () => {
         </h1>
         <div className="flex bg-[#f5f5f7] rounded-lg p-1 border border-[#e5e5ea]">
             <button 
-              onClick={() => setTimeframe('weekly')}
+              onClick={() => handleTimeframeChange('weekly')}
               className={cn("px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200", timeframe === 'weekly' ? "bg-white text-[#1d1d1f] shadow-sm text-[#ffd700]" : "text-[#86868b] hover:text-[#1d1d1f]")}
+              aria-label="Weekly leaderboard"
             >
               Weekly
             </button>
             <button 
-              onClick={() => setTimeframe('alltime')}
+              onClick={() => handleTimeframeChange('alltime')}
               className={cn("px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200", timeframe === 'alltime' ? "bg-white text-[#1d1d1f] shadow-sm text-[#ffd700]" : "text-[#86868b] hover:text-[#1d1d1f]")}
+              aria-label="All time leaderboard"
             >
               All Time
             </button>
@@ -46,7 +54,7 @@ const Leaderboard = () => {
           <div className="col-span-4 sm:col-span-4 text-right">Net PnL</div>
         </div>
 
-        {LEADERBOARD_DATA.map((user) => {
+        {leaderboardData.map((user) => {
           let rankStyle = "text-[#86868b] font-mono";
           let rowBg = "hover:bg-[#f5f5f7]";
           let medal = null;
@@ -126,6 +134,8 @@ const Leaderboard = () => {
       </div>
     </div>
   );
-};
+});
+
+Leaderboard.displayName = 'Leaderboard';
 
 export default Leaderboard;

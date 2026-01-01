@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo, useCallback } from 'react';
 import { Search, MoreHorizontal, TrendingUp, Sparkles } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import LazyImage from './LazyImage';
@@ -14,17 +14,17 @@ const TrendingItem = ({ category, title, posts }: { category: string, title: str
   </div>
 );
 
-const RightPanel = () => {
+const RightPanel = memo(() => {
   const [searchQuery, setSearchQuery] = useState('');
   const { showToast } = useToast();
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       showToast(`Searching for "${searchQuery}"...`, 'info');
       // In production, this would trigger a search
     }
-  };
+  }, [searchQuery, showToast]);
 
   return (
     <div className="hidden lg:block w-[350px] pl-8 py-6 h-screen sticky top-0 overflow-y-auto no-scrollbar">
@@ -127,6 +127,8 @@ const RightPanel = () => {
        </div>
     </div>
   );
-};
+});
+
+RightPanel.displayName = 'RightPanel';
 
 export default RightPanel;
