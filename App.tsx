@@ -269,25 +269,11 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-white p-4">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-[#1d1d1f] mb-2">Web3Auth Error</h2>
-            <p className="text-sm text-[#86868b]">Continuing without wallet connection...</p>
-          </div>
-        </div>}>
-          <Web3AuthProvider>
-            <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-white p-4">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold text-[#1d1d1f] mb-2">Auth Error</h2>
-                <p className="text-sm text-[#86868b]">Continuing without authentication...</p>
-              </div>
-            </div>}>
-              <AuthProvider>
-                <AppContent />
-              </AuthProvider>
-            </ErrorBoundary>
-          </Web3AuthProvider>
-        </ErrorBoundary>
+        <Web3AuthProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </Web3AuthProvider>
       </ToastProvider>
     </ErrorBoundary>
   );
