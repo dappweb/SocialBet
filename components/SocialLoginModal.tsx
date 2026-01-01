@@ -9,31 +9,31 @@ interface SocialLoginModalProps {
 }
 
 const SOCIAL_PROVIDERS = [
-  { 
-    id: 'google', 
-    name: 'Google', 
-    icon: Mail, 
+  {
+    id: 'google',
+    name: 'Google',
+    icon: Mail,
     color: 'bg-[#4285F4] hover:bg-[#357ae8]',
     description: 'Continue with Google'
   },
-  { 
-    id: 'twitter', 
-    name: 'Twitter/X', 
-    icon: Twitter, 
+  {
+    id: 'twitter',
+    name: 'Twitter/X',
+    icon: Twitter,
     color: 'bg-[#1DA1F2] hover:bg-[#1a91da]',
     description: 'Continue with Twitter'
   },
-  { 
-    id: 'discord', 
-    name: 'Discord', 
-    icon: MessageCircle, 
+  {
+    id: 'discord',
+    name: 'Discord',
+    icon: MessageCircle,
     color: 'bg-[#5865F2] hover:bg-[#4752c4]',
     description: 'Continue with Discord'
   },
-  { 
-    id: 'github', 
-    name: 'GitHub', 
-    icon: Github, 
+  {
+    id: 'github',
+    name: 'GitHub',
+    icon: Github,
     color: 'bg-[#24292e] hover:bg-[#1a1e22]',
     description: 'Continue with GitHub'
   },
@@ -62,14 +62,14 @@ const SocialLoginModal: React.FC<SocialLoginModalProps> = ({ isOpen, onClose }) 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">
       <div className="w-full max-w-md bg-white border border-[#e5e5ea] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#e5e5ea]">
           <h3 className="text-lg font-semibold text-[#1d1d1f]">
             Sign in with Social Account
           </h3>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="p-1.5 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200"
             disabled={isConnecting}
           >
@@ -82,11 +82,11 @@ const SocialLoginModal: React.FC<SocialLoginModalProps> = ({ isOpen, onClose }) 
           <p className="text-sm text-[#86868b] text-center mb-4">
             Choose a social account to sign in or create an account
           </p>
-          
+
           {SOCIAL_PROVIDERS.map((provider) => {
             const Icon = provider.icon;
             const isConnectingThis = connectingProvider === provider.id;
-            
+
             return (
               <button
                 key={provider.id}
@@ -128,7 +128,7 @@ const SocialLoginModal: React.FC<SocialLoginModalProps> = ({ isOpen, onClose }) 
         {/* Footer */}
         <div className="px-6 py-4 bg-[#f5f5f7] border-t border-[#e5e5ea]">
           <p className="text-xs text-[#86868b] text-center">
-            By signing in, you agree to SocialBet's Terms of Service and Privacy Policy
+            By signing in, you agree to SoulCast's Terms of Service and Privacy Policy
           </p>
         </div>
       </div>

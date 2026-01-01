@@ -1,7 +1,7 @@
-# SocialBet - User Stories
+# SoulCast - User Stories
 
 ## Overview
-This document contains user stories that describe the features and functionality of SocialBet from the user's perspective. Each story follows the format: "As a [user type], I want [goal] so that [benefit]."
+This document contains user stories that describe the features and functionality of SoulCast from the user's perspective. Each story follows the format: "As a [user type], I want [goal] so that [benefit]."
 
 ---
 

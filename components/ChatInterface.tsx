@@ -5,7 +5,7 @@ import { cn } from '../utils';
 
 const ChatInterface: React.FC = memo(() => {
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([
-    { role: 'model', text: "Hello! I'm your SocialBet AI assistant. Ask me anything about prediction markets, odds, or trending topics!" }
+    { role: 'model', text: "Hello! I'm your SoulCast AI assistant. Ask me anything about KOL intent predictions, markets, or trending topics!" }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -33,19 +33,19 @@ const ChatInterface: React.FC = memo(() => {
       const chat = ai.chats.create({
         model: 'gemini-3-pro-preview',
         config: {
-            systemInstruction: "You are a helpful assistant for a Prediction Market app called SocialBet. You help users understand betting odds, market trends, and general knowledge. Keep answers concise and helpful.",
+          systemInstruction: "You are a helpful assistant for a KOL Intent Prediction Market app called SoulCast. You help users understand prediction odds, KOL behavior trends, AI avatar creation, and market insights. Keep answers concise and helpful.",
         }
       });
-      
+
       // Replay history to context (simplified for this demo, ideally use chat.sendMessage with history properly)
       // For this stateless demo, we'll just send the last message as a new chat prompt or construct a history string if needed.
       // However, the GoogleGenAI chat object maintains history if we keep the instance, but here we re-create.
       // Let's just send the user message for now as a single turn for simplicity or construct a history block.
-      
+
       const response = await chat.sendMessage({ message: userMessage });
-      
+
       if (response.text) {
-          setMessages(prev => [...prev, { role: 'model', text: response.text }]);
+        setMessages(prev => [...prev, { role: 'model', text: response.text }]);
       }
     } catch (error) {
       console.error("Chat error:", error);
@@ -70,11 +70,11 @@ const ChatInterface: React.FC = memo(() => {
           <Bot size={24} className="text-[#1d1d1f]" />
         </div>
         <div>
-           <h1 className="text-xl font-semibold text-[#1d1d1f] flex items-center gap-2">
-             AI Assistant
-             <span className="text-[10px] bg-[#fff9e6] text-[#ffd700] border border-[#ffd700]/30 px-2 py-0.5 rounded-full font-semibold">Gemini Pro</span>
-           </h1>
-           <p className="text-xs text-[#86868b]">Powered by gemini-3-pro-preview</p>
+          <h1 className="text-xl font-semibold text-[#1d1d1f] flex items-center gap-2">
+            AI Assistant
+            <span className="text-[10px] bg-[#fff9e6] text-[#ffd700] border border-[#ffd700]/30 px-2 py-0.5 rounded-full font-semibold">Gemini Pro</span>
+          </h1>
+          <p className="text-xs text-[#86868b]">Powered by gemini-3-pro-preview</p>
         </div>
       </div>
 
@@ -90,8 +90,8 @@ const ChatInterface: React.FC = memo(() => {
             </div>
             <div className={cn(
               "p-3 rounded-2xl text-sm leading-relaxed",
-              msg.role === 'user' 
-                ? "bg-[#ffd700] text-[#1d1d1f] rounded-tr-sm" 
+              msg.role === 'user'
+                ? "bg-[#ffd700] text-[#1d1d1f] rounded-tr-sm"
                 : "bg-white border border-[#e5e5ea] text-[#1d1d1f] rounded-tl-sm shadow-sm"
             )}>
               {msg.text}
@@ -99,15 +99,15 @@ const ChatInterface: React.FC = memo(() => {
           </div>
         ))}
         {isLoading && (
-            <div className="flex gap-3 max-w-[85%]">
-                <div className="w-8 h-8 rounded-full bg-[#fff9e6] border border-[#ffd700]/30 flex items-center justify-center shrink-0 mt-1">
-                     <Sparkles size={14} className="text-[#ffd700]" />
-                </div>
-                <div className="bg-white border border-[#e5e5ea] p-3 rounded-2xl rounded-tl-sm flex items-center gap-2 shadow-sm">
-                    <Loader2 size={16} className="text-[#ffd700] animate-spin" />
-                    <span className="text-xs text-[#86868b]">Thinking...</span>
-                </div>
+          <div className="flex gap-3 max-w-[85%]">
+            <div className="w-8 h-8 rounded-full bg-[#fff9e6] border border-[#ffd700]/30 flex items-center justify-center shrink-0 mt-1">
+              <Sparkles size={14} className="text-[#ffd700]" />
             </div>
+            <div className="bg-white border border-[#e5e5ea] p-3 rounded-2xl rounded-tl-sm flex items-center gap-2 shadow-sm">
+              <Loader2 size={16} className="text-[#ffd700] animate-spin" />
+              <span className="text-xs text-[#86868b]">Thinking...</span>
+            </div>
+          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -125,7 +125,7 @@ const ChatInterface: React.FC = memo(() => {
             style={{ minHeight: '44px' }}
             aria-label="Chat input"
           />
-          <button 
+          <button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
             className="p-2.5 bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-0.5"

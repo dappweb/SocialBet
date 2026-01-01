@@ -1,13 +1,13 @@
-# SocialBet - Requirements Document
+# SoulCast - Requirements Document
 
 ## 1. Project Overview
 
-**Project Name:** SocialBet - Prediction Market Feed  
+**Project Name:** SoulCast - KOL Intent Prediction Market  
 **Version:** 1.0.0  
-**Last Updated:** 2024
+**Last Updated:** 2025
 
 ### 1.1 Description
-SocialBet is a decentralized social prediction market feed platform where users can create, discover, and bet on real-world outcomes across multiple categories including Crypto, Sports, Pop Culture, Politics, and Tech. The platform incorporates OnlyFans-inspired monetization features, allowing creators to offer premium content and subscriptions, while leveraging Cloudflare's AI and database services for scalable infrastructure and supporting Web3 wallet integration for decentralized authentication and payments. The platform features native mobile (iOS/Android) and desktop (Windows/macOS/Linux) applications, instant messaging and video conferencing capabilities, token airdrops, red envelope giveaways, and a native platform token (SOS) with a comprehensive economic model.
+SoulCast is a KOL (Key Opinion Leader) social intent prediction market platform where predicted intents are incorporated into AI avatars (digital souls) and can be injected into robots. The platform allows users to create, discover, and bet on KOL intentions across multiple categories including Crypto, Sports, Pop Culture, Politics, and Tech. Issued tokens are redeemed and destroyed by SoulCast as issuance fees. The platform features native mobile (iOS/Android) and desktop (Windows/macOS/Linux) applications, instant messaging and video conferencing capabilities, token airdrops, red envelope giveaways, and a native platform token (SOUL) with a comprehensive economic model.
 
 ### 1.2 Objectives
 - Provide an intuitive social media-like interface for prediction markets
@@ -245,8 +245,8 @@ SocialBet is a decentralized social prediction market feed platform where users 
   - Community engagement rewards
   - Event celebration giveaways
 
-### 2.16 SOS Platform Token & Economic Model
-- **FR-16.1:** Platform token: SOS (SocialBet Token)
+### 2.16 SOUL Platform Token & Economic Model
+- **FR-16.1:** Platform token: SOUL (SoulCast Token)
 - **FR-16.2:** Total supply: 2.1 billion SOS tokens
 - **FR-16.3:** Token distribution model:
   - Community rewards and airdrops

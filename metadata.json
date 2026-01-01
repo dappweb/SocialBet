@@ -1,5 +1,5 @@
 {
-  "name": "SocialBet - Prediction Market Feed",
-  "description": "A decentralized social prediction market feed where users bet on real-world outcomes.",
+  "name": "SoulCast - KOL Intent Prediction Market",
+  "description": "A KOL social intent prediction market where predicted intents are incorporated into AI avatars and injected into robots.",
   "requestFramePermissions": []
 }

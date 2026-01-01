@@ -1,3 +1,7 @@
+// Polyfills for Web3Auth
+import { Buffer } from 'buffer';
+(window as any).Buffer = Buffer;
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';

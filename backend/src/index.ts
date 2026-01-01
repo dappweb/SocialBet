@@ -1,0 +1,42 @@
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { marketsRoutes } from './routes/markets';
+import { usersRoutes } from './routes/users';
+import { betsRoutes } from './routes/bets';
+import { socialRoutes } from './routes/social';
+
+export interface Env {
+    DB: D1Database;
+}
+
+const app = new Hono<{ Bindings: Env }>();
+
+// CORS middleware
+app.use('*', cors({
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'https://socialbet.pages.dev'],
+    credentials: true,
+}));
+
+// Health check
+app.get('/api/health', (c) => {
+    return c.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Mount routes
+app.route('/api/markets', marketsRoutes);
+app.route('/api/users', usersRoutes);
+app.route('/api/bets', betsRoutes);
+app.route('/api/social', socialRoutes);
+
+// 404 handler
+app.notFound((c) => {
+    return c.json({ error: 'Not found' }, 404);
+});
+
+// Error handler
+app.onError((err, c) => {
+    console.error('Error:', err);
+    return c.json({ error: err.message }, 500);
+});
+
+export default app;

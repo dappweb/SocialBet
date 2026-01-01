@@ -1,6 +1,6 @@
 
-import React, { useState, lazy, Suspense, useCallback, useMemo } from 'react';
-import { WalletProvider } from './contexts/WalletContext';
+import React, { useState, lazy, Suspense, useCallback, useMemo, useEffect } from 'react';
+import { Web3AuthProvider } from './contexts/Web3AuthContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { ToastContainer } from './components/Toast';
@@ -10,6 +10,8 @@ import RightPanel from './components/RightPanel';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import { MOCK_MARKETS } from './constants';
+import { marketsApi } from './services/api';
+import { PredictionMarket } from './types';
 import { Home, Search, Trophy, User, Bell, PlusSquare, Bot } from 'lucide-react';
 import { cn } from './utils';
 
@@ -23,8 +25,7 @@ const ChatInterface = lazy(() => import('./components/ChatInterface'));
 const CreateMarketModal = lazy(() => import('./components/CreateMarketModal'));
 const DAOGovernance = lazy(() => import('./components/DAOGovernance'));
 const WhitePaper = lazy(() => import('./components/WhitePaper'));
-const WalletLoginModal = lazy(() => import('./components/WalletLoginModal'));
-const SocialLoginModal = lazy(() => import('./components/SocialLoginModal'));
+const LoginModal = lazy(() => import('./components/LoginModal'));
 const WalletBalance = lazy(() => import('./components/WalletBalance'));
 
 type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper';
@@ -32,50 +33,49 @@ type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | '
 const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { showToast, toasts, removeToast } = useToast();
-  // In a real app, this would modify the global market state
-  const [markets, setMarkets] = useState(MOCK_MARKETS);
+  const [markets, setMarkets] = useState<PredictionMarket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch markets from API on mount
+  useEffect(() => {
+    const fetchMarkets = async () => {
+      try {
+        setIsLoading(true);
+        const data = await marketsApi.getAll();
+        setMarkets(data as PredictionMarket[]);
+      } catch (error) {
+        console.error('Failed to fetch markets:', error);
+        // Fallback to mock data if API fails
+        setMarkets(MOCK_MARKETS);
+        showToast('Using offline data - API unavailable', 'warning');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMarkets();
+  }, [showToast]);
 
   const handleCreateMarket = useCallback(async (newMarketData: any) => {
     try {
-      // Mock adding market to state
-      console.log("Creating market:", newMarketData);
-      
-      // Optional: Add to local feed to simulate functionality
-      const newMarket = {
-          id: `new-${Date.now()}`,
-          creator: {
-            id: 'me',
-            name: 'Degen Trader',
-            handle: '@degen_eth',
-            avatar: 'https://picsum.photos/id/100/100/100',
-            isVerified: true,
-          },
-          question: newMarketData.question,
-          category: newMarketData.category,
-          endDate: newMarketData.endDate,
-          poolSize: newMarketData.liquidity,
-          volume: 0,
-          likes: 0,
-          comments: 0,
-          image: newMarketData.image, // Add image if present
-          outcomeStats: {
-            yesPercent: 50,
-            noPercent: 50,
-            yesPrice: 0.5,
-            noPrice: 0.5,
-          },
-      };
-      
+      // Create market via API
+      const newMarket = await marketsApi.create({
+        question: newMarketData.question,
+        category: newMarketData.category,
+        endDate: newMarketData.endDate,
+        image: newMarketData.image,
+        creatorId: 'me',
+      });
+
       // Add to top of feed
-      setMarkets([newMarket, ...markets]);
+      setMarkets(prev => [newMarket as PredictionMarket, ...prev]);
       showToast('Market created successfully!', 'success');
     } catch (error) {
+      console.error('Failed to create market:', error);
       showToast('Failed to create market. Please try again.', 'error');
     }
-  }, [markets, showToast]);
+  }, [showToast]);
 
   const handleNavigate = useCallback((view: View) => {
     setCurrentView(view);
@@ -84,6 +84,17 @@ const AppContent: React.FC = () => {
   const handleBack = useCallback(() => {
     setCurrentView('home');
   }, []);
+
+  // Modal handlers - must be at top level, not inside JSX
+  const handleOpenCreateModal = useCallback(() => setIsCreateModalOpen(true), []);
+  const handleCloseCreateModal = useCallback(() => setIsCreateModalOpen(false), []);
+  const handleOpenLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
+  const handleCloseLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
+
+  // Navigation handlers for mobile nav
+  const handleNavigateHome = useCallback(() => setCurrentView('home'), []);
+  const handleNavigateExplore = useCallback(() => setCurrentView('explore'), []);
+  const handleNavigateAssistant = useCallback(() => setCurrentView('assistant'), []);
 
   const renderView = useMemo(() => {
     switch (currentView) {
@@ -148,72 +159,76 @@ const AppContent: React.FC = () => {
     <>
       <div className="min-h-screen bg-white text-[#1d1d1f] font-sans">
         <div className="max-w-[1265px] mx-auto flex justify-center sm:justify-start">
-          
+
           {/* Left Sidebar (Desktop) */}
           <header className="hidden sm:flex flex-col w-[80px] xl:w-[275px] shrink-0 bg-white/80 backdrop-blur-xl border-r border-[#e5e5ea]">
-            <Sidebar 
-              currentView={currentView} 
-              onNavigate={handleNavigate} 
-              onCreateClick={useCallback(() => setIsCreateModalOpen(true), [])}
-              onWalletClick={useCallback(() => setIsWalletModalOpen(true), [])}
-              onSocialClick={useCallback(() => setIsSocialModalOpen(true), [])}
+            <Sidebar
+              currentView={currentView}
+              onNavigate={handleNavigate}
+              onCreateClick={handleOpenCreateModal}
+              onLoginClick={handleOpenLoginModal}
             />
           </header>
 
           {/* Main Feed / Content Area */}
-          <main className="flex-1 max-w-[600px] min-h-screen relative border-r border-[#e5e5ea]/50">
+          <main className={cn(
+            "flex-1 min-h-screen relative",
+            currentView !== 'whitepaper' && "max-w-[600px] border-r border-[#e5e5ea]/50"
+          )}>
             {renderView}
           </main>
 
-          {/* Right Panel (Desktop) */}
-          <div className="hidden lg:block w-[350px] shrink-0 bg-[#f5f5f7]">
-            <div className="sticky top-0 h-screen overflow-y-auto no-scrollbar py-6 px-4">
-              <Suspense fallback={<div className="h-32 bg-white rounded-xl mb-4 animate-pulse" />}>
-                <WalletBalance />
-              </Suspense>
-              <RightPanel />
-            </div>
-          </div>
+          {/* Right Panel (Desktop) - Hidden on whitepaper for better reading experience */}
+          {currentView !== 'whitepaper' && (
+            <aside className="hidden lg:block w-[350px] shrink-0 bg-white/80 backdrop-blur-xl border-l border-[#e5e5ea]">
+              <div className="sticky top-0 h-screen overflow-y-auto no-scrollbar">
+                <Suspense fallback={<div className="h-32 bg-white rounded-xl mb-4 animate-pulse" />}>
+                  <WalletBalance />
+                </Suspense>
+                <RightPanel />
+              </div>
+            </aside>
+          )}
         </div>
 
         {/* Mobile Bottom Nav */}
         <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-[#e5e5ea] flex justify-around px-2 py-3 z-40 safe-area-pb shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-          <button 
-              onClick={useCallback(() => setCurrentView('home'), [])}
-              className={cn("p-2 rounded-full transition-all duration-200", currentView === 'home' ? "text-[#ffd700]" : "text-[#86868b]")}
-              aria-label="Home"
+          <button
+            onClick={handleNavigateHome}
+            className={cn("p-2 rounded-full transition-all duration-200", currentView === 'home' ? "text-[#ffd700]" : "text-[#86868b]")}
+            aria-label="Home"
           >
             <Home size={24} strokeWidth={currentView === 'home' ? 2.5 : 2} />
           </button>
-          <button 
-              onClick={useCallback(() => setCurrentView('explore'), [])}
-              className={cn("p-2 rounded-full transition-all duration-200", currentView === 'explore' ? "text-[#ffd700]" : "text-[#86868b]")}
-              aria-label="Explore"
+          <button
+            onClick={handleNavigateExplore}
+            className={cn("p-2 rounded-full transition-all duration-200", currentView === 'explore' ? "text-[#ffd700]" : "text-[#86868b]")}
+            aria-label="Explore"
           >
             <Search size={24} strokeWidth={currentView === 'explore' ? 2.5 : 2} />
           </button>
-          
+
           {/* Mobile Create Button (Center) - Bright Yellow */}
-          <button 
-               onClick={useCallback(() => setIsCreateModalOpen(true), [])}
-               className="p-2 -mt-4 bg-[#ffd700] text-[#1d1d1f] rounded-full shadow-lg shadow-[#ffd700]/30 hover:bg-[#ffeb3b] transition-all duration-200 active:scale-95"
-               aria-label="Create Market"
+          <button
+            onClick={handleOpenCreateModal}
+            className="p-2 -mt-4 bg-[#ffd700] text-[#1d1d1f] rounded-full shadow-lg shadow-[#ffd700]/30 hover:bg-[#ffeb3b] transition-all duration-200 active:scale-95"
+            aria-label="Create Market"
           >
             <PlusSquare size={24} strokeWidth={2.5} />
           </button>
-          
-          <button 
-               onClick={useCallback(() => setCurrentView('assistant'), [])}
-               className={cn("p-2 rounded-full transition-all duration-200", currentView === 'assistant' ? "text-[#ffd700]" : "text-[#86868b]")}
-              aria-label="AI Assistant"
+
+          <button
+            onClick={handleNavigateAssistant}
+            className={cn("p-2 rounded-full transition-all duration-200", currentView === 'assistant' ? "text-[#ffd700]" : "text-[#86868b]")}
+            aria-label="AI Assistant"
           >
             <Bot size={24} strokeWidth={currentView === 'assistant' ? 2.5 : 2} />
           </button>
 
-          <button 
-               onClick={useCallback(() => setIsWalletModalOpen(true), [])}
-               className={cn("p-2 rounded-full transition-all duration-200", "text-[#86868b]")}
-               aria-label="Wallet"
+          <button
+            onClick={handleOpenLoginModal}
+            className={cn("p-2 rounded-full transition-all duration-200", "text-[#86868b]")}
+            aria-label="Login"
           >
             <User size={24} strokeWidth={2} />
           </button>
@@ -222,26 +237,18 @@ const AppContent: React.FC = () => {
         {/* Modals */}
         {isCreateModalOpen && (
           <Suspense fallback={null}>
-            <CreateMarketModal 
-              isOpen={isCreateModalOpen} 
-              onClose={useCallback(() => setIsCreateModalOpen(false), [])} 
+            <CreateMarketModal
+              isOpen={isCreateModalOpen}
+              onClose={handleCloseCreateModal}
               onCreate={handleCreateMarket}
             />
           </Suspense>
         )}
-        {isWalletModalOpen && (
+        {isLoginModalOpen && (
           <Suspense fallback={null}>
-            <WalletLoginModal 
-              isOpen={isWalletModalOpen} 
-              onClose={useCallback(() => setIsWalletModalOpen(false), [])} 
-            />
-          </Suspense>
-        )}
-        {isSocialModalOpen && (
-          <Suspense fallback={null}>
-            <SocialLoginModal 
-              isOpen={isSocialModalOpen} 
-              onClose={useCallback(() => setIsSocialModalOpen(false), [])} 
+            <LoginModal
+              isOpen={isLoginModalOpen}
+              onClose={handleCloseLoginModal}
             />
           </Suspense>
         )}
@@ -255,11 +262,11 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <WalletProvider>
+        <Web3AuthProvider>
           <AuthProvider>
             <AppContent />
           </AuthProvider>
-        </WalletProvider>
+        </Web3AuthProvider>
       </ToastProvider>
     </ErrorBoundary>
   );

@@ -1,4 +1,4 @@
-# SocialBet - Technical Specifications
+# SoulCast - Technical Specifications
 
 ## 1. Architecture Overview
 

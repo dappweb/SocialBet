@@ -1,0 +1,23 @@
+{
+    "name": "socialbet-backend",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "wrangler dev",
+        "dev:local": "tsx watch src/local.ts",
+        "deploy": "wrangler deploy",
+        "db:create": "wrangler d1 create socialbet-db",
+        "db:migrate": "wrangler d1 execute socialbet-db --file=./schema.sql",
+        "db:migrate:local": "wrangler d1 execute socialbet-db --local --file=./schema.sql",
+        "db:seed": "wrangler d1 execute socialbet-db --file=./seed.sql",
+        "db:seed:local": "wrangler d1 execute socialbet-db --local --file=./seed.sql"
+    },
+    "dependencies": {
+        "hono": "^4.6.0"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^4.20241127.0",
+        "typescript": "^5.8.2",
+        "wrangler": "^3.99.0"
+    }
+}

@@ -1,6 +1,6 @@
-# SocialBet Documentation
+# SoulCast Documentation
 
-Welcome to the SocialBet documentation. This directory contains all project documentation organized by category.
+Welcome to the SoulCast documentation. This directory contains all project documentation organized by category.
 
 ## 📁 Documentation Structure
 
@@ -70,11 +70,10 @@ For getting started with the project, see the main [README.md](../README.md) in 
 
 | Document | Status | Last Updated |
 |----------|--------|--------------|
-| REQUIREMENTS.md | ✅ Complete | 2024 |
-| TECHNICAL_SPEC.md | ✅ Complete | 2024 |
-| USER_STORIES.md | ✅ Complete | 2024 |
+| REQUIREMENTS.md | ✅ Complete | 2025 |
+| TECHNICAL_SPEC.md | ✅ Complete | 2025 |
+| USER_STORIES.md | ✅ Complete | 2025 |
 
 ---
 
 For questions or updates to documentation, please refer to the project maintainers.
-

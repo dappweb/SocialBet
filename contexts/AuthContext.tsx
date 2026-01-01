@@ -1,16 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useWallet } from './WalletContext';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { useWeb3Auth } from './Web3AuthContext';
 import { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isConnecting: boolean;
-  connectSocial: (provider: 'google' | 'twitter' | 'discord' | 'github') => Promise<void>;
-  linkWallet: () => Promise<void>;
-  linkSocial: (provider: 'google' | 'twitter' | 'discord' | 'github') => Promise<void>;
-  logout: () => void;
-  authMethod: 'wallet' | 'social' | null;
+  connect: () => Promise<void>;
+  logout: () => Promise<void>;
+  walletAddress: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,178 +26,93 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const { user: walletUser, isConnected: isWalletConnected, connectWallet, disconnectWallet } = useWallet();
+  const {
+    user: web3AuthUser,
+    isConnected,
+    isLoading,
+    walletAddress,
+    connect: web3AuthConnect,
+    disconnect: web3AuthDisconnect
+  } = useWeb3Auth();
+
   const [user, setUser] = useState<User | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [authMethod, setAuthMethod] = useState<'wallet' | 'social' | null>(null);
 
-  // Sync wallet user with auth user
+  // Sync Web3Auth user with app user
   useEffect(() => {
-    if (isWalletConnected && walletUser) {
-      setUser(walletUser);
-      setAuthMethod('wallet');
-    } else if (!isWalletConnected && authMethod === 'wallet') {
+    if (isConnected && web3AuthUser) {
+      const appUser: User = {
+        id: web3AuthUser.verifierId || walletAddress || 'user',
+        name: web3AuthUser.name || 'Anonymous User',
+        handle: web3AuthUser.email ? `@${web3AuthUser.email.split('@')[0]}` :
+          walletAddress ? `@${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '@user',
+        avatar: web3AuthUser.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress || 'default'}`,
+        isVerified: !!web3AuthUser.email,
+        walletAddressEth: walletAddress || undefined,
+      };
+      setUser(appUser);
+
+      // Save to localStorage for persistence display
+      localStorage.setItem('socialbet_auth', JSON.stringify({
+        user: appUser,
+        provider: web3AuthUser.verifier || 'web3auth',
+      }));
+    } else if (!isConnected && !isLoading) {
       setUser(null);
-      setAuthMethod(null);
+      localStorage.removeItem('socialbet_auth');
     }
-  }, [isWalletConnected, walletUser, authMethod]);
+  }, [isConnected, web3AuthUser, walletAddress, isLoading]);
 
-  // Load saved social auth from localStorage
+  // Load saved auth on mount (for UI consistency before Web3Auth initializes)
   useEffect(() => {
-    const savedAuth = localStorage.getItem('socialbet_auth');
-    if (savedAuth && !isWalletConnected) {
-      try {
-        const authData = JSON.parse(savedAuth);
-        setUser(authData.user);
-        setAuthMethod('social');
-      } catch (error) {
-        console.error('Failed to load saved auth:', error);
-        localStorage.removeItem('socialbet_auth');
+    if (isLoading) {
+      const savedAuth = localStorage.getItem('socialbet_auth');
+      if (savedAuth) {
+        try {
+          const authData = JSON.parse(savedAuth);
+          setUser(authData.user);
+        } catch (error) {
+          console.error('Failed to load saved auth:', error);
+        }
       }
     }
-  }, [isWalletConnected]);
+  }, [isLoading]);
 
-  const connectSocial = async (provider: 'google' | 'twitter' | 'discord' | 'github') => {
+  const connect = useCallback(async () => {
     setIsConnecting(true);
     try {
-      // Mock OAuth flow - In production, this would redirect to OAuth provider
-      // For now, we'll simulate the OAuth callback
-      
-      // Simulate OAuth redirect
-      const mockOAuthData = {
-        google: {
-          id: 'google_123456',
-          name: 'John Doe',
-          email: 'john@example.com',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=google',
-        },
-        twitter: {
-          id: 'twitter_123456',
-          name: 'John Doe',
-          username: '@johndoe',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=twitter',
-        },
-        discord: {
-          id: 'discord_123456',
-          name: 'John Doe',
-          username: 'johndoe#1234',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=discord',
-        },
-        github: {
-          id: 'github_123456',
-          name: 'John Doe',
-          username: 'johndoe',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=github',
-        },
-      };
-
-      const oauthData = mockOAuthData[provider];
-      
-      // Create user object from OAuth data
-      const newUser: User = {
-        id: oauthData.id,
-        name: oauthData.name,
-        handle: provider === 'twitter' ? oauthData.username : 
-                provider === 'discord' ? oauthData.username :
-                provider === 'github' ? `@${oauthData.username}` :
-                `@${oauthData.email?.split('@')[0]}`,
-        avatar: oauthData.avatar,
-        isVerified: false,
-      };
-
-      setUser(newUser);
-      setAuthMethod('social');
-
-      // Save to localStorage
-      localStorage.setItem('socialbet_auth', JSON.stringify({
-        user: newUser,
-        provider,
-      }));
-
-      // In production, you would:
-      // 1. Redirect to OAuth provider
-      // 2. Handle OAuth callback
-      // 3. Exchange code for access token
-      // 4. Fetch user profile from provider API
-      // 5. Create/link user account
-      
-    } catch (error: any) {
-      console.error('Social login error:', error);
+      await web3AuthConnect();
+    } catch (error) {
+      console.error('Connect error:', error);
       throw error;
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, [web3AuthConnect]);
 
-  const linkWallet = async () => {
-    // This would open wallet connection modal
-    // For now, we'll just use the existing wallet connection
-    if (!isWalletConnected) {
-      throw new Error('Please connect a wallet first');
+  const logout = useCallback(async () => {
+    try {
+      await web3AuthDisconnect();
+      setUser(null);
+      localStorage.removeItem('socialbet_auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
     }
-    
-    // Link wallet to existing social account
-    if (user && authMethod === 'social' && walletUser) {
-      const linkedUser: User = {
-        ...user,
-        walletAddressEth: walletUser.walletAddressEth,
-        walletAddressSol: walletUser.walletAddressSol,
-        walletAddressBsc: walletUser.walletAddressBsc,
-        primaryChain: walletUser.primaryChain,
-      };
-      setUser(linkedUser);
-      localStorage.setItem('socialbet_auth', JSON.stringify({
-        user: linkedUser,
-        provider: 'social',
-        walletLinked: true,
-      }));
-    }
-  };
-
-  const linkSocial = async (provider: 'google' | 'twitter' | 'discord' | 'github') => {
-    // Link social account to existing wallet
-    if (!isWalletConnected || !walletUser) {
-      throw new Error('Please connect a wallet first');
-    }
-    
-    await connectSocial(provider);
-    
-    // Link social to wallet user
-    if (user && walletUser) {
-      const linkedUser: User = {
-        ...walletUser,
-        name: user.name,
-        handle: user.handle,
-        avatar: user.avatar,
-      };
-      setUser(linkedUser);
-    }
-  };
-
-  const logout = () => {
-    setUser(null);
-    setAuthMethod(null);
-    localStorage.removeItem('socialbet_auth');
-    if (isWalletConnected) {
-      disconnectWallet();
-    }
-  };
+  }, [web3AuthDisconnect]);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         isAuthenticated: !!user,
-        isConnecting,
-        connectSocial,
-        linkWallet,
-        linkSocial,
+        isConnecting: isConnecting || isLoading,
+        connect,
         logout,
-        authMethod,
+        walletAddress,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-

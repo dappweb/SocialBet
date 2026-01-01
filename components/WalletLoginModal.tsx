@@ -81,15 +81,15 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">
       <div className="w-full max-w-md bg-white border border-[#e5e5ea] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#e5e5ea]">
           <h3 className="text-lg font-semibold text-[#1d1d1f] flex items-center gap-2">
             <Wallet className="text-[#ffd700]" size={20} />
             Connect Wallet
           </h3>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="p-1.5 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200"
             disabled={isConnecting}
           >
@@ -103,7 +103,7 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
             <p className="text-sm text-[#86868b] text-center">
               Choose a blockchain to connect your wallet
             </p>
-            
+
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setSelectedChain('ethereum')}
@@ -112,7 +112,7 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
                 <div className="text-2xl mb-2">⟠</div>
                 <div className="text-sm font-semibold text-[#1d1d1f]">Ethereum</div>
               </button>
-              
+
               <button
                 onClick={() => setSelectedChain('bsc')}
                 className="p-4 border-2 border-[#e5e5ea] rounded-xl hover:border-[#ffd700] hover:bg-[#fff9e6] transition-all duration-200 text-center group"
@@ -120,7 +120,7 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
                 <div className="text-2xl mb-2">◎</div>
                 <div className="text-sm font-semibold text-[#1d1d1f]">BSC</div>
               </button>
-              
+
               <button
                 onClick={() => setSelectedChain('solana')}
                 className="p-4 border-2 border-[#e5e5ea] rounded-xl hover:border-[#ffd700] hover:bg-[#fff9e6] transition-all duration-200 text-center group"
@@ -234,7 +234,7 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
         {/* Footer */}
         <div className="px-6 py-4 bg-[#f5f5f7] border-t border-[#e5e5ea]">
           <p className="text-xs text-[#86868b] text-center">
-            By connecting, you agree to SocialBet's Terms of Service and Privacy Policy
+            By connecting, you agree to SoulCast's Terms of Service and Privacy Policy
           </p>
           {error && error.includes('Phantom') && (
             <div className="mt-2 text-center">

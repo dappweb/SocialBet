@@ -1,12 +1,17 @@
+# SoulCast - KOL Social Intent Prediction Market
+
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" height="475" alt="SoulCast Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# SocialBet - Prediction Market Feed
+A decentralized KOL (Key Opinion Leader) social intent prediction market platform where predicted intents are incorporated into AI avatars (digital souls) and can be injected into robots. Users can predict, discover, and bet on KOL intentions across multiple categories.
 
-A decentralized social prediction market feed platform where users can create, discover, and bet on real-world outcomes across multiple categories including Crypto, Sports, Pop Culture, Politics, and Tech.
+## 🌟 Vision
 
-View your app in AI Studio: https://ai.studio/apps/drive/1zSxZ5A3StMHBNCmaPbDWNL-8tkM3UwcN
+SoulCast bridges the gap between social prediction markets and AI avatar technology:
+- **Predict KOL Intent**: Bet on what influencers will do next
+- **AI Avatar Creation**: Generate digital souls from KOL prediction data
+- **Robot Integration**: Inject AI avatars into physical robots
 
 ## 📚 Documentation
 
@@ -60,7 +65,7 @@ Comprehensive project documentation is available in the [`docs/`](./docs/) direc
 ## 📁 Project Structure
 
 ```
-SocialBet/
+SoulCast/
 ├── components/          # React components
 ├── docs/               # Project documentation
 │   ├── requirements/   # Requirements documents
@@ -72,13 +77,22 @@ SocialBet/
 
 ## 🎯 Features
 
-- **Market Feed:** Browse prediction markets in a social media-like feed
-- **Market Creation:** Create new prediction markets with custom parameters
-- **Betting:** Place YES/NO bets on markets with real-time pricing
+- **Intent Prediction Feed:** Browse KOL intent prediction markets in a social media-like feed
+- **Market Creation:** Create new prediction markets for KOL intentions
+- **Prediction:** Place YES/NO bets on KOL intent markets with real-time pricing
+- **AI Avatar System:** Generate digital souls from KOL prediction data
+- **Robot Integration:** API for injecting AI avatars into physical robots
 - **Social Features:** Like, comment, and engage with markets
-- **AI Assistant:** Chat with AI for market insights and assistance
+- **AI Assistant:** Chat with AI for market insights and KOL analysis
 - **Responsive Design:** Works seamlessly on mobile and desktop
 - **Multiple Categories:** Crypto, Sports, Pop Culture, Politics, Tech
+
+## 💰 SOUL Token
+
+The SOUL token powers the SoulCast ecosystem:
+- **Total Supply:** 2.1 billion SOUL
+- **Use Cases:** Intent prediction, AI avatar creation, governance, staking
+- **Multi-Chain:** Ethereum, Solana, BSC
 
 ## 📝 License
 

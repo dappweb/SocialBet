@@ -27,10 +27,10 @@ const RightPanel = memo(() => {
   }, [searchQuery, showToast]);
 
   return (
-    <div className="hidden lg:block w-[350px] pl-8 py-6 h-screen sticky top-0 overflow-y-auto no-scrollbar">
-      
+    <div className="w-full py-6 pl-4 pr-6">
+
       {/* Search */}
-      <div className="sticky top-0 bg-[#f5f5f7] pb-3 z-10">
+      <div className="sticky top-0 bg-white/80 backdrop-blur-xl pb-3 z-10">
         <form onSubmit={handleSearch} className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-[#86868b] group-focus-within:text-[#ffd700] transition-colors" />
@@ -74,57 +74,57 @@ const RightPanel = memo(() => {
       {/* Trending Box */}
       <div className="mt-4 bg-white border border-[#e5e5ea] rounded-2xl overflow-hidden shadow-sm">
         <h2 className="px-4 pt-4 pb-2 text-lg font-semibold text-[#1d1d1f]">Trends for you</h2>
-        
-        <TrendingItem 
-           category="Politics"
-           title="US Election 2024"
-           posts="1.2M"
+
+        <TrendingItem
+          category="Politics"
+          title="US Election 2024"
+          posts="1.2M"
         />
-        <TrendingItem 
-           category="Crypto"
-           title="$SOL vs $ETH"
-           posts="450K"
+        <TrendingItem
+          category="Crypto"
+          title="$SOL vs $ETH"
+          posts="450K"
         />
-         <TrendingItem 
-           category="Sports"
-           title="Super Bowl LVIII"
-           posts="125K"
+        <TrendingItem
+          category="Sports"
+          title="Super Bowl LVIII"
+          posts="125K"
         />
-        <TrendingItem 
-           category="Technology"
-           title="Sam Altman"
-           posts="89K"
+        <TrendingItem
+          category="Technology"
+          title="Sam Altman"
+          posts="89K"
         />
-        
+
         <div className="p-4 text-[#ffd700] text-sm hover:bg-[#fff9e6] cursor-pointer transition-colors duration-200 font-medium">
-            Show more
+          Show more
         </div>
       </div>
 
       {/* Who to follow */}
       <div className="mt-4 bg-white border border-[#e5e5ea] rounded-2xl overflow-hidden shadow-sm">
         <h2 className="px-4 pt-4 pb-2 text-lg font-semibold text-[#1d1d1f]">Who to follow</h2>
-        
+
         {[1, 2, 3].map((i) => (
-            <div key={i} className="px-4 py-3 hover:bg-[#f5f5f7] transition-colors duration-200 cursor-pointer flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <LazyImage src={`https://picsum.photos/id/${50+i}/50/50`} className="w-10 h-10 rounded-full border-2 border-[#e5e5ea]" alt="avatar" />
-                    <div>
-                        <div className="font-semibold text-sm hover:underline text-[#1d1d1f]">Oracle {i}</div>
-                        <div className="text-[#86868b] text-xs">@oracle_{i}</div>
-                    </div>
-                </div>
-                <button className="bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] px-4 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-sm">
-                    Follow
-                </button>
+          <div key={i} className="px-4 py-3 hover:bg-[#f5f5f7] transition-colors duration-200 cursor-pointer flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <LazyImage src={`https://picsum.photos/id/${50 + i}/50/50`} className="w-10 h-10 rounded-full border-2 border-[#e5e5ea]" alt="avatar" />
+              <div>
+                <div className="font-semibold text-sm hover:underline text-[#1d1d1f]">Oracle {i}</div>
+                <div className="text-[#86868b] text-xs">@oracle_{i}</div>
+              </div>
             </div>
+            <button className="bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] px-4 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-sm">
+              Follow
+            </button>
+          </div>
         ))}
       </div>
 
-       <div className="mt-6 text-xs text-[#86868b] px-4 leading-relaxed">
-          Terms of Service • Privacy Policy • Cookie Policy • Accessibility • Ads info • More<br />
-          © 2024 SocialBet, Inc.
-       </div>
+      <div className="mt-6 text-xs text-[#86868b] px-4 leading-relaxed">
+        Terms of Service • Privacy Policy • Cookie Policy • Accessibility • Ads info • More<br />
+        © 2025 SoulCast, Inc.
+      </div>
     </div>
   );
 });
