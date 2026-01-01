@@ -2,6 +2,7 @@
 import React, { useState, lazy, Suspense, useCallback, useMemo, useEffect } from 'react';
 import { Web3AuthProvider } from './contexts/Web3AuthContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { WalletProvider } from './contexts/WalletContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { ToastContainer } from './components/Toast';
 import { useToast } from './contexts/ToastContext';
@@ -269,11 +270,13 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <Web3AuthProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </Web3AuthProvider>
+        <WalletProvider>
+          <Web3AuthProvider>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </Web3AuthProvider>
+        </WalletProvider>
       </ToastProvider>
     </ErrorBoundary>
   );
