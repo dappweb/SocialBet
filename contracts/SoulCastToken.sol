@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 /**
  * @title SoulCast Token (SOUL)
@@ -16,8 +18,17 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *      - Staking functionality
  *      - Role-based access control for governance
  *      - EIP-2612 permit for gasless approvals
+ *      - UUPS Upgradeable pattern
  */
-contract SoulCastToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, ReentrancyGuard {
+contract SoulCastToken is 
+    Initializable, 
+    ERC20Upgradeable, 
+    ERC20BurnableUpgradeable, 
+    ERC20PermitUpgradeable, 
+    AccessControlUpgradeable, 
+    ReentrancyGuardUpgradeable,
+    UUPSUpgradeable 
+{
     
     // ============ Constants ============
     
@@ -25,7 +36,7 @@ contract SoulCastToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Reen
     uint256 public constant TOTAL_SUPPLY = 2_100_000_000 * 10**18;
     
     /// @notice Issuance fee percentage (in basis points, 100 = 1%)
-    uint256 public issuanceFeeBps = 100; // 1% default
+    uint256 public issuanceFeeBps;
     
     /// @notice Maximum issuance fee (5%)
     uint256 public constant MAX_ISSUANCE_FEE_BPS = 500;
@@ -36,6 +47,7 @@ contract SoulCastToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Reen
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
     bytes32 public constant STAKING_ROLE = keccak256("STAKING_ROLE");
     bytes32 public constant FEE_MANAGER_ROLE = keccak256("FEE_MANAGER_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     
     // ============ Token Distribution Allocations ============
     
@@ -67,7 +79,7 @@ contract SoulCastToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Reen
     uint256 public totalStaked;
     
     /// @notice Annual staking reward rate in basis points (500 = 5%)
-    uint256 public stakingRewardRateBps = 500;
+    uint256 public stakingRewardRateBps;
     
     /// @notice Staking rewards pool
     uint256 public stakingRewardsPool;
@@ -92,17 +104,28 @@ contract SoulCastToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Reen
     event StakingRewardRateUpdated(uint256 oldRate, uint256 newRate);
     event StakingRewardsPoolFunded(uint256 amount);
     
-    // ============ Constructor ============
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
     
     /**
      * @notice Initialize the SOUL token
      * @param _admin Address to receive initial admin role and tokens for distribution
      */
-    constructor(address _admin) 
-        ERC20("SoulCast Token", "SOUL") 
-        ERC20Permit("SoulCast Token") 
-    {
-        require(_admin != address(0), "Invalid admin address");
+    function initialize(address _admin) public initializer {
+        require(_admin != address(0), "Invalid admin");
+        
+        __ERC20_init("SoulCast Token", "SOUL");
+        __ERC20Burnable_init();
+        __ERC20Permit_init("SoulCast Token");
+        __AccessControl_init();
+        __ReentrancyGuard_init();
+        __UUPSUpgradeable_init();
+        
+        // Initialize state variables
+        issuanceFeeBps = 100; // 1% default
+        stakingRewardRateBps = 500; // 5% default
         
         // Grant roles
         _grantRole(DEFAULT_ADMIN_ROLE, _admin);
@@ -110,6 +133,7 @@ contract SoulCastToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Reen
         _grantRole(BURNER_ROLE, _admin);
         _grantRole(FEE_MANAGER_ROLE, _admin);
         _grantRole(STAKING_ROLE, _admin);
+        _grantRole(UPGRADER_ROLE, _admin);
         
         // Mint total supply to admin for distribution
         _mint(_admin, TOTAL_SUPPLY);
@@ -117,6 +141,8 @@ contract SoulCastToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Reen
         // Initialize allocations based on white paper
         _initializeAllocations(_admin);
     }
+    
+    function _authorizeUpgrade(address newImplementation) internal override onlyRole(UPGRADER_ROLE) {}
     
     // ============ Allocation Functions ============
     

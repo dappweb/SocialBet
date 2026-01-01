@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/governance/Governor.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @title SoulCast DAO Governor
- * @notice Governance contract for the SoulCast platform
+ * @notice Governance contract for the SoulCast platform (UUPS Upgradeable)
  * @dev Based on OpenZeppelin Governor with SOUL token voting
  * 
  * Governance Rules from White Paper:
@@ -20,35 +23,54 @@ import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.so
  * - Token-weighted voting
  */
 contract SoulCastGovernor is 
-    Governor, 
-    GovernorSettings, 
-    GovernorCountingSimple, 
-    GovernorVotes, 
-    GovernorVotesQuorumFraction,
-    GovernorTimelockControl 
+    Initializable,
+    GovernorUpgradeable, 
+    GovernorSettingsUpgradeable, 
+    GovernorCountingSimpleUpgradeable, 
+    GovernorVotesUpgradeable, 
+    GovernorVotesQuorumFractionUpgradeable,
+    GovernorTimelockControlUpgradeable,
+    UUPSUpgradeable,
+    OwnableUpgradeable
 {
     /// @notice Minimum tokens required for proposal (1M SOUL)
     uint256 public constant PROPOSAL_THRESHOLD_TOKENS = 1_000_000 * 10**18;
+    
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
     
     /**
      * @notice Initialize the governor
      * @param _token SOUL token with voting capability
      * @param _timelock Timelock controller for execution delay
      */
-    constructor(
-        IVotes _token,
-        TimelockController _timelock
+    function initialize(
+        IVotesUpgradeable _token,
+        TimelockControllerUpgradeable _timelock
     )
-        Governor("SoulCast DAO")
-        GovernorSettings(
+        public
+        initializer
+    {
+        __Governor_init("SoulCast DAO");
+        __GovernorSettings_init(
             1 days,        // voting delay (1 day)
             7 days,        // voting period (7 days as per whitepaper)
             PROPOSAL_THRESHOLD_TOKENS  // proposal threshold (1M SOUL)
-        )
-        GovernorVotes(_token)
-        GovernorVotesQuorumFraction(1) // 1% quorum (can be adjusted via governance)
-        GovernorTimelockControl(_timelock)
-    {}
+        );
+        __GovernorCountingSimple_init();
+        __GovernorVotes_init(_token);
+        __GovernorVotesQuorumFraction_init(1); // 1% quorum (can be adjusted via governance)
+        __GovernorTimelockControl_init(_timelock);
+        __UUPSUpgradeable_init();
+        __Ownable_init(msg.sender);
+    }
+    
+    /**
+     * @dev Authorize upgrade. only owner (usually timelock) can upgrade
+     */
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     // ============ Proposal Types ============
     
@@ -77,7 +99,7 @@ contract SoulCastGovernor is
     function votingDelay()
         public
         view
-        override(Governor, GovernorSettings)
+        override(GovernorUpgradeable, GovernorSettingsUpgradeable)
         returns (uint256)
     {
         return super.votingDelay();
@@ -86,7 +108,7 @@ contract SoulCastGovernor is
     function votingPeriod()
         public
         view
-        override(Governor, GovernorSettings)
+        override(GovernorUpgradeable, GovernorSettingsUpgradeable)
         returns (uint256)
     {
         return super.votingPeriod();
@@ -95,7 +117,7 @@ contract SoulCastGovernor is
     function quorum(uint256 blockNumber)
         public
         view
-        override(Governor, GovernorVotesQuorumFraction)
+        override(GovernorUpgradeable, GovernorVotesQuorumFractionUpgradeable)
         returns (uint256)
     {
         return super.quorum(blockNumber);
@@ -104,7 +126,7 @@ contract SoulCastGovernor is
     function state(uint256 proposalId)
         public
         view
-        override(Governor, GovernorTimelockControl)
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (ProposalState)
     {
         return super.state(proposalId);
@@ -113,7 +135,7 @@ contract SoulCastGovernor is
     function proposalNeedsQueuing(uint256 proposalId)
         public
         view
-        override(Governor, GovernorTimelockControl)
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (bool)
     {
         return super.proposalNeedsQueuing(proposalId);
@@ -122,7 +144,7 @@ contract SoulCastGovernor is
     function proposalThreshold()
         public
         view
-        override(Governor, GovernorSettings)
+        override(GovernorUpgradeable, GovernorSettingsUpgradeable)
         returns (uint256)
     {
         return super.proposalThreshold();
@@ -134,7 +156,7 @@ contract SoulCastGovernor is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) returns (uint48) {
+    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (uint48) {
         return super._queueOperations(proposalId, targets, values, calldatas, descriptionHash);
     }
 
@@ -144,7 +166,7 @@ contract SoulCastGovernor is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) {
+    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) {
         super._executeOperations(proposalId, targets, values, calldatas, descriptionHash);
     }
 
@@ -153,14 +175,14 @@ contract SoulCastGovernor is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) returns (uint256) {
+    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (uint256) {
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 
     function _executor()
         internal
         view
-        override(Governor, GovernorTimelockControl)
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (address)
     {
         return super._executor();
