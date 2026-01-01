@@ -204,6 +204,8 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
         }
     }, [web3auth]);
 
+    // Always provide a valid context, even if initialization failed
+    // This prevents errors from propagating and breaking the app
     return (
         <Web3AuthContext.Provider
             value={{
