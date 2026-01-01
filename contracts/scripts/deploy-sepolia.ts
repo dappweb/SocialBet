@@ -14,19 +14,31 @@ async function main() {
     console.log("\n1. Deploying SoulCastToken...");
     const SoulCastToken = await ethers.getContractFactory("SoulCastToken");
     
-    // Deploy as upgradeable proxy
-    // For now, deploy directly (can upgrade to proxy pattern later)
-    const soulToken = await SoulCastToken.deploy();
-    await soulToken.waitForDeployment();
+    // Deploy the implementation contract first
+    const soulTokenImpl = await SoulCastToken.deploy();
+    await soulTokenImpl.waitForDeployment();
+    const implAddress = await soulTokenImpl.getAddress();
+    console.log("   Implementation deployed to:", implAddress);
 
-    const tokenAddress = await soulToken.getAddress();
-    console.log("   SoulCastToken deployed to:", tokenAddress);
-
-    // Initialize the token
+    // Initialize the token (must be done during deployment for upgradeable contracts)
     console.log("\n2. Initializing token...");
-    const initTx = await soulToken.initialize(deployer.address);
-    await initTx.wait();
-    console.log("   Token initialized");
+    try {
+        const initTx = await soulTokenImpl.initialize(deployer.address);
+        await initTx.wait();
+        console.log("   Token initialized");
+    } catch (error: any) {
+        // If already initialized, that's okay
+        if (error.message?.includes('InvalidInitialization') || error.message?.includes('already initialized')) {
+            console.log("   Token already initialized, continuing...");
+        } else {
+            throw error;
+        }
+    }
+
+    const tokenAddress = implAddress;
+    
+    // Get the contract instance for queries
+    const soulToken = await ethers.getContractAt("SoulCastToken", tokenAddress);
 
     // Get token stats
     const stats = await soulToken.getTokenStats();
