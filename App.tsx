@@ -35,8 +35,14 @@ const AppContent: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { showToast, toasts, removeToast } = useToast();
-  const [markets, setMarkets] = useState<PredictionMarket[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize with mock data immediately, then try to fetch from API
+  const [markets, setMarkets] = useState<PredictionMarket[]>(MOCK_MARKETS);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Debug: Log markets state
+  useEffect(() => {
+    console.log('App - Markets state:', markets.length);
+  }, [markets]);
 
   // Fetch markets from API on mount
   useEffect(() => {
@@ -44,11 +50,12 @@ const AppContent: React.FC = () => {
       try {
         setIsLoading(true);
         const data = await marketsApi.getAll();
-        setMarkets(data as PredictionMarket[]);
+        if (data && Array.isArray(data) && data.length > 0) {
+          setMarkets(data as PredictionMarket[]);
+        }
       } catch (error) {
         console.error('Failed to fetch markets:', error);
-        // Fallback to mock data if API fails
-        setMarkets(MOCK_MARKETS);
+        // Keep using mock data if API fails
         showToast('Using offline data - API unavailable', 'warning');
       } finally {
         setIsLoading(false);
@@ -262,11 +269,25 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <Web3AuthProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </Web3AuthProvider>
+        <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-white p-4">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-[#1d1d1f] mb-2">Web3Auth Error</h2>
+            <p className="text-sm text-[#86868b]">Continuing without wallet connection...</p>
+          </div>
+        </div>}>
+          <Web3AuthProvider>
+            <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-white p-4">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-[#1d1d1f] mb-2">Auth Error</h2>
+                <p className="text-sm text-[#86868b]">Continuing without authentication...</p>
+              </div>
+            </div>}>
+              <AuthProvider>
+                <AppContent />
+              </AuthProvider>
+            </ErrorBoundary>
+          </Web3AuthProvider>
+        </ErrorBoundary>
       </ToastProvider>
     </ErrorBoundary>
   );

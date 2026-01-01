@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import PredictionCard from './PredictionCard';
 import BetModal from './BetModal';
 import { PredictionMarket, BetType } from '../types';
@@ -16,7 +16,7 @@ interface FeedProps {
 
 type TabType = 'foryou' | 'following' | 'crypto' | 'sports';
 
-const Feed: React.FC<FeedProps> = ({ markets: initialMarkets }) => {
+const Feed: React.FC<FeedProps> = ({ markets: initialMarkets = [] }) => {
   const [markets, setMarkets] = useState<PredictionMarket[]>(initialMarkets);
   const [selectedMarket, setSelectedMarket] = useState<PredictionMarket | null>(null);
   const [betType, setBetType] = useState<BetType | null>(null);
@@ -24,6 +24,11 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets }) => {
   const [activeTab, setActiveTab] = useState<TabType>('foryou');
   const { showToast } = useToast();
   const { isAuthenticated } = useAuth();
+
+  // Sync with prop changes - always update when prop changes
+  useEffect(() => {
+    setMarkets(initialMarkets);
+  }, [initialMarkets]);
 
   const openBetModal = useCallback((market: PredictionMarket, type: BetType) => {
     if (!isAuthenticated) {
@@ -88,6 +93,9 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets }) => {
 
   // Filter markets based on active tab
   const filteredMarkets = useMemo(() => {
+    if (!markets || markets.length === 0) {
+      return [];
+    }
     switch (activeTab) {
       case 'foryou':
         return markets; // Show all for now
@@ -101,6 +109,11 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets }) => {
         return markets;
     }
   }, [markets, activeTab]);
+
+  // Debug: Log markets on mount and when they change
+  useEffect(() => {
+    console.log('Feed - initialMarkets:', initialMarkets?.length || 0, 'markets:', markets.length, 'filtered:', filteredMarkets.length);
+  }, [initialMarkets, markets, filteredMarkets]);
 
   const TabButton = ({ id, label }: { id: TabType, label: string }) => (
     <button
@@ -155,7 +168,7 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets }) => {
 
       {/* Feed Items */}
       <div className="min-h-[50vh] bg-white">
-        {filteredMarkets.length > 0 ? (
+        {filteredMarkets && filteredMarkets.length > 0 ? (
           <div className="content-visibility-auto">
             {filteredMarkets.map(market => (
               <PredictionCard
@@ -165,7 +178,7 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets }) => {
               />
             ))}
           </div>
-        ) : filteredMarkets.length === 0 && markets.length > 0 ? (
+        ) : markets && markets.length > 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-[#86868b]">
             <Activity size={48} className="mb-4 opacity-50" />
             <p>No markets found in this category.</p>

@@ -59,8 +59,10 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
     const [isLoading, setIsLoading] = useState(true);
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
-    // Initialize Web3Auth
+    // Initialize Web3Auth - non-blocking
     useEffect(() => {
+        let mounted = true;
+        
         const init = async () => {
             try {
                 const privateKeyProvider = new EthereumPrivateKeyProvider({
@@ -84,6 +86,8 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
 
                 await web3authInstance.init();
 
+                if (!mounted) return;
+
                 setWeb3auth(web3authInstance);
 
                 // Check if already connected
@@ -91,7 +95,9 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
                     setProvider(web3authInstance.provider);
                     try {
                         const userInfo = await web3authInstance.getUserInfo();
-                        setUser(userInfo as Web3AuthUser);
+                        if (mounted) {
+                            setUser(userInfo as Web3AuthUser);
+                        }
                     } catch (e) {
                         console.log('No user info available');
                     }
@@ -99,7 +105,7 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
                     // Get wallet address
                     try {
                         const accounts = await web3authInstance.provider.request({ method: 'eth_accounts' }) as string[];
-                        if (accounts && accounts.length > 0) {
+                        if (accounts && accounts.length > 0 && mounted) {
                             setWalletAddress(accounts[0]);
                         }
                     } catch (e) {
@@ -108,12 +114,29 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
                 }
             } catch (error) {
                 console.error('Web3Auth initialization error:', error);
+                // Don't block app rendering if Web3Auth fails
             } finally {
-                setIsLoading(false);
+                if (mounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
-        init();
+        // Initialize with timeout to prevent blocking
+        const timeoutId = setTimeout(() => {
+            if (mounted) {
+                setIsLoading(false);
+            }
+        }, 5000); // Max 5 seconds for initialization
+
+        init().finally(() => {
+            clearTimeout(timeoutId);
+        });
+
+        return () => {
+            mounted = false;
+            clearTimeout(timeoutId);
+        };
     }, []);
 
     const connect = useCallback(async () => {

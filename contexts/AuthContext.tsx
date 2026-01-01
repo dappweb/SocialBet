@@ -26,6 +26,22 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  // Safely get Web3Auth context - handle case where it might not be available
+  let web3AuthContext;
+  try {
+    web3AuthContext = useWeb3Auth();
+  } catch (error) {
+    console.warn('Web3Auth not available, continuing without wallet connection:', error);
+    web3AuthContext = {
+      user: null,
+      isConnected: false,
+      isLoading: false,
+      walletAddress: null,
+      connect: async () => { throw new Error('Web3Auth not initialized'); },
+      disconnect: async () => {},
+    };
+  }
+
   const {
     user: web3AuthUser,
     isConnected,
@@ -33,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     walletAddress,
     connect: web3AuthConnect,
     disconnect: web3AuthDisconnect
-  } = useWeb3Auth();
+  } = web3AuthContext;
 
   const [user, setUser] = useState<User | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
