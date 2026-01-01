@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "wrangler dev",
         "dev:local": "tsx watch src/local.ts",
+        "test": "vitest run",
         "deploy": "wrangler deploy",
         "db:create": "wrangler d1 create socialbet-db",
         "db:migrate": "wrangler d1 execute socialbet-db --file=./schema.sql",
@@ -17,7 +18,11 @@
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20241127.0",
+        "@types/supertest": "^6.0.3",
+        "@vitest/ui": "^4.0.16",
+        "supertest": "^7.1.4",
         "typescript": "^5.8.2",
+        "vitest": "^4.0.16",
         "wrangler": "^3.99.0"
     }
 }

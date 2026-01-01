@@ -1,5 +1,6 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@openzeppelin/hardhat-upgrades";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -10,12 +11,13 @@ const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY || "";
 
 const config: HardhatUserConfig = {
     solidity: {
-        version: "0.8.20",
+        version: "0.8.24",
         settings: {
             optimizer: {
                 enabled: true,
                 runs: 200,
             },
+            evmVersion: "cancun",
         },
     },
     networks: {
