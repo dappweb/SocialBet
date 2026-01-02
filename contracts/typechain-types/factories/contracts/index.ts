@@ -3,3 +3,6 @@
 /* eslint-disable */
 export { SoulCastGovernor__factory } from "./SoulCastGovernor__factory";
 export { SoulCastToken__factory } from "./SoulCastToken__factory";
+export { SoulLiquidityManager__factory } from "./SoulLiquidityManager__factory";
+export { SoulTokenSale__factory } from "./SoulTokenSale__factory";
+export { SoulVesting__factory } from "./SoulVesting__factory";

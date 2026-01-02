@@ -6,6 +6,7 @@ import LazyImage from './LazyImage';
 interface RightPanelProps {
   onTradeClick?: () => void;
   onStakeClick?: () => void;
+  onTokenSaleClick?: () => void;
 }
 
 const TrendingItem = ({ category, title, posts }: { category: string, title: string, posts: string }) => (
@@ -19,7 +20,7 @@ const TrendingItem = ({ category, title, posts }: { category: string, title: str
   </div>
 );
 
-const RightPanel = memo(({ onTradeClick, onStakeClick }: RightPanelProps) => {
+const RightPanel = memo(({ onTradeClick, onStakeClick, onTokenSaleClick }: RightPanelProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const { showToast } = useToast();
 

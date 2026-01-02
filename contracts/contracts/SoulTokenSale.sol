@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -121,11 +121,13 @@ contract SoulTokenSale is Ownable, ReentrancyGuard {
         uint256 _hardCap,
         uint256 _tokenPrice,
         uint256 _minPurchase,
-        uint256 _maxPurchase
-    ) {
+        uint256 _maxPurchase,
+        address _owner
+    ) Ownable(_owner) {
         require(_soulToken != address(0), "Invalid token address");
         require(_softCap > 0 && _hardCap > _softCap, "Invalid caps");
         require(_tokenPrice > 0, "Invalid price");
+        require(_owner != address(0), "Invalid owner");
         
         soulToken = IERC20(_soulToken);
         paymentToken = _paymentToken;

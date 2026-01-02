@@ -204,13 +204,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       await web3AuthDisconnect();
+      const userId = user?.id;
       setUser(null);
+      setSoulBalance(0); // Reset Soul balance on logout
       localStorage.removeItem('socialbet_auth');
+      // Clear user-specific Soul balance from localStorage
+      if (userId) {
+        localStorage.removeItem(`soul_balance_${userId}`);
+      }
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
     }
-  }, [web3AuthDisconnect]);
+  }, [web3AuthDisconnect, user?.id]);
 
   return (
     <AuthContext.Provider

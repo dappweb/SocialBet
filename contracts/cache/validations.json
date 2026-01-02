@@ -2,6 +2,929 @@
   "version": "3.4",
   "log": [
     {
+      "@openzeppelin/contracts/access/Ownable.sol:Ownable": {
+        "src": "@openzeppelin/contracts/access/Ownable.sol:20",
+        "inherit": [
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "owner()",
+          "renounceOwnership()",
+          "transferOwnership(address)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "Ownable",
+            "src": "@openzeppelin/contracts/access/Ownable.sol:38"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/interfaces/IERC1363.sol:IERC1363": {
+        "src": "@openzeppelin/contracts/interfaces/IERC1363.sol:16",
+        "inherit": [
+          "@openzeppelin/contracts/utils/introspection/IERC165.sol:IERC165",
+          "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20"
+        ],
+        "libraries": [],
+        "methods": [
+          "transferAndCall(address,uint256)",
+          "transferAndCall(address,uint256,bytes)",
+          "transferFromAndCall(address,address,uint256)",
+          "transferFromAndCall(address,address,uint256,bytes)",
+          "approveAndCall(address,uint256)",
+          "approveAndCall(address,uint256,bytes)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20": {
+        "src": "@openzeppelin/contracts/token/ERC20/IERC20.sol:9",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "totalSupply()",
+          "balanceOf(address)",
+          "transfer(address,uint256)",
+          "allowance(address,address)",
+          "approve(address,uint256)",
+          "transferFrom(address,address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol:SafeERC20": {
+        "src": "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol:18",
+        "version": {
+          "withMetadata": "307ab0534cb9fe61a65e5f1f126c0de7dd513458a76f18645fb9944358a0e3e0",
+          "withoutMetadata": "aef8899eac78fba7080b09fc141bbd85fea7f379041e693bd8f5e5e8ddf44312",
+          "linkedWithoutMetadata": "aef8899eac78fba7080b09fc141bbd85fea7f379041e693bd8f5e5e8ddf44312"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/utils/Address.sol:Address": {
+        "src": "@openzeppelin/contracts/utils/Address.sol:11",
+        "version": {
+          "withMetadata": "fdcfbcd51056991ca4fc5c041797278012656b7137e3b2d64aee66d0aac53d93",
+          "withoutMetadata": "aef8899eac78fba7080b09fc141bbd85fea7f379041e693bd8f5e5e8ddf44312",
+          "linkedWithoutMetadata": "aef8899eac78fba7080b09fc141bbd85fea7f379041e693bd8f5e5e8ddf44312"
+        },
+        "inherit": [],
+        "libraries": [
+          "@openzeppelin/contracts/utils/Errors.sol:Errors"
+        ],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "delegatecall",
+            "src": "@openzeppelin/contracts/utils/Address.sol:97"
+          }
+        ],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/utils/Context.sol:Context": {
+        "src": "@openzeppelin/contracts/utils/Context.sol:16",
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/utils/Errors.sol:Errors": {
+        "src": "@openzeppelin/contracts/utils/Errors.sol:14",
+        "version": {
+          "withMetadata": "7dd9b30bd880407f25b01c4ff198d252c5d30aca989aadf6d21bcf513c041f27",
+          "withoutMetadata": "aef8899eac78fba7080b09fc141bbd85fea7f379041e693bd8f5e5e8ddf44312",
+          "linkedWithoutMetadata": "aef8899eac78fba7080b09fc141bbd85fea7f379041e693bd8f5e5e8ddf44312"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/utils/ReentrancyGuard.sol:ReentrancyGuard": {
+        "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:25",
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "ReentrancyGuard",
+            "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:47"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_status",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "ReentrancyGuard",
+              "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:40"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/utils/introspection/IERC165.sol:IERC165": {
+        "src": "@openzeppelin/contracts/utils/introspection/IERC165.sol:15",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "supportsInterface(bytes4)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "contracts/SoulLiquidityManager.sol:SoulLiquidityManager": {
+        "src": "contracts/SoulLiquidityManager.sol:14",
+        "version": {
+          "withMetadata": "f8ccccbff9c04cbba6e255dfe4ce5559b0ea772fa38d73d7747b66e1abef3a63",
+          "withoutMetadata": "efbbff54962e5a5aa7fda8ccb9a12db5cfb51e4f4659bc1c8e221acfa317c48e",
+          "linkedWithoutMetadata": "efbbff54962e5a5aa7fda8ccb9a12db5cfb51e4f4659bc1c8e221acfa317c48e"
+        },
+        "inherit": [
+          "@openzeppelin/contracts/utils/ReentrancyGuard.sol:ReentrancyGuard",
+          "@openzeppelin/contracts/access/Ownable.sol:Ownable",
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [
+          "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol:SafeERC20"
+        ],
+        "methods": [
+          "(address,address)",
+          "stakeLP(uint256)",
+          "unstakeLP(uint256)",
+          "claimRewards()",
+          "recordLiquidityPool(address,address,address,uint256,uint256,uint256,string)",
+          "lockLiquidity(uint256,uint256)",
+          "unlockLiquidity(uint256)",
+          "setLPToken(address)",
+          "fundRewardsPool(uint256)",
+          "setStakingRewardRate(uint256)",
+          "setMinLockDuration(uint256)",
+          "calculateRewards(address)",
+          "getStakerInfo(address)",
+          "isPoolLocked(uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "SoulLiquidityManager",
+            "src": "contracts/SoulLiquidityManager.sol:111"
+          },
+          {
+            "kind": "state-variable-immutable",
+            "name": "soulToken",
+            "src": "contracts/SoulLiquidityManager.sol:42"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            },
+            {
+              "label": "_status",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ReentrancyGuard",
+              "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:40"
+            },
+            {
+              "label": "lpToken",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_contract(IERC20)315",
+              "contract": "SoulLiquidityManager",
+              "src": "contracts/SoulLiquidityManager.sol:45"
+            },
+            {
+              "label": "poolCount",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_uint256",
+              "contract": "SoulLiquidityManager",
+              "src": "contracts/SoulLiquidityManager.sol:48"
+            },
+            {
+              "label": "liquidityPools",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_mapping(t_uint256,t_struct(LiquidityPool)1206_storage)",
+              "contract": "SoulLiquidityManager",
+              "src": "contracts/SoulLiquidityManager.sol:51"
+            },
+            {
+              "label": "lpStakes",
+              "offset": 0,
+              "slot": "5",
+              "type": "t_mapping(t_address,t_struct(LPStake)1217_storage)",
+              "contract": "SoulLiquidityManager",
+              "src": "contracts/SoulLiquidityManager.sol:54"
+            },
+            {
+              "label": "totalLPStaked",
+              "offset": 0,
+              "slot": "6",
+              "type": "t_uint256",
+              "contract": "SoulLiquidityManager",
+              "src": "contracts/SoulLiquidityManager.sol:57"
+            },
+            {
+              "label": "stakingRewardsPool",
+              "offset": 0,
+              "slot": "7",
+              "type": "t_uint256",
+              "contract": "SoulLiquidityManager",
+              "src": "contracts/SoulLiquidityManager.sol:60"
+            },
+            {
+              "label": "stakingRewardRateBps",
+              "offset": 0,
+              "slot": "8",
+              "type": "t_uint256",
+              "contract": "SoulLiquidityManager",
+              "src": "contracts/SoulLiquidityManager.sol:63"
+            },
+            {
+              "label": "minLockDuration",
+              "offset": 0,
+              "slot": "9",
+              "type": "t_uint256",
+              "contract": "SoulLiquidityManager",
+              "src": "contracts/SoulLiquidityManager.sol:66"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_contract(IERC20)315": {
+              "label": "contract IERC20",
+              "numberOfBytes": "20"
+            },
+            "t_mapping(t_address,t_struct(LPStake)1217_storage)": {
+              "label": "mapping(address => struct SoulLiquidityManager.LPStake)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(LiquidityPool)1206_storage)": {
+              "label": "mapping(uint256 => struct SoulLiquidityManager.LiquidityPool)",
+              "numberOfBytes": "32"
+            },
+            "t_string_storage": {
+              "label": "string",
+              "numberOfBytes": "32"
+            },
+            "t_struct(LPStake)1217_storage": {
+              "label": "struct SoulLiquidityManager.LPStake",
+              "members": [
+                {
+                  "label": "staker",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "lpTokenAmount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "stakedAt",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "rewardsEarned",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "lastRewardClaim",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_struct(LiquidityPool)1206_storage": {
+              "label": "struct SoulLiquidityManager.LiquidityPool",
+              "members": [
+                {
+                  "label": "poolAddress",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "token0",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "token1",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "token0Amount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "token1Amount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "lpTokens",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "5"
+                },
+                {
+                  "label": "lockUntil",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "6"
+                },
+                {
+                  "label": "locked",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "7"
+                },
+                {
+                  "label": "dexName",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "8"
+                }
+              ],
+              "numberOfBytes": "288"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "contracts/SoulTokenSale.sol:SoulTokenSale": {
+        "src": "contracts/SoulTokenSale.sol:15",
+        "version": {
+          "withMetadata": "85b358d7e80a7da53c6dd0cf549364117af590d6e2cf1cfd201e45acd21aa6ed",
+          "withoutMetadata": "36662ebb8057ec9ef0588b5494207bf9fd0fb4a6e84ad5ca9bdca4fdb3ff4b99",
+          "linkedWithoutMetadata": "36662ebb8057ec9ef0588b5494207bf9fd0fb4a6e84ad5ca9bdca4fdb3ff4b99"
+        },
+        "inherit": [
+          "@openzeppelin/contracts/utils/ReentrancyGuard.sol:ReentrancyGuard",
+          "@openzeppelin/contracts/access/Ownable.sol:Ownable",
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [
+          "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol:SafeERC20",
+          "@openzeppelin/contracts/utils/Address.sol:Address"
+        ],
+        "methods": [
+          "(address,address,uint256,uint256,uint256,uint256,uint256,address)",
+          "buyTokens(uint256)",
+          "claimRefund()",
+          "startSale(uint8,uint256)",
+          "changePhase(uint8)",
+          "endSale()",
+          "enableRefunds()",
+          "withdrawFunds()",
+          "updateWhitelist(address[],bool)",
+          "setWhitelistEnabled(bool)",
+          "withdrawUnsoldTokens()",
+          "getSaleProgress()",
+          "canPurchase(address)",
+          "getTokensForAmount(uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "SoulTokenSale",
+            "src": "contracts/SoulTokenSale.sol:117"
+          },
+          {
+            "kind": "state-variable-immutable",
+            "name": "soulToken",
+            "src": "contracts/SoulTokenSale.sol:33"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            },
+            {
+              "label": "_status",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ReentrancyGuard",
+              "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:40"
+            },
+            {
+              "label": "paymentToken",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_address",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:36"
+            },
+            {
+              "label": "currentPhase",
+              "offset": 20,
+              "slot": "2",
+              "type": "t_enum(SalePhase)1980",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:39"
+            },
+            {
+              "label": "saleStartTime",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:42"
+            },
+            {
+              "label": "saleEndTime",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:45"
+            },
+            {
+              "label": "softCap",
+              "offset": 0,
+              "slot": "5",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:48"
+            },
+            {
+              "label": "hardCap",
+              "offset": 0,
+              "slot": "6",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:51"
+            },
+            {
+              "label": "totalRaised",
+              "offset": 0,
+              "slot": "7",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:54"
+            },
+            {
+              "label": "totalTokensSold",
+              "offset": 0,
+              "slot": "8",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:57"
+            },
+            {
+              "label": "tokenPrice",
+              "offset": 0,
+              "slot": "9",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:60"
+            },
+            {
+              "label": "minPurchase",
+              "offset": 0,
+              "slot": "10",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:63"
+            },
+            {
+              "label": "maxPurchase",
+              "offset": 0,
+              "slot": "11",
+              "type": "t_uint256",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:66"
+            },
+            {
+              "label": "whitelistEnabled",
+              "offset": 0,
+              "slot": "12",
+              "type": "t_bool",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:69"
+            },
+            {
+              "label": "refundEnabled",
+              "offset": 1,
+              "slot": "12",
+              "type": "t_bool",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:72"
+            },
+            {
+              "label": "contributions",
+              "offset": 0,
+              "slot": "13",
+              "type": "t_mapping(t_address,t_uint256)",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:77"
+            },
+            {
+              "label": "tokensPurchased",
+              "offset": 0,
+              "slot": "14",
+              "type": "t_mapping(t_address,t_uint256)",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:80"
+            },
+            {
+              "label": "whitelist",
+              "offset": 0,
+              "slot": "15",
+              "type": "t_mapping(t_address,t_bool)",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:83"
+            },
+            {
+              "label": "refundClaimed",
+              "offset": 0,
+              "slot": "16",
+              "type": "t_mapping(t_address,t_bool)",
+              "contract": "SoulTokenSale",
+              "src": "contracts/SoulTokenSale.sol:86"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_enum(SalePhase)1980": {
+              "label": "enum SoulTokenSale.SalePhase",
+              "members": [
+                "NotStarted",
+                "PrivateSale",
+                "PublicSale",
+                "Ended",
+                "Refunded"
+              ],
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_address,t_bool)": {
+              "label": "mapping(address => bool)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_uint256)": {
+              "label": "mapping(address => uint256)",
+              "numberOfBytes": "32"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "contracts/SoulVesting.sol:SoulVesting": {
+        "src": "contracts/SoulVesting.sol:14",
+        "version": {
+          "withMetadata": "079dac923031206d06a0cc61c03d01a46d36e6fb86325e2b3570391c81fb841c",
+          "withoutMetadata": "908028ee36efe338cf050ed2fcec0f18da2c57fefdea3fd2ebfa71db0f014c72",
+          "linkedWithoutMetadata": "908028ee36efe338cf050ed2fcec0f18da2c57fefdea3fd2ebfa71db0f014c72"
+        },
+        "inherit": [
+          "@openzeppelin/contracts/utils/ReentrancyGuard.sol:ReentrancyGuard",
+          "@openzeppelin/contracts/access/Ownable.sol:Ownable",
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [
+          "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol:SafeERC20"
+        ],
+        "methods": [
+          "(address,address)",
+          "release(uint256)",
+          "earlyUnlock(uint256,uint256)",
+          "createVestingSchedule(address,uint256,uint256,uint256,uint256,bool,uint256)",
+          "revoke(uint256)",
+          "batchCreateVestingSchedules(address[],uint256[],uint256,uint256,uint256,bool,uint256)",
+          "getVestedAmount(uint256)",
+          "getReleasableAmount(uint256)",
+          "getBeneficiarySchedules(address)",
+          "getSchedule(uint256)",
+          "getBeneficiaryInfo(address)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "SoulVesting",
+            "src": "contracts/SoulVesting.sol:91"
+          },
+          {
+            "kind": "state-variable-immutable",
+            "name": "soulToken",
+            "src": "contracts/SoulVesting.sol:34"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            },
+            {
+              "label": "_status",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ReentrancyGuard",
+              "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:40"
+            },
+            {
+              "label": "vestingScheduleCount",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_uint256",
+              "contract": "SoulVesting",
+              "src": "contracts/SoulVesting.sol:37"
+            },
+            {
+              "label": "vestingSchedules",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_mapping(t_uint256,t_struct(VestingSchedule)2908_storage)",
+              "contract": "SoulVesting",
+              "src": "contracts/SoulVesting.sol:40"
+            },
+            {
+              "label": "beneficiarySchedules",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)",
+              "contract": "SoulVesting",
+              "src": "contracts/SoulVesting.sol:43"
+            },
+            {
+              "label": "totalVestingAmount",
+              "offset": 0,
+              "slot": "5",
+              "type": "t_uint256",
+              "contract": "SoulVesting",
+              "src": "contracts/SoulVesting.sol:46"
+            },
+            {
+              "label": "totalReleased",
+              "offset": 0,
+              "slot": "6",
+              "type": "t_uint256",
+              "contract": "SoulVesting",
+              "src": "contracts/SoulVesting.sol:49"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_array(t_uint256)dyn_storage": {
+              "label": "uint256[]",
+              "numberOfBytes": "32"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+              "label": "mapping(address => uint256[])",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(VestingSchedule)2908_storage)": {
+              "label": "mapping(uint256 => struct SoulVesting.VestingSchedule)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(VestingSchedule)2908_storage": {
+              "label": "struct SoulVesting.VestingSchedule",
+              "members": [
+                {
+                  "label": "beneficiary",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "totalAmount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "released",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "startTime",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "duration",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "cliffDuration",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "5"
+                },
+                {
+                  "label": "revocable",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "6"
+                },
+                {
+                  "label": "revoked",
+                  "type": "t_bool",
+                  "offset": 1,
+                  "slot": "6"
+                },
+                {
+                  "label": "earlyUnlockPenalty",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "7"
+                }
+              ],
+              "numberOfBytes": "256"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      }
+    },
+    {
       "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:AccessControlUpgradeable": {
         "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:51",
         "inherit": [

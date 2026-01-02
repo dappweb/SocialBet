@@ -3,3 +3,6 @@
 /* eslint-disable */
 export type { SoulCastGovernor } from "./SoulCastGovernor";
 export type { SoulCastToken } from "./SoulCastToken";
+export type { SoulLiquidityManager } from "./SoulLiquidityManager";
+export type { SoulTokenSale } from "./SoulTokenSale";
+export type { SoulVesting } from "./SoulVesting";

@@ -11,4 +11,5 @@ import type * as structs from "./structs";
 export type { structs };
 export type { Address } from "./Address";
 export type { Errors } from "./Errors";
+export type { ReentrancyGuard } from "./ReentrancyGuard";
 export type { Strings } from "./Strings";

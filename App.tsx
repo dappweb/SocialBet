@@ -33,6 +33,7 @@ const SoulTokenTrading = lazy(() => import('./components/SoulTokenTrading'));
 const TreasuryManagement = lazy(() => import('./components/TreasuryManagement'));
 const SoulTokenBalance = lazy(() => import('./components/SoulTokenBalance'));
 const SoulTokenStaking = lazy(() => import('./components/SoulTokenStaking'));
+const TokenSale = lazy(() => import('./components/TokenSale'));
 const OperationsDashboard = lazy(() => import('./components/OperationsDashboard'));
 
 type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper' | 'operations';
@@ -114,6 +115,8 @@ const AppContent: React.FC = () => {
   const handleCloseTradingModal = useCallback(() => setIsTradingModalOpen(false), []);
   const handleOpenStakingModal = useCallback(() => setIsStakingModalOpen(true), []);
   const handleCloseStakingModal = useCallback(() => setIsStakingModalOpen(false), []);
+  const handleOpenTokenSaleModal = useCallback(() => setIsTokenSaleModalOpen(true), []);
+  const handleCloseTokenSaleModal = useCallback(() => setIsTokenSaleModalOpen(false), []);
 
   // Navigation handlers for mobile nav
   const handleNavigateHome = useCallback(() => setCurrentView('home'), []);
@@ -218,6 +221,7 @@ const AppContent: React.FC = () => {
                 <RightPanel 
                   onTradeClick={handleOpenTradingModal} 
                   onStakeClick={handleOpenStakingModal}
+                  onTokenSaleClick={handleOpenTokenSaleModal}
                 />
               </div>
             </aside>
@@ -299,6 +303,15 @@ const AppContent: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <Suspense fallback={<LoadingSpinner text="Loading staking..." />}>
                 <SoulTokenStaking onClose={handleCloseStakingModal} />
+              </Suspense>
+            </div>
+          </div>
+        )}
+        {isTokenSaleModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <Suspense fallback={<LoadingSpinner text="Loading token sale..." />}>
+                <TokenSale onClose={handleCloseTokenSaleModal} />
               </Suspense>
             </div>
           </div>

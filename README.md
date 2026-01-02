@@ -23,6 +23,16 @@ Comprehensive project documentation is available in the [`docs/`](./docs/) direc
 - **[User Stories](./docs/user-stories/USER_STORIES.md)** - User-centric feature descriptions and acceptance criteria
 - **[Documentation Index](./docs/README.md)** - Overview of all documentation
 
+## 🌐 Live Deployment
+
+- **Production Frontend**: https://51218b34.socialbet.pages.dev
+- **Backend API**: https://socialbet-api.dappweb.workers.dev
+- **API Health Check**: https://socialbet-api.dappweb.workers.dev/api/health
+
+### Smart Contracts (Sepolia Testnet)
+- **SOUL Token Contract**: `0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66`
+- **Block Explorer**: https://sepolia.etherscan.io/address/0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -36,8 +46,13 @@ Comprehensive project documentation is available in the [`docs/`](./docs/) direc
    ```
 
 2. **Configure environment variables:**
-   Create a `.env.local` file in the project root and add your Gemini API key:
-   ```
+   Create a `.env.local` file in the project root and add your configuration:
+   ```env
+   VITE_DEFAULT_CHAIN=sepolia
+   VITE_SEPOLIA_RPC_URL=https://rpc.sepolia.org
+   VITE_SOUL_TOKEN_SEPOLIA=0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66
+   VITE_API_URL=https://socialbet-api.dappweb.workers.dev
+   VITE_WEB3AUTH_CLIENT_ID=your_web3auth_client_id
    GEMINI_API_KEY=your_api_key_here
    ```
 
@@ -54,6 +69,9 @@ Comprehensive project documentation is available in the [`docs/`](./docs/) direc
 - `npm run dev` - Start development server (port 3000)
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
+- `npm run deploy:sepolia` - Deploy contracts to Sepolia testnet
+- `npm run deploy:staging` - Deploy to staging environment
+- `npm run deploy:production` - Deploy to production (monthly only)
 
 ## 🛠️ Technology Stack
 
@@ -102,3 +120,11 @@ This project is private and proprietary.
 ## 🤝 Contributing
 
 This is a private project. For questions or contributions, please contact the project maintainers.
+
+## 📚 Additional Documentation
+
+- **[Deployment Guide](./DEPLOYMENT_COMPLETE.md)** - Complete deployment status
+- **[Testing Report](./TESTING_REPORT.md)** - Testing results and checklist
+- **[Performance Monitoring](./PERFORMANCE_MONITORING.md)** - Performance metrics
+- **[Contract Documentation](./CONTRACT_DOCUMENTATION.md)** - Smart contract details
+- **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Pre-deployment checklist
