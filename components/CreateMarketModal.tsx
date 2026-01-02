@@ -1,13 +1,13 @@
 
-import React, { useState, useRef } from 'react';
-import { X, Loader2, Calendar, Tag, DollarSign, HelpCircle, Image as ImageIcon, Sparkles, Upload, Coins, AlertCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Loader2, Calendar, Tag, DollarSign, HelpCircle, Image as ImageIcon, Sparkles, Upload, Coins, AlertCircle, TrendingUp, Zap } from 'lucide-react';
 import { MarketCategory } from '../types';
 import { cn } from '../utils';
 import { GoogleGenAI } from "@google/genai";
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import SoulPurchaseModal from './SoulPurchaseModal';
-import { usersApi } from '../services/api';
+import { usersApi, aiApi, CurrentEvent } from '../services/api';
 
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -34,6 +34,74 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
   const [editPrompt, setEditPrompt] = useState('');
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Current Events State
+  const [currentEvents, setCurrentEvents] = useState<CurrentEvent[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+
+  // Fetch current events when modal opens
+  useEffect(() => {
+    if (isOpen && currentEvents.length === 0) {
+      fetchCurrentEvents();
+    }
+  }, [isOpen]);
+
+  const fetchCurrentEvents = async () => {
+    setIsLoadingEvents(true);
+    try {
+      const response = await aiApi.getCurrentEvents();
+      if (response.events && response.events.length > 0) {
+        setCurrentEvents(response.events);
+      }
+    } catch (error) {
+      console.error('Failed to fetch current events:', error);
+      // Keep empty array on error
+    } finally {
+      setIsLoadingEvents(false);
+    }
+  };
+
+  const handleEventClick = async (event: CurrentEvent) => {
+    // Auto-fill form with event data
+    setQuestion(event.suggestedQuestion);
+    setCategory(event.category as MarketCategory);
+    
+    // Set end date to 7 days from now (default)
+    const defaultEndDate = new Date();
+    defaultEndDate.setDate(defaultEndDate.getDate() + 7);
+    setEndDate(defaultEndDate.toISOString().split('T')[0]);
+    
+    // Set default liquidity
+    if (!liquidity) {
+      setLiquidity('1000');
+    }
+
+    showToast(`Form filled with: ${event.title}`, 'success');
+  };
+
+  const handleGenerateFromEvent = async (event: CurrentEvent) => {
+    try {
+      const response = await aiApi.generatePrediction({
+        topic: event.title,
+        context: event.description,
+        category: event.category,
+      });
+
+      if (response.prediction) {
+        setQuestion(response.prediction.question);
+        setCategory(response.prediction.category as MarketCategory);
+        setEndDate(new Date(response.prediction.endDate).toISOString().split('T')[0]);
+        if (!liquidity) {
+          setLiquidity('1000');
+        }
+        showToast('AI prediction generated from event!', 'success');
+      }
+    } catch (error) {
+      console.error('Failed to generate prediction from event:', error);
+      showToast('Failed to generate prediction. Using event data instead.', 'warning');
+      handleEventClick(event);
+    }
+  };
 
   // Early return AFTER all hooks
   if (!isOpen) return null;
@@ -234,6 +302,84 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
           )}
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Current Events Section */}
+            {currentEvents.length > 0 && (
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-semibold text-[#1d1d1f] flex items-center gap-2">
+                            <TrendingUp size={14} className="text-[#ffd700]" /> Current Events
+                        </label>
+                        <button
+                            type="button"
+                            onClick={fetchCurrentEvents}
+                            disabled={isLoadingEvents}
+                            className="text-xs text-[#86868b] hover:text-[#1d1d1f] flex items-center gap-1 transition-colors"
+                        >
+                            {isLoadingEvents ? (
+                                <>
+                                    <Loader2 size={12} className="animate-spin" />
+                                    <span>Loading...</span>
+                                </>
+                            ) : (
+                                <span>Refresh</span>
+                            )}
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+                        {currentEvents.map((event, idx) => (
+                            <div
+                                key={idx}
+                                className="group bg-[#f5f5f7] hover:bg-[#fff9e6] border border-[#e5e5ea] hover:border-[#ffd700]/50 rounded-xl p-3 cursor-pointer transition-all duration-200"
+                            >
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={cn(
+                                                "text-xs font-semibold px-2 py-0.5 rounded",
+                                                event.category === 'Crypto' ? 'bg-[#ffd700] text-[#1d1d1f]' :
+                                                event.category === 'Sports' ? 'bg-[#34c759] text-white' :
+                                                event.category === 'Pop Culture' ? 'bg-[#af52de] text-white' :
+                                                event.category === 'Politics' ? 'bg-[#ff3b30] text-white' :
+                                                'bg-[#007aff] text-white'
+                                            )}>
+                                                {event.category}
+                                            </span>
+                                            <h4 className="text-sm font-semibold text-[#1d1d1f] truncate">{event.title}</h4>
+                                        </div>
+                                        <p className="text-xs text-[#86868b] line-clamp-2 mb-2">{event.description}</p>
+                                        <p className="text-xs font-medium text-[#1d1d1f] mb-2">{event.suggestedQuestion}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleEventClick(event)}
+                                        className="flex-1 text-xs font-semibold bg-white hover:bg-[#ffd700] text-[#1d1d1f] px-3 py-1.5 rounded-lg transition-all duration-200 border border-[#e5e5ea] hover:border-[#ffd700]"
+                                    >
+                                        Use This
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleGenerateFromEvent(event)}
+                                        className="flex items-center gap-1 text-xs font-semibold bg-[#ffd700] hover:bg-[#ffeb3b] text-[#1d1d1f] px-3 py-1.5 rounded-lg transition-all duration-200"
+                                    >
+                                        <Zap size={12} />
+                                        AI Generate
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {isLoadingEvents && currentEvents.length === 0 && (
+                <div className="flex items-center justify-center py-8">
+                    <Loader2 size={24} className="animate-spin text-[#ffd700]" />
+                    <span className="ml-2 text-sm text-[#86868b]">Loading current events...</span>
+                </div>
+            )}
+
             <div className="space-y-2">
                 <label className="text-sm font-medium text-[#1d1d1f] flex items-center gap-2">
                     <HelpCircle size={14} /> Market Question

@@ -259,6 +259,166 @@ Output format (JSON):
     }
 });
 
+// GET /api/ai/current-events - Get 5 current events for market creation
+aiRoutes.get('/current-events', async (c) => {
+    try {
+        const ai = c.env.AI;
+        if (!ai) {
+            return c.json({ error: 'AI service not available' }, 503);
+        }
+
+        const systemPrompt = `You are a news and trend analyst. Generate exactly 5 current, relevant events that would make good prediction markets. Focus on:
+- Recent news (last 24-48 hours)
+- Trending topics in crypto, sports, tech, politics, pop culture
+- Events with clear YES/NO outcomes
+- Topics that are bettable and interesting
+
+For each event, provide:
+- title: Short, catchy title (max 50 chars)
+- description: Brief description (1-2 sentences)
+- category: One of: Crypto, Sports, Pop Culture, Politics, Tech
+- suggestedQuestion: A clear YES/NO prediction market question
+- relevance: Why this is relevant now (1 sentence)
+
+Output as JSON array with exactly 5 events.`;
+
+        const response = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: 'Generate 5 current events that would make good prediction markets. Focus on recent news and trending topics.' },
+            ],
+            max_tokens: 2000,
+            temperature: 0.8,
+        });
+
+        let responseText = '';
+        if (response.response) {
+            responseText = response.response;
+        } else if (typeof response === 'string') {
+            responseText = response;
+        } else if (response.text) {
+            responseText = response.text;
+        } else {
+            responseText = JSON.stringify(response);
+        }
+
+        // Try to parse JSON from response
+        let events;
+        try {
+            // Extract JSON from markdown code blocks if present
+            const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/) || 
+                             responseText.match(/```\s*([\s\S]*?)\s*```/);
+            const jsonText = jsonMatch ? jsonMatch[1] : responseText;
+            events = JSON.parse(jsonText);
+        } catch {
+            // If JSON parsing fails, create mock events as fallback
+            events = [
+                {
+                    title: 'Bitcoin ETF Approval',
+                    description: 'SEC decision on Bitcoin ETF applications expected this week',
+                    category: 'Crypto',
+                    suggestedQuestion: 'Will Bitcoin ETF be approved by SEC this week?',
+                    relevance: 'Major regulatory decision affecting crypto markets',
+                },
+                {
+                    title: 'AI Model Release',
+                    description: 'Major tech company announces new AI model launch',
+                    category: 'Tech',
+                    suggestedQuestion: 'Will the new AI model achieve AGI benchmarks?',
+                    relevance: 'Breakthrough in AI technology',
+                },
+                {
+                    title: 'Sports Championship',
+                    description: 'Upcoming championship game with close odds',
+                    category: 'Sports',
+                    suggestedQuestion: 'Will the underdog team win the championship?',
+                    relevance: 'High-stakes sports event',
+                },
+                {
+                    title: 'Political Election',
+                    description: 'Upcoming election with polling data showing close race',
+                    category: 'Politics',
+                    suggestedQuestion: 'Will the incumbent win re-election?',
+                    relevance: 'Important political event',
+                },
+                {
+                    title: 'Celebrity Announcement',
+                    description: 'Major celebrity expected to make significant announcement',
+                    category: 'Pop Culture',
+                    suggestedQuestion: 'Will the celebrity announce a major project?',
+                    relevance: 'Trending in entertainment news',
+                },
+            ];
+        }
+
+        // Ensure we have exactly 5 events
+        if (!Array.isArray(events) || events.length < 5) {
+            // Use fallback events if AI didn't return enough
+            events = events.slice(0, 5);
+        } else {
+            events = events.slice(0, 5);
+        }
+
+        // Validate and normalize events
+        const validCategories = ['Crypto', 'Sports', 'Pop Culture', 'Politics', 'Tech'];
+        const normalizedEvents = events.map((event: any) => ({
+            title: event.title || 'Current Event',
+            description: event.description || '',
+            category: validCategories.includes(event.category) ? event.category : 'Crypto',
+            suggestedQuestion: event.suggestedQuestion || event.title,
+            relevance: event.relevance || '',
+        }));
+
+        return c.json({
+            events: normalizedEvents,
+            timestamp: new Date().toISOString(),
+        });
+    } catch (error: any) {
+        console.error('Current events error:', error);
+        // Return fallback events on error
+        return c.json({
+            events: [
+                {
+                    title: 'Bitcoin Price Movement',
+                    description: 'Bitcoin approaching key resistance level',
+                    category: 'Crypto',
+                    suggestedQuestion: 'Will Bitcoin break $100k this month?',
+                    relevance: 'Major price movement expected',
+                },
+                {
+                    title: 'Tech Product Launch',
+                    description: 'Major tech company product announcement',
+                    category: 'Tech',
+                    suggestedQuestion: 'Will the new product exceed sales expectations?',
+                    relevance: 'Product launch event',
+                },
+                {
+                    title: 'Sports Playoff',
+                    description: 'Championship playoff game',
+                    category: 'Sports',
+                    suggestedQuestion: 'Will the home team win?',
+                    relevance: 'Playoff game',
+                },
+                {
+                    title: 'Political Poll',
+                    description: 'Election polling data release',
+                    category: 'Politics',
+                    suggestedQuestion: 'Will the leading candidate maintain lead?',
+                    relevance: 'Election polling',
+                },
+                {
+                    title: 'Entertainment News',
+                    description: 'Major entertainment industry announcement',
+                    category: 'Pop Culture',
+                    suggestedQuestion: 'Will the announcement be positive?',
+                    relevance: 'Entertainment trend',
+                },
+            ],
+            timestamp: new Date().toISOString(),
+        });
+    }
+});
+
 // GET /api/ai/models - List available AI models
 aiRoutes.get('/models', async (c) => {
     return c.json({

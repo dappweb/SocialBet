@@ -4,6 +4,7 @@ import { Web3AuthProvider } from './contexts/Web3AuthContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { WalletProvider } from './contexts/WalletContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastContainer } from './components/Toast';
 import { useToast } from './contexts/ToastContext';
 import { useAuth } from './contexts/AuthContext';
@@ -191,11 +192,11 @@ const AppContent: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-white text-[#1d1d1f] font-sans">
+      <div className="min-h-screen bg-white dark:bg-black text-[#1d1d1f] dark:text-white font-sans transition-colors duration-300">
         <div className="max-w-[1265px] mx-auto flex justify-center sm:justify-start">
 
           {/* Left Sidebar (Desktop) */}
-          <header className="hidden sm:flex flex-col w-[80px] xl:w-[275px] shrink-0 bg-white/80 backdrop-blur-xl border-r border-[#e5e5ea]">
+          <header className="hidden sm:flex flex-col w-[80px] xl:w-[275px] shrink-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-r border-[#e5e5ea] dark:border-[#38383a] transition-colors duration-300">
             <Sidebar
               currentView={currentView}
               onNavigate={handleNavigate}
@@ -326,15 +327,17 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <WalletProvider>
-          <Web3AuthProvider>
-            <AuthProvider>
-              <AppContent />
-            </AuthProvider>
-          </Web3AuthProvider>
-        </WalletProvider>
-      </ToastProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <WalletProvider>
+            <Web3AuthProvider>
+              <AuthProvider>
+                <AppContent />
+              </AuthProvider>
+            </Web3AuthProvider>
+          </WalletProvider>
+        </ToastProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

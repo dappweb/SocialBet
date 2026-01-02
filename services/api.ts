@@ -330,6 +330,19 @@ export interface AIPredictionResponse {
     timestamp: string;
 }
 
+export interface CurrentEvent {
+    title: string;
+    description: string;
+    category: string;
+    suggestedQuestion: string;
+    relevance: string;
+}
+
+export interface CurrentEventsResponse {
+    events: CurrentEvent[];
+    timestamp: string;
+}
+
 export const aiApi = {
     // Chat with AI assistant
     async chat(messages: ChatMessage[], userId?: string): Promise<ChatResponse> {
@@ -362,6 +375,11 @@ export const aiApi = {
             method: 'POST',
             body: JSON.stringify(data),
         });
+    },
+
+    // Get current events for market creation
+    async getCurrentEvents(): Promise<CurrentEventsResponse> {
+        return fetchApi<CurrentEventsResponse>('/api/ai/current-events');
     },
 
     // Get available AI models
