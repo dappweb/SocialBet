@@ -155,7 +155,7 @@ const AppContent: React.FC = () => {
       case 'profile':
         return (
           <Suspense fallback={<LoadingSpinner text="Loading profile..." />}>
-            <Profile onBack={handleBack} />
+            <Profile onBack={handleBack} onLoginClick={handleOpenLoginModal} />
           </Suspense>
         );
       case 'assistant':

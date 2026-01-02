@@ -1,5 +1,5 @@
-import React, { useState, memo, useCallback, useMemo, useEffect } from 'react';
-import { Calendar, Link as LinkIcon, MapPin, ArrowLeft, Ghost, Loader2 } from 'lucide-react';
+import React, { useState, memo, useCallback, useMemo, useEffect, lazy, Suspense } from 'react';
+import { Calendar, Link as LinkIcon, MapPin, ArrowLeft, Ghost, Loader2, LogIn, AlertCircle } from 'lucide-react';
 import { MOCK_MARKETS } from '../constants';
 import PredictionCard from './PredictionCard';
 import { PredictionMarket, BetType } from '../types';
@@ -7,12 +7,16 @@ import { cn } from '../utils';
 import { usersApi, betsApi, marketsApi } from '../services/api';
 import LazyImage from './LazyImage';
 import { useAuth } from '../contexts/AuthContext';
+import LoadingSpinner from './LoadingSpinner';
+
+const TradingDashboard = lazy(() => import('./TradingDashboard'));
 
 interface ProfileProps {
   onBack?: () => void;
+  onLoginClick?: () => void;
 }
 
-type ProfileTab = 'bets' | 'created' | 'likes';
+type ProfileTab = 'bets' | 'created' | 'likes' | 'trading';
 
 // Moved outside Profile component to prevent recreation on every render
 const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, label: string, activeTab: ProfileTab, onClick: (id: ProfileTab) => void }) => (
@@ -32,15 +36,26 @@ const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, lab
 
 TabButton.displayName = 'TabButton';
 
-const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
+const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
   const { user: authUser, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<ProfileTab>('bets');
   const [userMarkets, setUserMarkets] = useState<PredictionMarket[]>([]);
   const [allMarkets, setAllMarkets] = useState<PredictionMarket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userStats, setUserStats] = useState({ betsCount: 0 });
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Use authenticated user data or fallback to mock data
+  // Check for saved auth in localStorage as fallback (for mobile persistence)
+  const savedAuth = React.useMemo(() => {
+    try {
+      const saved = localStorage.getItem('socialbet_auth');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Use authenticated user data, saved auth, or fallback to mock data
   const displayUser = useMemo(() => {
     if (isAuthenticated && authUser) {
       return {
@@ -49,13 +64,30 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
         avatar: authUser.avatar,
       };
     }
-    // Fallback to mock user for demo
+    
+    // Fallback to saved auth from localStorage (for mobile persistence)
+    if (savedAuth?.user) {
+      return {
+        name: savedAuth.user.name,
+        handle: savedAuth.user.handle,
+        avatar: savedAuth.user.avatar,
+      };
+    }
+    
+    // Final fallback to mock user for demo
     return {
       name: 'Degen Trader',
       handle: '@degen_eth',
       avatar: 'https://picsum.photos/id/100/200/200',
     };
-  }, [isAuthenticated, authUser]);
+  }, [isAuthenticated, authUser, savedAuth]);
+
+  // Show login prompt if not authenticated and no saved auth
+  useEffect(() => {
+    // Check both isAuthenticated and savedAuth for mobile persistence
+    const hasAuth = isAuthenticated || savedAuth?.user;
+    setShowLoginPrompt(!hasAuth);
+  }, [isAuthenticated, savedAuth]);
 
   // Fetch user data and markets
   useEffect(() => {
@@ -94,6 +126,17 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
   }, []);
 
   const renderContent = () => {
+    // Show Trading Dashboard for trading tab
+    if (activeTab === 'trading') {
+      return (
+        <Suspense fallback={<LoadingSpinner text="Loading trading dashboard..." />}>
+          <div className="p-4">
+            <TradingDashboard markets={allMarkets} />
+          </div>
+        </Suspense>
+      );
+    }
+
     let data = userBets;
     let emptyMsg = "No bets placed yet.";
 
@@ -130,6 +173,48 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
   };
 
 
+
+  // Show login prompt if not authenticated and no saved auth
+  if (showLoginPrompt && !savedAuth?.user) {
+    return (
+      <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-4 py-2 flex items-center gap-4 border-b border-[#e5e5ea] shadow-sm">
+          <button onClick={() => onBack?.()} className="p-2 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200 group">
+            <ArrowLeft size={20} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
+          </button>
+          <div>
+            <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f]">Profile</h1>
+          </div>
+        </div>
+
+        {/* Login Prompt */}
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
+          <div className="bg-white border border-[#e5e5ea] rounded-2xl p-8 max-w-md w-full text-center space-y-6">
+            <div className="w-20 h-20 bg-[#fff9e6] rounded-full flex items-center justify-center mx-auto">
+              <AlertCircle size={40} className="text-[#ff9500]" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-[#1d1d1f] mb-2">Sign In Required</h2>
+              <p className="text-sm text-[#86868b]">
+                Please sign in to view your profile and trading history.
+              </p>
+            </div>
+            <button
+              onClick={() => onLoginClick?.()}
+              className="w-full py-4 px-6 bg-gradient-to-r from-[#ffd700] to-[#ffeb3b] text-[#1d1d1f] font-semibold rounded-xl hover:from-[#ffeb3b] hover:to-[#ffd700] transition-all duration-200 shadow-lg shadow-[#ffd700]/20 active:scale-[0.98] flex items-center justify-center gap-3"
+            >
+              <LogIn size={20} />
+              <span>Sign In</span>
+            </button>
+            <p className="text-xs text-[#86868b]">
+              Your session will be saved for easy access next time.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
@@ -206,6 +291,7 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
       {/* Tabs */}
       <div className="flex border-b border-[#e5e5ea] bg-white">
         <TabButton id="bets" label="Bets" activeTab={activeTab} onClick={handleTabChange} />
+        <TabButton id="trading" label="Trading" activeTab={activeTab} onClick={handleTabChange} />
         <TabButton id="created" label="Created" activeTab={activeTab} onClick={handleTabChange} />
         <TabButton id="likes" label="Likes" activeTab={activeTab} onClick={handleTabChange} />
       </div>

@@ -148,7 +148,7 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
 
                 setWeb3auth(web3authInstance);
 
-                // Check if already connected
+                // Check if already connected (restore session)
                 if (web3authInstance.connected && web3authInstance.provider) {
                     setProvider(web3authInstance.provider);
                     try {
@@ -160,9 +160,12 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
                                 profileImage: getProfileImage(userInfo),
                             } as Web3AuthUser;
                             setUser(normalizedUser);
+                            console.log('Web3Auth session restored');
                         }
                     } catch (e) {
-                        console.log('No user info available');
+                        console.log('No user info available, but session exists');
+                        // Even if getUserInfo fails, we have a provider, so mark as connected
+                        // This helps with mobile persistence
                     }
 
                     // Get wallet address
@@ -170,9 +173,33 @@ export const Web3AuthProvider: React.FC<Web3AuthProviderProps> = ({ children }) 
                         const accounts = await web3authInstance.provider.request({ method: 'eth_accounts' }) as string[];
                         if (accounts && accounts.length > 0 && mounted) {
                             setWalletAddress(accounts[0]);
+                            console.log('Wallet address restored:', accounts[0]);
                         }
                     } catch (e) {
-                        console.log('No accounts available');
+                        console.log('No accounts available, but provider exists');
+                        // Try to get address from provider directly for mobile compatibility
+                        try {
+                            if (web3authInstance.provider && typeof web3authInstance.provider.request === 'function') {
+                                const ethAccounts = await web3authInstance.provider.request({ method: 'eth_accounts' });
+                                if (ethAccounts && ethAccounts.length > 0 && mounted) {
+                                    setWalletAddress(ethAccounts[0]);
+                                }
+                            }
+                        } catch (err) {
+                            console.log('Could not retrieve accounts from provider');
+                        }
+                    }
+                } else {
+                    // Not connected - check if we have saved auth in localStorage for mobile
+                    // This helps restore state on mobile even if Web3Auth session expired
+                    try {
+                        const savedAuth = localStorage.getItem('socialbet_auth');
+                        if (savedAuth && mounted) {
+                            console.log('Web3Auth not connected, but saved auth found in localStorage');
+                            // AuthContext will handle restoring the user from localStorage
+                        }
+                    } catch (e) {
+                        console.log('Could not check localStorage for saved auth');
                     }
                 }
             } catch (error) {

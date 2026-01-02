@@ -198,20 +198,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [soulBalance, user]);
 
-  // Load saved auth on mount (for UI consistency before Web3Auth initializes)
+  // Load saved auth immediately on mount (for mobile persistence and UI consistency)
   useEffect(() => {
-    if (isLoading) {
+    // Load saved auth immediately, regardless of Web3Auth loading state
+    const savedAuth = localStorage.getItem('socialbet_auth');
+    if (savedAuth) {
+      try {
+        const authData = JSON.parse(savedAuth);
+        // Restore user immediately for UI consistency
+        setUser(authData.user);
+        
+        // Also try to restore Web3Auth session if it's available
+        // This helps with mobile persistence
+        if (authData.user && !isConnected && !isLoading) {
+          // Web3Auth should restore session automatically, but we ensure user is set
+          console.log('Restored saved auth from localStorage');
+        }
+      } catch (error) {
+        console.error('Failed to load saved auth:', error);
+        localStorage.removeItem('socialbet_auth');
+      }
+    }
+  }, []); // Run only once on mount
+
+  // Also restore when Web3Auth finishes loading (in case localStorage was cleared)
+  useEffect(() => {
+    if (!isLoading && !isConnected && !user) {
       const savedAuth = localStorage.getItem('socialbet_auth');
       if (savedAuth) {
         try {
           const authData = JSON.parse(savedAuth);
           setUser(authData.user);
         } catch (error) {
-          console.error('Failed to load saved auth:', error);
+          console.error('Failed to restore auth after Web3Auth load:', error);
         }
       }
     }
-  }, [isLoading]);
+  }, [isLoading, isConnected, user]);
 
   const connect = useCallback(async () => {
     setIsConnecting(true);
