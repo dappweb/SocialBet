@@ -14,7 +14,7 @@ interface SoulTokenTradingProps {
 type TradeType = 'buy' | 'sell';
 
 const SoulTokenTrading: React.FC<SoulTokenTradingProps> = ({ onClose }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, updateSoulBalance, soulBalance } = useAuth();
   const { web3auth, provider, isConnected } = useWeb3Auth();
   const { showToast } = useToast();
 
@@ -120,17 +120,19 @@ const SoulTokenTrading: React.FC<SoulTokenTradingProps> = ({ onClose }) => {
     }
 
     // Calculate ETH amount needed
-    const ethAmount = parseFloat(amount) * soulPriceETH;
-    const usdAmount = parseFloat(amount);
+    const ethAmount = parseFloat(amount);
+    const usdAmount = ethAmount * 2000; // Assuming ETH = $2000
     const feeAmount = calculatePlatformFee(usdAmount);
-    
-    // TODO: Implement smart contract interaction to buy SOUL tokens
-    // This would interact with a DEX or token sale contract
     
     showToast(`Buying ${soulTokens.toFixed(2)} SOUL tokens with ${ethAmount.toFixed(6)} ETH...`, 'info');
     
-    // Simulate transaction
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Use the tokenTrading service to buy SOUL tokens
+    const { buySoulWithETH } = await import('../services/tokenTrading');
+    const result = await buySoulWithETH(ethAmount, provider);
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to buy SOUL tokens');
+    }
     
     // Auto-record transaction for operations
     try {
@@ -138,7 +140,7 @@ const SoulTokenTrading: React.FC<SoulTokenTradingProps> = ({ onClose }) => {
         transactionType: 'trade_fee',
         amount: feeAmount,
         currency: 'USD',
-        description: `Platform fee from SOUL token purchase: ${soulTokens.toFixed(2)} SOUL`,
+        description: `Platform fee from SOUL token purchase: ${result.tokensReceived?.toFixed(2) || soulTokens.toFixed(2)} SOUL`,
         category: 'operations',
         status: 'completed',
         userId: user?.id,
@@ -148,28 +150,50 @@ const SoulTokenTrading: React.FC<SoulTokenTradingProps> = ({ onClose }) => {
       // Don't fail the trade if recording fails
     }
     
-    showToast(`Successfully purchased ${soulTokens.toFixed(2)} SOUL tokens!`, 'success');
+    // Update user's SOUL balance
+    if (result.tokensReceived) {
+      try {
+        if (user?.id) {
+          const { usersApi } = await import('../services/api');
+          await usersApi.addSoul(user.id, result.tokensReceived);
+        }
+        // Also update local balance
+        if (updateSoulBalance) {
+          await updateSoulBalance(result.tokensReceived);
+        }
+      } catch (error) {
+        console.error('Failed to update balance:', error);
+      }
+    }
+    
+    showToast(
+      `Successfully purchased ${result.tokensReceived?.toFixed(2) || soulTokens.toFixed(2)} SOUL tokens!${result.transactionHash ? ` TX: ${result.transactionHash.slice(0, 10)}...` : ''}`,
+      'success'
+    );
     
     if (onClose) {
       setTimeout(onClose, 1500);
     }
-  }, [provider, amount, soulPriceETH, soulTokens, showToast, onClose]);
+  }, [provider, amount, soulTokens, showToast, onClose, user]);
 
   const handleSellTokens = useCallback(async () => {
     if (!provider) {
       throw new Error('Wallet not connected');
     }
 
-    const usdAmount = parseFloat(amount) * soulPriceUSD;
+    const soulAmount = parseFloat(amount);
+    const usdAmount = soulAmount * soulPriceUSD;
     const feeAmount = calculatePlatformFee(usdAmount);
 
-    // TODO: Implement smart contract interaction to sell SOUL tokens
-    // This would interact with a DEX or token sale contract
+    showToast(`Selling ${soulAmount.toFixed(2)} SOUL tokens...`, 'info');
     
-    showToast(`Selling ${soulTokens.toFixed(2)} SOUL tokens...`, 'info');
+    // Use the tokenTrading service to sell SOUL tokens
+    const { sellSoulTokens } = await import('../services/tokenTrading');
+    const result = await sellSoulTokens(soulAmount, provider);
     
-    // Simulate transaction
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to sell SOUL tokens');
+    }
     
     // Auto-record transaction for operations
     try {
@@ -177,7 +201,7 @@ const SoulTokenTrading: React.FC<SoulTokenTradingProps> = ({ onClose }) => {
         transactionType: 'trade_fee',
         amount: feeAmount,
         currency: 'USD',
-        description: `Platform fee from SOUL token sale: ${soulTokens.toFixed(2)} SOUL`,
+        description: `Platform fee from SOUL token sale: ${soulAmount.toFixed(2)} SOUL`,
         category: 'operations',
         status: 'completed',
         userId: user?.id,
@@ -187,12 +211,30 @@ const SoulTokenTrading: React.FC<SoulTokenTradingProps> = ({ onClose }) => {
       // Don't fail the trade if recording fails
     }
     
-    showToast(`Successfully sold ${soulTokens.toFixed(2)} SOUL tokens!`, 'success');
+    // Update user's SOUL balance (deduct sold amount)
+    try {
+      if (user?.id) {
+        const { usersApi } = await import('../services/api');
+        // Deduct the sold amount from balance
+        await usersApi.addSoul(user.id, -soulAmount);
+      }
+      // Also update local balance
+      if (updateSoulBalance) {
+        await updateSoulBalance(-soulAmount);
+      }
+    } catch (error) {
+      console.error('Failed to update balance:', error);
+    }
+    
+    showToast(
+      `Successfully sold ${soulAmount.toFixed(2)} SOUL tokens! You received $${result.amountReceived?.toFixed(2) || userReceives.toFixed(2)}${result.transactionHash ? ` TX: ${result.transactionHash.slice(0, 10)}...` : ''}`,
+      'success'
+    );
     
     if (onClose) {
       setTimeout(onClose, 1500);
     }
-  }, [provider, soulTokens, amount, soulPriceUSD, showToast, onClose]);
+  }, [provider, amount, soulPriceUSD, soulTokens, userReceives, showToast, onClose, user]);
 
   if (!isAuthenticated) {
     return (

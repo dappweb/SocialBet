@@ -6,6 +6,7 @@ import { useToast } from '../contexts/ToastContext';
 import { buySoulWithFiat, buySoulWithETH, calculateSoulTokensFromFiat, SOUL_TOKEN_CONFIG, validateTradeAmount } from '../services/tokenTrading';
 import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { cn } from '../utils';
+import FiatOnRampModal from './FiatOnRampModal';
 
 interface SoulPurchaseModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'fiat' | 'crypto'>('fiat');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isFiatModalOpen, setIsFiatModalOpen] = useState(false);
 
   // Memoize calculations to prevent hooks violations
   const soulAmount = useMemo(() => {
@@ -59,10 +61,9 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
       const amountNum = parseFloat(amount);
 
       if (paymentMethod === 'fiat') {
-        if (!web3auth) {
-          throw new Error('Web3Auth not initialized');
-        }
-        result = await buySoulWithFiat(amountNum, web3auth);
+        // Open fiat on-ramp modal instead of direct purchase
+        setIsFiatModalOpen(true);
+        return; // Don't process further, let the modal handle it
       } else {
         if (!isConnected || !currentChain || !provider) {
           throw new Error('Please connect your wallet to purchase with crypto');
@@ -248,6 +249,21 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
           )}
         </div>
       </div>
+
+      {/* Fiat On-Ramp Modal */}
+      <FiatOnRampModal
+        isOpen={isFiatModalOpen}
+        onClose={() => setIsFiatModalOpen(false)}
+        onSuccess={async (soulAmount) => {
+          await updateSoulBalance(soulAmount);
+          showToast(`Successfully purchased ${soulAmount.toFixed(2)} SOUL tokens!`, 'success');
+          onPurchaseSuccess?.(soulAmount);
+          setIsFiatModalOpen(false);
+          setAmount('');
+          onClose();
+        }}
+        defaultAmount={parseFloat(amount) || 50}
+      />
     </div>
   );
 };

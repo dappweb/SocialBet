@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, Loader2, Info, Wallet, Sparkles, BrainCircuit, ChevronDown, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { X, Loader2, Info, Wallet, Sparkles, BrainCircuit, ChevronDown, ExternalLink, CheckCircle2, CreditCard } from 'lucide-react';
 import { PredictionMarket, BetType } from '../types';
 import { cn, formatCurrency } from '../utils';
 import { GoogleGenAI } from "@google/genai";
@@ -11,6 +11,7 @@ import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { placeBet as placeBetOnChain } from '../services/predictionMarketService';
 import { getEthereumBalance } from '../services/soulTokenService';
 import { getBalance } from '../services/soulContractService';
+import FiatOnRampModal from './FiatOnRampModal';
 
 interface BetModalProps {
   market: PredictionMarket | null;
@@ -36,6 +37,9 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
   // AI Analysis State
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
+  // Fiat On-Ramp Modal
+  const [isFiatModalOpen, setIsFiatModalOpen] = useState(false);
 
   // Set default blockchain based on connected wallet
   useEffect(() => {
@@ -427,6 +431,26 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
             </div>
           )}
 
+          {/* Insufficient Balance - Buy SOUL Option */}
+          {walletBalance !== null && numericAmount > walletBalance && (
+            <div className="bg-[#fff9e6] dark:bg-[#332d1a] border border-[#ffd700]/30 rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Info size={18} className="text-[#ff9800]" />
+                <span className="text-sm font-semibold text-[#1d1d1f] dark:text-white">Insufficient SOUL Balance</span>
+              </div>
+              <p className="text-xs text-[#86868b] dark:text-[#a1a1a6]">
+                You need {numericAmount.toFixed(2)} SOUL but only have {walletBalance.toFixed(2)} SOUL.
+              </p>
+              <button
+                onClick={() => setIsFiatModalOpen(true)}
+                className="w-full py-2.5 rounded-lg font-semibold text-sm text-[#1d1d1f] bg-[#ffd700] hover:bg-[#ffeb3b] transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <CreditCard size={16} />
+                Buy SOUL Tokens
+              </button>
+            </div>
+          )}
+
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || numericAmount <= 0 || (walletBalance !== null && numericAmount > walletBalance) || !isAuthenticated}
@@ -453,6 +477,19 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
           </p>
         </div>
       </div>
+
+      {/* Fiat On-Ramp Modal */}
+      <FiatOnRampModal
+        isOpen={isFiatModalOpen}
+        onClose={() => setIsFiatModalOpen(false)}
+        onSuccess={async (soulAmount) => {
+          // Refresh balance after purchase
+          await fetchWalletBalance();
+          showToast(`Successfully purchased ${soulAmount.toFixed(2)} SOUL tokens!`, 'success');
+          setIsFiatModalOpen(false);
+        }}
+        defaultAmount={numericAmount > 0 ? Math.ceil(numericAmount * 0.05) : 50}
+      />
     </div>
   );
 };
