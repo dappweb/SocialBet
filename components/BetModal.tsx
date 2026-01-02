@@ -91,6 +91,11 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
     }
   }, [isOpen]);
 
+  // Calculate max amount based on balance (MUST be before early return)
+  const maxAmount = useMemo(() => {
+    return walletBalance !== null ? walletBalance : 0;
+  }, [walletBalance]);
+
   // Early return AFTER all hooks
   if (!isOpen || !market || !betType) return null;
 
@@ -113,9 +118,9 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
         // Using gemini-2.5-flash for fast text analysis
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `Analyze this prediction market question for a user who is considering betting ${betType}: "${market.question}". 
-            Category: ${market.category}. 
-            Current Stats: YES is ${market.outcomeStats.yesPercent}%, NO is ${market.outcomeStats.noPercent}%.
+            contents: `Analyze this prediction market question for a user who is considering betting ${betType}: "${market?.question || ''}". 
+            Category: ${market?.category || ''}. 
+            Current Stats: YES is ${market?.outcomeStats.yesPercent || 50}%, NO is ${market?.outcomeStats.noPercent || 50}%.
             Provide a concise 2-sentence risk assessment and probability insight.`
         });
         if (response.text) {
@@ -215,11 +220,6 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
   const bgClass = isYes ? 'bg-[#34c759]' : 'bg-[#ff3b30]';
   const bgSoftClass = isYes ? 'bg-[#34c759]/10' : 'bg-[#ff3b30]/10';
   const borderClass = isYes ? 'border-[#34c759]/30' : 'border-[#ff3b30]/30';
-
-  // Calculate max amount based on balance
-  const maxAmount = useMemo(() => {
-    return walletBalance !== null ? walletBalance : 0;
-  }, [walletBalance]);
 
   // Blockchain options
   const blockchainOptions = [
