@@ -80,7 +80,7 @@ export async function createMarket(
     question: string,
     category: string,
     endDate: Date,
-    initialLiquidity: number // in tokens (will be converted to wei)
+    initialLiquidity: number // in SOUL tokens (will be converted to wei)
 ): Promise<{ success: boolean; marketId?: number; txHash?: string; error?: string }> {
     try {
         const signer = await getSigner(provider);
@@ -89,6 +89,12 @@ export async function createMarket(
         // Check if using native token
         const useNative = await contract.useNativeToken();
         const liquidityWei = ethers.parseEther(initialLiquidity.toString());
+        
+        // If using ERC-20 token (SOUL), ensure approval
+        if (!useNative) {
+            const paymentTokenAddress = await contract.paymentToken();
+            await ensureTokenApproval(provider, paymentTokenAddress, contractAddress, liquidityWei);
+        }
         
         let tx;
         if (useNative) {
@@ -141,6 +147,45 @@ export async function createMarket(
 }
 
 /**
+ * Check and approve SOUL token spending if needed
+ */
+async function ensureTokenApproval(
+    provider: IProvider,
+    paymentTokenAddress: string,
+    spenderAddress: string,
+    amount: bigint
+): Promise<boolean> {
+    try {
+        const signer = await getSigner(provider);
+        const userAddress = await signer.getAddress();
+        
+        // ERC-20 ABI for allowance and approve
+        const ERC20_ABI = [
+            "function allowance(address owner, address spender) external view returns (uint256)",
+            "function approve(address spender, uint256 amount) external returns (bool)"
+        ];
+        
+        const tokenContract = new ethers.Contract(paymentTokenAddress, ERC20_ABI, signer);
+        
+        // Check current allowance
+        const currentAllowance = await tokenContract.allowance(userAddress, spenderAddress);
+        
+        // If allowance is insufficient, approve
+        if (currentAllowance < amount) {
+            console.log(`Approving ${ethers.formatEther(amount)} SOUL tokens for prediction market...`);
+            const approveTx = await tokenContract.approve(spenderAddress, amount);
+            await approveTx.wait();
+            console.log('Token approval successful');
+        }
+        
+        return true;
+    } catch (error: any) {
+        console.error('Error ensuring token approval:', error);
+        throw new Error(`Token approval failed: ${error.message || 'Unknown error'}`);
+    }
+}
+
+/**
  * Place a bet on a market
  */
 export async function placeBet(
@@ -148,7 +193,7 @@ export async function placeBet(
     contractAddress: string,
     marketId: number,
     side: 'YES' | 'NO',
-    amount: number // in tokens
+    amount: number // in SOUL tokens
 ): Promise<{ success: boolean; txHash?: string; error?: string }> {
     try {
         const signer = await getSigner(provider);
@@ -157,6 +202,12 @@ export async function placeBet(
         const useNative = await contract.useNativeToken();
         const amountWei = ethers.parseEther(amount.toString());
         const betSide = side === 'YES';
+        
+        // If using ERC-20 token (SOUL), ensure approval
+        if (!useNative) {
+            const paymentTokenAddress = await contract.paymentToken();
+            await ensureTokenApproval(provider, paymentTokenAddress, contractAddress, amountWei);
+        }
         
         let tx;
         if (useNative) {

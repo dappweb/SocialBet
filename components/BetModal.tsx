@@ -9,6 +9,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useWallet } from '../contexts/WalletContext';
 import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { placeBet as placeBetOnChain } from '../services/predictionMarketService';
+import { getEthereumBalance } from '../services/soulTokenService';
+import { getBalance } from '../services/soulContractService';
 
 interface BetModalProps {
   market: PredictionMarket | null;
@@ -44,7 +46,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
     }
   }, [isOpen, currentChain, selectedBlockchain]);
 
-  // Fetch wallet balance
+  // Fetch SOUL token balance
   const fetchWalletBalance = useCallback(async () => {
     if (!isAuthenticated || !walletAddress || !selectedBlockchain) {
       setWalletBalance(null);
@@ -53,25 +55,36 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
 
     setIsLoadingBalance(true);
     try {
-      // Mock balance for now - in production, fetch from blockchain
-      // For Ethereum/BSC, use ethers.js to get USDC balance
-      // For Solana, use @solana/web3.js to get USDC balance
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const mockBalances: Record<string, number> = {
-        ethereum: 1240.50,
-        bsc: 850.25,
-        solana: 2100.75,
-      };
-      
-      setWalletBalance(mockBalances[selectedBlockchain] || 0);
+      if (selectedBlockchain === 'ethereum' && provider) {
+        // Fetch SOUL token balance from Ethereum/Sepolia
+        try {
+          const balanceResult = await getBalance(walletAddress, provider);
+          setWalletBalance(balanceResult.balance);
+        } catch (error) {
+          // Fallback to soulTokenService
+          try {
+            const tokenBalance = await getEthereumBalance(walletAddress, provider, 'sepolia');
+            setWalletBalance(tokenBalance.balance);
+          } catch (fallbackError) {
+            console.error('Failed to fetch SOUL balance from both services:', fallbackError);
+            setWalletBalance(0);
+          }
+        }
+      } else {
+        // For other chains, use mock for now
+        const mockBalances: Record<string, number> = {
+          bsc: 0,
+          solana: 0,
+        };
+        setWalletBalance(mockBalances[selectedBlockchain] || 0);
+      }
     } catch (error) {
-      console.error('Failed to fetch wallet balance:', error);
+      console.error('Failed to fetch SOUL balance:', error);
       setWalletBalance(null);
     } finally {
       setIsLoadingBalance(false);
     }
-  }, [isAuthenticated, walletAddress, selectedBlockchain]);
+  }, [isAuthenticated, walletAddress, selectedBlockchain, provider]);
 
   useEffect(() => {
     if (isOpen) {
@@ -142,8 +155,8 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
     }
 
     if (walletBalance !== null && numericAmount > walletBalance) {
-      setError(`Insufficient balance. Available: $${walletBalance.toFixed(2)}`);
-      showToast(`Insufficient balance. Available: $${walletBalance.toFixed(2)}`, 'error');
+      setError(`Insufficient SOUL balance. Available: ${walletBalance.toFixed(2)} SOUL`);
+      showToast(`Insufficient SOUL balance. Available: ${walletBalance.toFixed(2)} SOUL`, 'error');
       return;
     }
 
@@ -256,25 +269,27 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
         <div className="p-6 space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium text-[#1d1d1f] flex justify-between">
-              <span>Wager Amount (USDC)</span>
+              <span>Wager Amount (SOUL)</span>
               <span className="flex items-center gap-1 text-[#86868b] text-xs">
                 <Wallet size={12} />
                 {isLoadingBalance ? (
                   <Loader2 size={12} className="animate-spin" />
                 ) : walletBalance !== null ? (
-                  `Balance: ${formatCurrency(walletBalance)}`
+                  `Balance: ${walletBalance.toFixed(2)} SOUL`
                 ) : (
                   'Connect wallet'
                 )}
               </span>
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#86868b] font-semibold">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#86868b] font-semibold">⚡</span>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
+                min="1"
+                step="0.01"
                 className="w-full bg-[#f5f5f7] border border-[#e5e5ea] rounded-xl py-4 pl-8 pr-4 text-2xl font-bold text-[#1d1d1f] placeholder:text-[#c7c7cc] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white focus:border-[#ffd700] transition-all duration-200"
                 autoFocus
               />
@@ -282,7 +297,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
             
             {/* Quick Selectors */}
             <div className="flex gap-2 mt-2 flex-wrap">
-              {[10, 50, 100, 250].map((val) => (
+              {[10, 50, 100, 250, 500].map((val) => (
                 <button
                   key={val}
                   onClick={() => handleQuickAmount(val)}
@@ -292,7 +307,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
                     walletBalance !== null && val > walletBalance && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  ${val}
+                  {val} SOUL
                 </button>
               ))}
               <button
@@ -337,15 +352,15 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
           <div className={cn("p-4 rounded-xl space-y-2 border", bgSoftClass, borderClass)}>
             <div className="flex justify-between text-sm">
               <span className="text-[#86868b]">Total Shares</span>
-              <span className="font-mono text-[#1d1d1f] font-semibold">{(estimatedReturn || 0).toFixed(2)}</span>
+              <span className="font-mono text-[#1d1d1f] font-semibold">{(estimatedReturn || 0).toFixed(2)} SOUL</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-[#86868b]">Potential Payout</span>
-              <span className="font-mono font-bold text-[#1d1d1f]">{formatCurrency(estimatedReturn)}</span>
+              <span className="font-mono font-bold text-[#1d1d1f]">{(estimatedReturn || 0).toFixed(2)} SOUL</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-[#86868b]">Potential Profit</span>
-              <span className={cn("font-mono font-bold", colorClass)}>+{formatCurrency(potentialProfit)}</span>
+              <span className={cn("font-mono font-bold", colorClass)}>+{(potentialProfit || 0).toFixed(2)} SOUL</span>
             </div>
           </div>
 
