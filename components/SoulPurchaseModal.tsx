@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { X, Loader2, Wallet, CreditCard, Coins } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWallet } from '../contexts/WalletContext';
@@ -25,11 +25,17 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
   const [paymentMethod, setPaymentMethod] = useState<'fiat' | 'crypto'>('fiat');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Memoize calculations to prevent hooks violations
+  const soulAmount = useMemo(() => {
+    return amount ? calculateSoulTokensFromFiat(parseFloat(amount) || 0) : 0;
+  }, [amount]);
+
+  const validation = useMemo(() => {
+    return amount ? validateTradeAmount(parseFloat(amount), paymentMethod) : { valid: false };
+  }, [amount, paymentMethod]);
+
   // Early return AFTER all hooks
   if (!isOpen) return null;
-
-  const soulAmount = amount ? calculateSoulTokensFromFiat(parseFloat(amount) || 0) : 0;
-  const validation = amount ? validateTradeAmount(parseFloat(amount), paymentMethod) : { valid: false };
 
   const handlePresetAmount = useCallback((preset: number) => {
     setAmount(preset.toString());
@@ -58,13 +64,12 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
         }
         result = await buySoulWithFiat(amountNum, web3auth);
       } else {
-        if (!isConnected || !currentChain) {
+        if (!isConnected || !currentChain || !provider) {
           throw new Error('Please connect your wallet to purchase with crypto');
         }
         // For crypto, convert USD to ETH first
         const ethAmount = amountNum / 2000; // Assuming ETH = $2000
-        // This would need the actual provider from wallet context
-        result = await buySoulWithETH(ethAmount, {} as any);
+        result = await buySoulWithETH(ethAmount, provider);
       }
 
       if (result.success && result.tokensReceived) {
@@ -83,7 +88,7 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
     } finally {
       setIsProcessing(false);
     }
-  }, [amount, paymentMethod, validation, isAuthenticated, isConnected, currentChain, web3auth, showToast, onPurchaseSuccess, onClose]);
+  }, [amount, paymentMethod, validation, isAuthenticated, isConnected, currentChain, web3auth, provider, showToast, updateSoulBalance, onPurchaseSuccess, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">

@@ -44,6 +44,20 @@ if [ -n "$SOL_ADDRESS" ]; then
     fi
 fi
 
+# Update Token Sale contract
+if [ -n "$TOKEN_SALE_ADDRESS" ]; then
+    TOKEN_SALE_ADDRESS=$1
+    if [ -n "$TOKEN_SALE_ADDRESS" ] && [ "$TOKEN_SALE_ADDRESS" != "$ETH_ADDRESS" ]; then
+        if grep -q "VITE_TOKEN_SALE_CONTRACT" "$ENV_FILE"; then
+            sed -i "s|VITE_TOKEN_SALE_CONTRACT=.*|VITE_TOKEN_SALE_CONTRACT=$TOKEN_SALE_ADDRESS|" "$ENV_FILE"
+            echo "✅ Updated VITE_TOKEN_SALE_CONTRACT=$TOKEN_SALE_ADDRESS"
+        else
+            echo "VITE_TOKEN_SALE_CONTRACT=$TOKEN_SALE_ADDRESS" >> "$ENV_FILE"
+            echo "✅ Added VITE_TOKEN_SALE_CONTRACT=$TOKEN_SALE_ADDRESS"
+        fi
+    fi
+fi
+
 echo ""
 echo "📋 Updated $ENV_FILE with contract addresses"
 echo "   Remember to restart your dev server if running"
