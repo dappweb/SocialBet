@@ -19,7 +19,7 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
   const { user, isAuthenticated, updateSoulBalance } = useAuth();
   const { isConnected, currentChain } = useWallet();
   const { showToast } = useToast();
-  const { web3auth } = useWeb3Auth();
+  const { web3auth, provider } = useWeb3Auth();
   
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'fiat' | 'crypto'>('fiat');

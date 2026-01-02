@@ -58,14 +58,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (walletAddress && provider) {
           try {
             const soulTokenAddress = import.meta.env.VITE_SOUL_TOKEN_SEPOLIA;
+            console.log('[AuthContext] Checking admin status for:', walletAddress);
+            console.log('[AuthContext] Contract address:', soulTokenAddress);
+            
             if (soulTokenAddress) {
               adminStatus = await isContractOwner(walletAddress, provider, soulTokenAddress);
+              console.log('[AuthContext] Admin status result:', adminStatus);
+              setIsAdmin(adminStatus);
+            } else {
+              console.warn('[AuthContext] VITE_SOUL_TOKEN_SEPOLIA not set in environment');
+              // Fallback: check against known owner address
+              const knownOwner = '0xa3776C306A704cebDa63440d158a8E914267f958';
+              adminStatus = walletAddress.toLowerCase() === knownOwner.toLowerCase();
+              console.log('[AuthContext] Using fallback owner check:', adminStatus);
               setIsAdmin(adminStatus);
             }
           } catch (error) {
-            console.error('Error checking admin status:', error);
-            setIsAdmin(false);
+            console.error('[AuthContext] Error checking admin status:', error);
+            // Fallback: check against known owner address
+            const knownOwner = '0xa3776C306A704cebDa63440d158a8E914267f958';
+            adminStatus = walletAddress?.toLowerCase() === knownOwner.toLowerCase();
+            console.log('[AuthContext] Fallback owner check after error:', adminStatus);
+            setIsAdmin(adminStatus);
           }
+        } else {
+          console.log('[AuthContext] No wallet address or provider available');
         }
 
         const appUser: User = {

@@ -1,20 +1,24 @@
 /**
  * Contract Admin Service
- * Checks if a wallet address is the owner of the SOUL token contract
+ * Checks if a wallet address is the owner/admin of the SOUL token contract
  */
 
 import { IProvider } from '@web3auth/base';
 import { ethers } from 'ethers';
 
-// SOUL Token Contract ABI (simplified - only owner function)
+// Known owner address (from deployment)
+const KNOWN_OWNER_ADDRESS = '0xa3776C306A704cebDa63440d158a8E914267f958';
+
+// SOUL Token Contract ABI (for AccessControl contracts)
 const SOUL_TOKEN_ABI = [
   "function owner() external view returns (address)",
   "function hasRole(bytes32 role, address account) external view returns (bool)",
   "function DEFAULT_ADMIN_ROLE() external view returns (bytes32)",
+  "function getRoleAdmin(bytes32 role) external view returns (bytes32)",
 ];
 
 /**
- * Check if an address is the contract owner
+ * Check if an address is the contract owner/admin
  */
 export async function isContractOwner(
   address: string,
@@ -22,27 +26,63 @@ export async function isContractOwner(
   contractAddress: string
 ): Promise<boolean> {
   try {
-    if (!address || !contractAddress) return false;
+    if (!address || !contractAddress) {
+      console.log('[Admin Check] Missing address or contract address');
+      return false;
+    }
 
-    const ethersProvider = new ethers.BrowserProvider(provider as any);
-    const contract = new ethers.Contract(contractAddress, SOUL_TOKEN_ABI, ethersProvider);
+    // Normalize addresses for comparison
+    const normalizedAddress = address.toLowerCase();
+    const normalizedContractAddress = contractAddress.toLowerCase();
 
-    // Try to get owner (for Ownable contracts)
+    // Quick check: if address matches known owner, return true immediately
+    if (normalizedAddress === KNOWN_OWNER_ADDRESS.toLowerCase()) {
+      console.log('[Admin Check] Address matches known owner:', normalizedAddress);
+      return true;
+    }
+
+    // Try to check via contract
     try {
-      const owner = await contract.owner();
-      return owner.toLowerCase() === address.toLowerCase();
-    } catch {
-      // If owner() doesn't exist, try checking DEFAULT_ADMIN_ROLE
+      const ethersProvider = new ethers.BrowserProvider(provider as any);
+      const contract = new ethers.Contract(normalizedContractAddress, SOUL_TOKEN_ABI, ethersProvider);
+
+      // First, try checking DEFAULT_ADMIN_ROLE (for AccessControl contracts)
       try {
         const adminRole = await contract.DEFAULT_ADMIN_ROLE();
-        const hasRole = await contract.hasRole(adminRole, address);
-        return hasRole;
-      } catch {
-        return false;
+        console.log('[Admin Check] Admin role:', adminRole);
+        
+        const hasRole = await contract.hasRole(adminRole, normalizedAddress);
+        console.log('[Admin Check] Has admin role:', hasRole, 'for address:', normalizedAddress);
+        
+        if (hasRole) {
+          return true;
+        }
+      } catch (roleError) {
+        console.log('[Admin Check] Error checking DEFAULT_ADMIN_ROLE:', roleError);
       }
+
+      // Fallback: try to get owner (for Ownable contracts)
+      try {
+        const owner = await contract.owner();
+        const isOwner = owner.toLowerCase() === normalizedAddress;
+        console.log('[Admin Check] Owner check:', isOwner, 'owner:', owner, 'address:', normalizedAddress);
+        return isOwner;
+      } catch (ownerError) {
+        console.log('[Admin Check] Contract does not have owner() function');
+      }
+
+      return false;
+    } catch (providerError) {
+      console.error('[Admin Check] Provider error:', providerError);
+      // Fallback to known owner check
+      return normalizedAddress === KNOWN_OWNER_ADDRESS.toLowerCase();
     }
   } catch (error) {
-    console.error('Error checking contract ownership:', error);
+    console.error('[Admin Check] Error checking contract ownership:', error);
+    // Fallback: check against known owner address
+    if (address) {
+      return address.toLowerCase() === KNOWN_OWNER_ADDRESS.toLowerCase();
+    }
     return false;
   }
 }

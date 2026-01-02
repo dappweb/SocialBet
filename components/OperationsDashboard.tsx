@@ -171,6 +171,20 @@ const OperationsDashboard: React.FC = () => {
 
   // Show access denied if not admin
   if (!isAuthenticated || !isAdmin) {
+    // Debug info (only in development)
+    const debugInfo = import.meta.env.DEV ? (
+      <div className="mt-4 p-3 bg-[#f5f5f7] dark:bg-[#2c2c2e] rounded-lg text-left text-xs font-mono">
+        <p><strong>Debug Info:</strong></p>
+        <p>Authenticated: {isAuthenticated ? 'Yes' : 'No'}</p>
+        <p>Admin: {isAdmin ? 'Yes' : 'No'}</p>
+        <p>Wallet: {user?.walletAddressEth || 'Not connected'}</p>
+        <p>Expected Owner: 0xa3776C306A704cebDa63440d158a8E914267f958</p>
+        {user?.walletAddressEth && (
+          <p>Match: {user.walletAddressEth.toLowerCase() === '0xa3776c306a704cebda63440d158a8e914267f958' ? 'Yes' : 'No'}</p>
+        )}
+      </div>
+    ) : null;
+
     return (
       <div className="min-h-screen bg-[#f5f5f7] dark:bg-black p-4 sm:p-6 flex items-center justify-center">
         <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl border border-[#e5e5ea] dark:border-[#38383a] p-8 max-w-md text-center shadow-lg">
@@ -181,13 +195,14 @@ const OperationsDashboard: React.FC = () => {
           <p className="text-[#86868b] dark:text-[#a1a1a6] mb-4">
             {!isAuthenticated 
               ? 'Please sign in to access the Operations Dashboard.'
-              : 'Only contract owners and administrators can access the Operations Dashboard.'}
+              : 'Admin access is required to view the Operations Dashboard.'}
           </p>
           {!isAuthenticated && (
             <p className="text-sm text-[#86868b] dark:text-[#a1a1a6]">
               This section is restricted to platform administrators.
             </p>
           )}
+          {debugInfo}
         </div>
       </div>
     );

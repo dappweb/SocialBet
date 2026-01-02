@@ -91,12 +91,14 @@ export async function buySoulWithFiat(
     // });
 
     // For now, return a mock result
+    // TODO: Integrate with Web3Auth Wallet Services for actual fiat purchase
     return {
       success: true,
       tokensReceived: soulTokens,
       amountReceived: amount - platformFee,
     };
   } catch (error: any) {
+    console.error('Error buying SOUL with fiat:', error);
     return {
       success: false,
       error: error.message || 'Failed to buy SOUL tokens with fiat',
@@ -126,13 +128,19 @@ export async function buySoulWithETH(
     // For now, this is a mock implementation
     // In production, this would interact with a DEX or token sale contract
 
+    if (!provider) {
+      throw new Error('Provider not available');
+    }
+
     // For now, return a mock result
+    // TODO: Implement actual smart contract interaction
     return {
       success: true,
       tokensReceived: soulTokens,
       transactionHash: '0x' + Math.random().toString(16).substr(2, 64),
     };
   } catch (error: any) {
+    console.error('Error buying SOUL with ETH:', error);
     return {
       success: false,
       error: error.message || 'Failed to buy SOUL tokens with ETH',
