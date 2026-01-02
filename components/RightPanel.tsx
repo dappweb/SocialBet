@@ -10,13 +10,13 @@ interface RightPanelProps {
 }
 
 const TrendingItem = ({ category, title, posts }: { category: string, title: string, posts: string }) => (
-  <div className="py-3 px-4 hover:bg-[#f5f5f7] transition-colors duration-200 cursor-pointer relative">
+  <div className="py-3 px-4 hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] transition-colors duration-200 cursor-pointer relative">
     <div className="flex justify-between items-start">
-      <div className="text-xs text-[#86868b] font-medium">{category} • Trending</div>
-      <MoreHorizontal size={14} className="text-[#86868b] hover:text-[#1d1d1f]" />
+      <div className="text-xs text-[#86868b] dark:text-[#a1a1a6] font-medium">{category} • Trending</div>
+      <MoreHorizontal size={14} className="text-[#86868b] dark:text-[#a1a1a6] hover:text-[#1d1d1f] dark:hover:text-white" />
     </div>
-    <div className="font-semibold text-sm text-[#1d1d1f] mt-0.5">{title}</div>
-    <div className="text-xs text-[#86868b] mt-1">{posts} bets placed</div>
+    <div className="font-semibold text-sm text-[#1d1d1f] dark:text-white mt-0.5">{title}</div>
+    <div className="text-xs text-[#86868b] dark:text-[#a1a1a6] mt-1">{posts} bets placed</div>
   </div>
 );
 
@@ -36,16 +36,16 @@ const RightPanel = memo(({ onTradeClick, onStakeClick, onTokenSaleClick }: Right
     <div className="w-full py-6 pl-4 pr-6">
 
       {/* Search */}
-      <div className="sticky top-0 bg-white/80 backdrop-blur-xl pb-3 z-10">
+      <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl pb-3 z-10 transition-colors duration-300">
         <form onSubmit={handleSearch} className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-[#86868b] group-focus-within:text-[#ffd700] transition-colors" />
+            <Search className="h-5 w-5 text-[#86868b] dark:text-[#a1a1a6] group-focus-within:text-[#ffd700] transition-colors" />
           </div>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 rounded-xl leading-5 bg-white text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white border border-[#e5e5ea] focus:border-[#ffd700] transition-all duration-200 shadow-sm"
+            className="block w-full pl-10 pr-3 py-3 rounded-xl leading-5 bg-white dark:bg-[#1c1c1e] text-[#1d1d1f] dark:text-white placeholder-[#86868b] dark:placeholder-[#a1a1a6] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white dark:focus:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] focus:border-[#ffd700] transition-all duration-200 shadow-sm"
             placeholder="Search markets"
           />
         </form>
@@ -92,34 +92,34 @@ const RightPanel = memo(({ onTradeClick, onStakeClick, onTokenSaleClick }: Right
       )}
 
       {/* AI Predictions Section */}
-      <div className="mt-4 bg-white border border-[#e5e5ea] rounded-2xl overflow-hidden shadow-sm">
+      <div className="mt-4 bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl overflow-hidden shadow-sm transition-colors duration-300">
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[#1d1d1f] flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-[#1d1d1f] dark:text-white flex items-center gap-2">
             <Sparkles className="text-[#ffd700]" size={18} />
             AI Predictions
           </h2>
         </div>
         <div className="px-4 pb-4 space-y-3">
-          <div className="p-3 bg-[#fff9e6] rounded-xl border border-[#ffd700]/20">
+          <div className="p-3 bg-[#fff9e6] dark:bg-[#332d1a] rounded-xl border border-[#ffd700]/20">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp size={14} className="text-[#ffd700]" />
-              <span className="text-xs font-semibold text-[#1d1d1f]">Bitcoin Price</span>
+              <span className="text-xs font-semibold text-[#1d1d1f] dark:text-white">Bitcoin Price</span>
             </div>
-            <p className="text-xs text-[#86868b]">AI predicts 75% chance BTC hits $100k by Q2 2024</p>
+            <p className="text-xs text-[#86868b] dark:text-[#a1a1a6]">AI predicts 75% chance BTC hits $100k by Q2 2024</p>
           </div>
-          <div className="p-3 bg-[#fff9e6] rounded-xl border border-[#ffd700]/20">
+          <div className="p-3 bg-[#fff9e6] dark:bg-[#332d1a] rounded-xl border border-[#ffd700]/20">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp size={14} className="text-[#ffd700]" />
-              <span className="text-xs font-semibold text-[#1d1d1f]">Election Outcome</span>
+              <span className="text-xs font-semibold text-[#1d1d1f] dark:text-white">Election Outcome</span>
             </div>
-            <p className="text-xs text-[#86868b]">AI suggests 68% probability of current trend continuing</p>
+            <p className="text-xs text-[#86868b] dark:text-[#a1a1a6]">AI suggests 68% probability of current trend continuing</p>
           </div>
         </div>
       </div>
 
       {/* Trending Box */}
-      <div className="mt-4 bg-white border border-[#e5e5ea] rounded-2xl overflow-hidden shadow-sm">
-        <h2 className="px-4 pt-4 pb-2 text-lg font-semibold text-[#1d1d1f]">Trends for you</h2>
+      <div className="mt-4 bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl overflow-hidden shadow-sm transition-colors duration-300">
+        <h2 className="px-4 pt-4 pb-2 text-lg font-semibold text-[#1d1d1f] dark:text-white">Trends for you</h2>
 
         <TrendingItem
           category="Politics"
@@ -142,7 +142,7 @@ const RightPanel = memo(({ onTradeClick, onStakeClick, onTokenSaleClick }: Right
           posts="89K"
         />
 
-        <div className="p-4 text-[#ffd700] text-sm hover:bg-[#fff9e6] cursor-pointer transition-colors duration-200 font-medium">
+        <div className="p-4 text-[#ffd700] text-sm hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] cursor-pointer transition-colors duration-200 font-medium">
           Show more
         </div>
       </div>

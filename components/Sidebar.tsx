@@ -109,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
   }, []);
 
   return (
-    <div className="h-screen sticky top-0 flex flex-col justify-between py-6 pl-6 pr-4 bg-white dark:bg-black transition-colors duration-300">
+    <div className="h-screen sticky top-0 flex flex-col justify-between py-6 pl-6 pr-4 bg-white/80 dark:bg-black/80 backdrop-blur-xl transition-colors duration-300">
       <div className="space-y-1">
         {/* Top Section: Logo and User Profile */}
         <div className="px-2 py-2 mb-6 space-y-4">
@@ -127,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
               {/* Profile Button */}
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#f5f5f7] w-full text-left transition-all duration-200 group"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] w-full text-left transition-all duration-200 group"
                 aria-expanded={isProfileMenuOpen}
                 aria-haspopup="true"
               >
@@ -158,13 +158,13 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
                   )}
                 </div>
                 <div className="hidden xl:block overflow-hidden flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-[#1d1d1f] truncate">{user.name}</p>
-                  <p className="text-[#86868b] text-xs truncate">{user.handle}</p>
+                  <p className="font-semibold text-sm text-[#1d1d1f] dark:text-white truncate">{user.name}</p>
+                  <p className="text-[#86868b] dark:text-[#a1a1a6] text-xs truncate">{user.handle}</p>
                 </div>
                 <ChevronDown 
                   size={16} 
                   className={cn(
-                    "text-[#86868b] transition-all duration-200 hidden xl:block",
+                    "text-[#86868b] dark:text-[#a1a1a6] transition-all duration-200 hidden xl:block",
                     isProfileMenuOpen && "rotate-180"
                   )} 
                 />
@@ -172,9 +172,9 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
 
               {/* Profile Dropdown Menu */}
               {isProfileMenuOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#e5e5ea] rounded-xl shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-xl shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden transition-colors duration-300">
                   {/* User Info Section */}
-                  <div className="p-4 border-b border-[#e5e5ea] bg-[#f5f5f7]">
+                  <div className="p-4 border-b border-[#e5e5ea] dark:border-[#38383a] bg-[#f5f5f7] dark:bg-[#2c2c2e] transition-colors duration-300">
                     <div className="flex items-center gap-3 mb-3">
                       {user.avatar ? (
                         <LazyImage 
@@ -188,23 +188,23 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-[#1d1d1f] truncate">{user.name}</p>
-                        <p className="text-[#86868b] text-xs truncate">{user.handle}</p>
+                        <p className="font-semibold text-sm text-[#1d1d1f] dark:text-white truncate">{user.name}</p>
+                        <p className="text-[#86868b] dark:text-[#a1a1a6] text-xs truncate">{user.handle}</p>
                       </div>
                     </div>
                     {walletAddress && (
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-[#e5e5ea]">
-                        <Wallet size={14} className="text-[#86868b] flex-shrink-0" />
-                        <span className="text-xs font-mono text-[#86868b] truncate flex-1">{walletAddress}</span>
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] transition-colors duration-300">
+                        <Wallet size={14} className="text-[#86868b] dark:text-[#a1a1a6] flex-shrink-0" />
+                        <span className="text-xs font-mono text-[#86868b] dark:text-[#a1a1a6] truncate flex-1">{walletAddress}</span>
                         <button
                           onClick={handleCopyAddress}
-                          className="p-1 hover:bg-[#f5f5f7] rounded transition-colors"
+                          className="p-1 hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] rounded transition-colors"
                           title="Copy address"
                         >
                           {copiedAddress ? (
                             <Check size={12} className="text-[#34c759]" />
                           ) : (
-                            <Copy size={12} className="text-[#86868b]" />
+                            <Copy size={12} className="text-[#86868b] dark:text-[#a1a1a6]" />
                           )}
                         </button>
                       </div>
@@ -218,18 +218,18 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
                         onNavigate('profile');
                         setIsProfileMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f5f5f7] text-left transition-colors duration-200"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] text-left transition-colors duration-200"
                     >
-                      <User size={16} className="text-[#86868b]" />
-                      <span className="text-sm text-[#1d1d1f]">View Profile</span>
+                      <User size={16} className="text-[#86868b] dark:text-[#a1a1a6]" />
+                      <span className="text-sm text-[#1d1d1f] dark:text-white">View Profile</span>
                     </button>
                     
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#fff5f5] text-left transition-colors duration-200 group"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#fff5f5] dark:hover:bg-[#2c1c1c] text-left transition-colors duration-200 group"
                     >
-                      <LogOut size={16} className="text-[#86868b] group-hover:text-[#ff3b30] transition-colors" />
-                      <span className="text-sm text-[#1d1d1f] group-hover:text-[#ff3b30] transition-colors">Sign Out</span>
+                      <LogOut size={16} className="text-[#86868b] dark:text-[#a1a1a6] group-hover:text-[#ff3b30] transition-colors" />
+                      <span className="text-sm text-[#1d1d1f] dark:text-white group-hover:text-[#ff3b30] transition-colors">Sign Out</span>
                     </button>
                   </div>
                 </div>
@@ -286,7 +286,7 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
         />
 
         {/* DAO Governance, Operations & White Paper (PC Platform Only) */}
-        <div className="hidden xl:block mt-6 pt-6 border-t border-[#e5e5ea] dark:border-[#38383a] space-y-1 transition-colors duration-300">
+        <div className="hidden xl:block mt-6 pt-6 border-t border-[#e5e5ea] dark:border-[#38383a] space-y-1">
           <NavItem
             icon={Users}
             label="DAO Governance"

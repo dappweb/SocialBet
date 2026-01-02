@@ -1,7 +1,9 @@
-import React from 'react';
-import { X, LogIn, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, LogIn, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { cn } from '../utils';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -10,22 +12,75 @@ interface LoginModalProps {
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     const { connect, isConnecting } = useAuth();
+    const { web3auth, isLoading: web3AuthLoading } = useWeb3Auth();
     const { showToast } = useToast();
+    const [error, setError] = useState<string | null>(null);
+    const [isInitializing, setIsInitializing] = useState(false);
 
     // Early return AFTER all hooks
     if (!isOpen) return null;
 
+    // Check if Web3Auth is ready when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            if (!web3auth && !web3AuthLoading) {
+                // Web3Auth failed to initialize
+                setError('Authentication service is not available. Please refresh the page.');
+            } else if (web3auth && !web3AuthLoading) {
+                // Web3Auth is ready, clear any errors
+                setError(null);
+            }
+        }
+    }, [isOpen, web3auth, web3AuthLoading]);
+
     const handleConnect = async () => {
+        // If Web3Auth is still loading, wait for it
+        if (web3AuthLoading) {
+            setIsInitializing(true);
+            setError(null);
+            showToast('Initializing authentication...', 'info');
+            return;
+        }
+
+        // If Web3Auth failed to initialize
+        if (!web3auth) {
+            setError('Authentication service is not available. Please refresh the page.');
+            setIsInitializing(false);
+            return;
+        }
+
+        setError(null);
+        setIsInitializing(false);
+
         try {
+            // Call connect which will trigger Web3Auth's login modal
             await connect();
             showToast('Successfully signed in!', 'success');
             onClose();
         } catch (error: any) {
             console.error('Login error:', error);
+            const errorMessage = error?.message || error?.toString() || 'Unknown error';
+            
             // Don't show error for user-cancelled login
-            if (!error?.message?.includes('cancelled') && !error?.message?.includes('closed')) {
-                showToast('Sign in failed. Please try again.', 'error');
+            if (errorMessage.includes('cancelled') || 
+                errorMessage.includes('closed') || 
+                errorMessage.includes('User closed') ||
+                errorMessage.includes('popup_closed_by_user') ||
+                errorMessage.includes('user closed') ||
+                errorMessage.includes('User rejected') ||
+                errorMessage.includes('user_cancelled')) {
+                // User cancelled, don't show error - just close modal silently
+                onClose();
+                return;
             }
+            
+            // Show user-friendly error message
+            const friendlyError = errorMessage.includes('not available') || errorMessage.includes('not initialized')
+                ? 'Authentication service is not available. Please refresh the page.'
+                : 'Sign in failed. Please try again.';
+            
+            setError(friendlyError);
+            showToast(friendlyError, 'error');
         }
     };
 
@@ -61,16 +116,39 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                         </p>
                     </div>
 
+                    {/* Error Message */}
+                    {error && (
+                        <div className="bg-[#ff3b30]/10 border border-[#ff3b30]/20 rounded-xl p-3 text-sm text-[#ff3b30] flex items-start gap-2 relative">
+                            <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                            <span className="flex-1">{error}</span>
+                            <button
+                                onClick={() => setError(null)}
+                                className="flex-shrink-0 p-1 hover:bg-[#ff3b30]/20 rounded-full transition-colors duration-200"
+                                aria-label="Close error"
+                            >
+                                <X size={14} className="text-[#ff3b30]" />
+                            </button>
+                        </div>
+                    )}
+
                     {/* Single Sign In Button */}
                     <button
                         onClick={handleConnect}
-                        disabled={isConnecting}
-                        className="w-full py-4 px-6 bg-gradient-to-r from-[#ffd700] to-[#ffeb3b] text-[#1d1d1f] font-semibold rounded-xl hover:from-[#ffeb3b] hover:to-[#ffd700] transition-all duration-200 shadow-lg shadow-[#ffd700]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                        disabled={isConnecting || isInitializing || (!web3auth && !web3AuthLoading)}
+                        className={cn(
+                            "w-full py-4 px-6 bg-gradient-to-r from-[#ffd700] to-[#ffeb3b] text-[#1d1d1f] font-semibold rounded-xl hover:from-[#ffeb3b] hover:to-[#ffd700] transition-all duration-200 shadow-lg shadow-[#ffd700]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3",
+                            (!web3auth && !web3AuthLoading) && "opacity-50 cursor-not-allowed"
+                        )}
                     >
-                        {isConnecting ? (
+                        {isConnecting || isInitializing ? (
                             <>
                                 <Loader2 size={20} className="animate-spin" />
-                                <span>Connecting...</span>
+                                <span>{isInitializing ? 'Initializing...' : 'Connecting...'}</span>
+                            </>
+                        ) : !web3auth && web3AuthLoading ? (
+                            <>
+                                <Loader2 size={20} className="animate-spin" />
+                                <span>Loading...</span>
                             </>
                         ) : (
                             <>
