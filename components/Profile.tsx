@@ -43,9 +43,11 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
   const [allMarkets, setAllMarkets] = useState<PredictionMarket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userStats, setUserStats] = useState({ betsCount: 0 });
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [savedAuth, setSavedAuth] = useState<any>(null);
 
-  // Check for saved auth in localStorage reactively (for mobile persistence)
+  // Check for saved auth in localStorage as fallback (for mobile persistence)
+  // Make it reactive so it updates when auth state changes
   useEffect(() => {
     const checkSavedAuth = () => {
       try {
@@ -58,45 +60,24 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
         return null;
       }
     };
-
-    // Check immediately on mount
+    
+    // Check immediately
     checkSavedAuth();
-
-    // Listen for storage events (when localStorage changes in other tabs/windows)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'socialbet_auth') {
-        checkSavedAuth();
-      }
+    
+    // Also check periodically in case localStorage is updated elsewhere
+    const interval = setInterval(checkSavedAuth, 1000);
+    
+    // Listen for storage events (when localStorage changes in other tabs)
+    const handleStorageChange = () => {
+      checkSavedAuth();
     };
     window.addEventListener('storage', handleStorageChange);
-
-    // Also poll periodically to catch changes (for mobile persistence)
-    const intervalId = setInterval(() => {
-      if (!isAuthenticated && !authUser) {
-        checkSavedAuth();
-      }
-    }, 1000); // Check every second if not authenticated
-
+    
     return () => {
+      clearInterval(interval);
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(intervalId);
     };
-  }, [isAuthenticated, authUser]);
-
-  // Determine if user has any form of authentication
-  const hasAnyAuth = useMemo(() => {
-    const hasAuth = isAuthenticated || !!authUser || !!savedAuth?.user;
-    // Debug logging (remove in production)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Profile] Auth check:', {
-        isAuthenticated,
-        hasAuthUser: !!authUser,
-        hasSavedAuth: !!savedAuth?.user,
-        hasAnyAuth: hasAuth,
-      });
-    }
-    return hasAuth;
-  }, [isAuthenticated, authUser, savedAuth]);
+  }, []);
 
   // Use authenticated user data, saved auth, or fallback to mock data
   const displayUser = useMemo(() => {
@@ -124,6 +105,32 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
       avatar: 'https://picsum.photos/id/100/200/200',
     };
   }, [isAuthenticated, authUser, savedAuth]);
+
+  // Show login prompt ONLY if not authenticated AND no saved auth
+  // This ensures profile is accessible when logged in
+  useEffect(() => {
+    // Check both isAuthenticated and savedAuth for mobile persistence
+    const hasAuth = isAuthenticated || authUser || (savedAuth?.user !== null && savedAuth?.user !== undefined);
+    
+    // Debug logging (remove in production)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Profile auth check:', {
+        isAuthenticated,
+        hasAuthUser: !!authUser,
+        hasSavedAuth: !!savedAuth?.user,
+        hasAuth,
+        showLoginPrompt: !hasAuth
+      });
+    }
+    
+    // Only show login prompt if we truly have no authentication
+    // Add a small delay to avoid race conditions during auth initialization
+    const timer = setTimeout(() => {
+      setShowLoginPrompt(!hasAuth);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, savedAuth, authUser]);
 
   // Fetch user data and markets
   useEffect(() => {
@@ -210,39 +217,12 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
 
 
 
-  // Show login prompt only if truly not authenticated (no auth user, no saved auth)
-  // Wait a bit for AuthContext to restore from localStorage before showing prompt
-  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
-  useEffect(() => {
-    // Give AuthContext time to restore from localStorage
-    const timer = setTimeout(() => {
-      setHasCheckedAuth(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Don't show login prompt until we've checked auth state
-  if (!hasCheckedAuth) {
-    return (
-      <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
-        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-4 py-2 flex items-center gap-4 border-b border-[#e5e5ea] shadow-sm">
-          <button onClick={() => onBack?.()} className="p-2 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200 group">
-            <ArrowLeft size={20} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
-          </button>
-          <div>
-            <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f]">Profile</h1>
-          </div>
-        </div>
-        <div className="flex flex-col items-center justify-center py-24 text-[#86868b]">
-          <Loader2 size={40} className="animate-spin mb-4 opacity-50" />
-          <p className="font-medium">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show login prompt only if truly not authenticated (no auth user, no saved auth)
-  if (!hasAnyAuth) {
+  // Determine if we should show login prompt
+  // Only show if we have NO authentication at all (neither isAuthenticated nor savedAuth)
+  const hasAnyAuth = isAuthenticated || authUser || (savedAuth?.user !== null && savedAuth?.user !== undefined);
+  const shouldShowLoginPrompt = !hasAnyAuth;
+  
+  if (shouldShowLoginPrompt) {
     return (
       <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
         {/* Sticky Header */}

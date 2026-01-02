@@ -15,6 +15,18 @@
     <link rel="preconnect" href="https://api.dicebear.com" />
     <link rel="dns-prefetch" href="https://picsum.photos" />
     
+    <!-- Apply theme immediately to prevent flash -->
+    <script>
+      (function() {
+        const theme = localStorage.getItem('soulcast_theme') || 'light';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+    
     <title>SoulCast - KOL Intent Prediction Markets</title>
   </head>
   <body>

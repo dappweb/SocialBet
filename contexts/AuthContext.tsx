@@ -87,28 +87,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           provider: web3AuthUser.verifier || 'web3auth',
         }));
       } else if (!isConnected && !isLoading) {
-        // For mobile persistence: don't clear user if we have saved auth
-        // This prevents the profile from becoming unavailable on mobile
+        // Only clear user if we're sure they're logged out
+        // Don't clear if there's saved auth (user might be logged in but Web3Auth session not restored yet)
         const savedAuth = localStorage.getItem('socialbet_auth');
-        if (savedAuth) {
+        if (!savedAuth) {
+          // No saved auth means user is truly logged out
+          setUser(null);
+          setSoulBalance(0);
+          setIsAdmin(false);
+        } else {
+          // There's saved auth, so keep the user (Web3Auth might restore session later)
+          // This prevents the Profile from showing login prompt when user is actually logged in
           try {
             const authData = JSON.parse(savedAuth);
-            if (authData.user) {
-              // Keep user from saved auth for mobile persistence
+            if (authData.user && !user) {
+              // Restore user from saved auth if not already set
               setUser(authData.user);
-              console.log('Maintaining user from saved auth (mobile persistence)');
-              // Don't clear localStorage - keep it for persistence
-              return; // Exit early to preserve user state
             }
           } catch (error) {
-            console.error('Failed to parse saved auth:', error);
+            console.error('Failed to restore user from saved auth:', error);
           }
         }
-        // Only clear if no saved auth exists
-        setUser(null);
-        setSoulBalance(0);
-        setIsAdmin(false);
-        localStorage.removeItem('socialbet_auth');
       }
     };
 
@@ -237,22 +236,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Also restore when Web3Auth finishes loading (in case localStorage was cleared)
   useEffect(() => {
-    // If Web3Auth is done loading and we're not connected, check localStorage
-    if (!isLoading && !isConnected && !user) {
+    // If Web3Auth is done loading and we don't have a user, check localStorage
+    if (!isLoading && !user) {
       const savedAuth = localStorage.getItem('socialbet_auth');
       if (savedAuth) {
         try {
           const authData = JSON.parse(savedAuth);
           if (authData.user) {
             setUser(authData.user);
-            console.log('Restored saved auth after Web3Auth load:', authData.user.name);
+            console.log('Restored auth after Web3Auth load:', authData.user.name);
           }
         } catch (error) {
           console.error('Failed to restore auth after Web3Auth load:', error);
         }
       }
     }
-  }, [isLoading, isConnected, user]);
+  }, [isLoading, user]);
 
   const connect = useCallback(async () => {
     setIsConnecting(true);

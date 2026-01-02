@@ -50,7 +50,7 @@ const NavItem = ({
 );
 
 const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreateClick, onLoginClick }) => {
-  const { isAuthenticated, user, logout, walletAddress } = useAuth();
+  const { isAuthenticated, user, logout, walletAddress, isAdmin } = useAuth();
   const { showToast } = useToast();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState(false);
@@ -293,12 +293,15 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
             active={currentView === 'dao'}
             onClick={() => onNavigate('dao')}
           />
-          <NavItem
-            icon={Settings}
-            label="Operations"
-            active={currentView === 'operations'}
-            onClick={() => onNavigate('operations')}
-          />
+          {/* Operations - Only visible to admin/owner */}
+          {isAdmin && (
+            <NavItem
+              icon={Settings}
+              label="Operations"
+              active={currentView === 'operations'}
+              onClick={() => onNavigate('operations')}
+            />
+          )}
           <NavItem
             icon={FileText}
             label="White Paper"

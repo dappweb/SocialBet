@@ -48,10 +48,18 @@ const AppContent: React.FC = () => {
   const [isStakingModalOpen, setIsStakingModalOpen] = useState(false);
   const [isTokenSaleModalOpen, setIsTokenSaleModalOpen] = useState(false);
   const { showToast, toasts, removeToast } = useToast();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   // Initialize with mock data immediately, then try to fetch from API
   const [markets, setMarkets] = useState<PredictionMarket[]>(MOCK_MARKETS);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect from operations if not admin
+  useEffect(() => {
+    if (currentView === 'operations' && !isAdmin) {
+      setCurrentView('home');
+      showToast('Access denied. Operations dashboard is only available to administrators.', 'error');
+    }
+  }, [currentView, isAdmin, showToast]);
 
   // Debug: Log markets state
   useEffect(() => {

@@ -23,9 +23,14 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className, size = 'md' }) => 
     lg: 24,
   };
 
+  const handleToggle = () => {
+    toggleTheme();
+  };
+
   return (
     <button
-      onClick={toggleTheme}
+      onClick={handleToggle}
+      type="button"
       className={cn(
         "relative rounded-full transition-all duration-300",
         "bg-[#f5f5f7] dark:bg-[#1c1c1e]",
@@ -34,6 +39,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className, size = 'md' }) => 
         "hover:border-[#ffd700] dark:hover:border-[#ffd700]",
         "focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:ring-offset-2",
         "dark:focus:ring-offset-[#1c1c1e]",
+        "active:scale-95",
         sizeClasses[size],
         className
       )}

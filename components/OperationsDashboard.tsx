@@ -10,7 +10,9 @@ import {
   Filter,
   Download,
   BarChart3,
-  Activity
+  Activity,
+  Shield,
+  Lock
 } from 'lucide-react';
 import { cn } from '../utils';
 import { operationsApi, TreasuryTransaction, OperationsStats } from '../services/api';
@@ -22,6 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
 /**
  * Operations Dashboard Component
  * Comprehensive operations and management system for Soulcast
+ * Only accessible to contract owner/admin
  */
 const OperationsDashboard: React.FC = () => {
   const { user, isAuthenticated, isAdmin } = useAuth();
@@ -169,15 +172,22 @@ const OperationsDashboard: React.FC = () => {
   // Show access denied if not admin
   if (!isAuthenticated || !isAdmin) {
     return (
-      <div className="min-h-screen bg-[#f5f5f7] p-4 sm:p-6 flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-[#e5e5ea] p-8 max-w-md text-center">
-          <Settings size={48} className="text-[#86868b] mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-[#1d1d1f] mb-2">Access Denied</h2>
-          <p className="text-[#86868b]">
+      <div className="min-h-screen bg-[#f5f5f7] dark:bg-black p-4 sm:p-6 flex items-center justify-center">
+        <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl border border-[#e5e5ea] dark:border-[#38383a] p-8 max-w-md text-center shadow-lg">
+          <div className="w-16 h-16 bg-[#ff3b30]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock size={32} className="text-[#ff3b30]" />
+          </div>
+          <h2 className="text-2xl font-semibold text-[#1d1d1f] dark:text-white mb-2">Access Denied</h2>
+          <p className="text-[#86868b] dark:text-[#a1a1a6] mb-4">
             {!isAuthenticated 
               ? 'Please sign in to access the Operations Dashboard.'
-              : 'Admin access is required to view the Operations Dashboard.'}
+              : 'Only contract owners and administrators can access the Operations Dashboard.'}
           </p>
+          {!isAuthenticated && (
+            <p className="text-sm text-[#86868b] dark:text-[#a1a1a6]">
+              This section is restricted to platform administrators.
+            </p>
+          )}
         </div>
       </div>
     );
