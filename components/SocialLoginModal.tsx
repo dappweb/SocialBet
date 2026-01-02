@@ -120,8 +120,15 @@ const SocialLoginModal: React.FC<SocialLoginModalProps> = ({ isOpen, onClose }) 
         {/* Error Message */}
         {error && (
           <div className="px-6 pb-4">
-            <div className="bg-[#ff3b30]/10 border border-[#ff3b30]/20 rounded-xl p-3 text-sm text-[#ff3b30]">
-              {error}
+            <div className="bg-[#ff3b30]/10 border border-[#ff3b30]/20 rounded-xl p-3 text-sm text-[#ff3b30] relative flex items-center gap-2">
+              <span className="flex-1">{error}</span>
+              <button
+                onClick={() => setError(null)}
+                className="flex-shrink-0 p-1 hover:bg-[#ff3b30]/20 rounded-full transition-colors duration-200"
+                aria-label="Close error"
+              >
+                <X size={14} className="text-[#ff3b30]" />
+              </button>
             </div>
           </div>
         )}

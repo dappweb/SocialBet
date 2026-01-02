@@ -27,6 +27,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
   const [liquidity, setLiquidity] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [showSoulWarning, setShowSoulWarning] = useState(true);
   
   // Image Generation/Editing State
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -179,8 +180,8 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
         </div>
 
           {/* Soul Balance Warning */}
-          {!hasEnoughSoul && isAuthenticated && (
-            <div className="mx-5 mt-5 p-4 bg-[#fff3cd] border border-[#ffd700] rounded-xl flex items-start gap-3">
+          {!hasEnoughSoul && isAuthenticated && showSoulWarning && (
+            <div className="mx-5 mt-5 p-4 bg-[#fff3cd] border border-[#ffd700] rounded-xl flex items-start gap-3 relative">
               <AlertCircle size={20} className="text-[#ff9800] flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <div className="font-semibold text-sm text-[#1d1d1f] mb-1">
@@ -196,6 +197,13 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
                   Purchase Soul
                 </button>
               </div>
+              <button
+                onClick={() => setShowSoulWarning(false)}
+                className="absolute top-2 right-2 p-1 hover:bg-[#ffd700]/20 rounded-full transition-colors duration-200"
+                aria-label="Close warning"
+              >
+                <X size={16} className="text-[#86868b]" />
+              </button>
             </div>
           )}
 

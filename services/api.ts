@@ -137,7 +137,7 @@ export const marketsApi = {
     },
 
     // Create new market
-    async create(data: { question: string; category: string; endDate: string; image?: string; creatorId?: string }): Promise<Market> {
+    async create(data: { question: string; category: string; endDate: string; image?: string; creatorId?: string; isAiGenerated?: boolean }): Promise<Market> {
         return fetchApi<Market>('/api/markets', {
             method: 'POST',
             body: JSON.stringify(data),
@@ -314,6 +314,22 @@ export interface MarketAnalysis {
     timestamp: string;
 }
 
+export interface AIPrediction {
+    question: string;
+    category: string;
+    description: string;
+    endDate: string;
+    reasoning: string;
+    confidence: number;
+    isAiGenerated: boolean;
+}
+
+export interface AIPredictionResponse {
+    prediction: AIPrediction;
+    rawResponse: string;
+    timestamp: string;
+}
+
 export const aiApi = {
     // Chat with AI assistant
     async chat(messages: ChatMessage[], userId?: string): Promise<ChatResponse> {
@@ -331,6 +347,18 @@ export const aiApi = {
         currentOdds?: { yesPercent: number; noPercent: number };
     }): Promise<MarketAnalysis> {
         return fetchApi<MarketAnalysis>('/api/ai/analyze-market', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Generate a new prediction market using AI
+    async generatePrediction(data: {
+        topic?: string;
+        context?: string;
+        category?: string;
+    }): Promise<AIPredictionResponse> {
+        return fetchApi<AIPredictionResponse>('/api/ai/generate-prediction', {
             method: 'POST',
             body: JSON.stringify(data),
         });

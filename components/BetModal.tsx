@@ -211,9 +211,16 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
           </div>
           
           {error && (
-            <div className="text-[#ff3b30] text-sm flex items-center gap-2 bg-[#ff3b30]/10 p-3 rounded-xl border border-[#ff3b30]/20">
-              <Info size={16} />
-              {error}
+            <div className="text-[#ff3b30] text-sm flex items-center gap-2 bg-[#ff3b30]/10 p-3 rounded-xl border border-[#ff3b30]/20 relative">
+              <Info size={16} className="flex-shrink-0" />
+              <span className="flex-1">{error}</span>
+              <button
+                onClick={() => setError(null)}
+                className="flex-shrink-0 p-1 hover:bg-[#ff3b30]/20 rounded-full transition-colors duration-200"
+                aria-label="Close error"
+              >
+                <X size={14} className="text-[#ff3b30]" />
+              </button>
             </div>
           )}
 

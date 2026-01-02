@@ -214,20 +214,31 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
         {/* Error Message */}
         {error && (
           <div className="px-6 pb-4">
-            <div className="bg-[#ff3b30]/10 border border-[#ff3b30]/20 rounded-xl p-3 text-sm text-[#ff3b30]">
-              {error}
-              {error.includes('not installed') && (
-                <div className="mt-2">
-                  <a
-                    href="https://metamask.io/download/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#ffd700] hover:text-[#ffc107] underline text-xs"
-                  >
-                    Install MetaMask →
-                  </a>
+            <div className="bg-[#ff3b30]/10 border border-[#ff3b30]/20 rounded-xl p-3 text-sm text-[#ff3b30] relative">
+              <div className="flex items-start gap-2">
+                <div className="flex-1">
+                  {error}
+                  {error.includes('not installed') && (
+                    <div className="mt-2">
+                      <a
+                        href="https://metamask.io/download/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#ffd700] hover:text-[#ffc107] underline text-xs"
+                      >
+                        Install MetaMask →
+                      </a>
+                    </div>
+                  )}
                 </div>
-              )}
+                <button
+                  onClick={() => setError(null)}
+                  className="flex-shrink-0 p-1 hover:bg-[#ff3b30]/20 rounded-full transition-colors duration-200 -mt-1"
+                  aria-label="Close error"
+                >
+                  <X size={14} className="text-[#ff3b30]" />
+                </button>
+              </div>
             </div>
           </div>
         )}

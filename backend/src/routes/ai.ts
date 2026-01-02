@@ -37,8 +37,12 @@ aiRoutes.post('/chat', async (c) => {
 - Explain market dynamics and probability calculations
 - Assist with AI avatar creation concepts
 - Answer questions about trending topics and market opportunities
+- Proactively suggest creating prediction markets when users discuss interesting topics
+- When users ask about trends, events, or "what if" scenarios, suggest generating a prediction market
 - Keep responses concise, friendly, and informative
 - Use emojis sparingly and appropriately
+
+If a user discusses something that could be a good prediction market (trends, events, outcomes, etc.), suggest: "Would you like me to generate a prediction market for this? Just click 'Generate Prediction' or ask me to create one!"
 
 Always be helpful and accurate. If you don't know something, admit it rather than guessing.`;
 
@@ -147,6 +151,111 @@ Keep the response concise and actionable.`;
     } catch (error: any) {
         console.error('Market analysis error:', error);
         return c.json({ error: error.message || 'Analysis failed' }, 500);
+    }
+});
+
+// POST /api/ai/generate-prediction - AI generates a new prediction market
+aiRoutes.post('/generate-prediction', async (c) => {
+    try {
+        const { topic, context, category } = await c.req.json();
+
+        const ai = c.env.AI;
+        if (!ai) {
+            return c.json({ error: 'AI service not available' }, 503);
+        }
+
+        // Enhanced system prompt for prediction generation
+        const systemPrompt = `You are an expert prediction market creator for SoulCast. Your role is to generate high-quality, engaging prediction market questions based on trending topics, news, or user requests.
+
+Guidelines:
+- Create clear, binary YES/NO questions
+- Questions should be specific and measurable
+- End dates should be realistic (typically 1-30 days)
+- Categories: Crypto, Sports, Pop Culture, Politics, Tech
+- Make questions interesting and bettable
+- Consider current events and trends
+
+Output format (JSON):
+{
+  "question": "Clear, specific YES/NO question",
+  "category": "One of: Crypto, Sports, Pop Culture, Politics, Tech",
+  "description": "Brief explanation of why this prediction is relevant",
+  "endDate": "ISO date string (1-30 days from now)",
+  "reasoning": "Why this prediction is interesting/valuable",
+  "confidence": "AI confidence level (0-100%)"
+}`;
+
+        const userPrompt = topic 
+            ? `Generate a prediction market question about: ${topic}${context ? `\n\nContext: ${context}` : ''}${category ? `\n\nCategory: ${category}` : ''}`
+            : `Generate an interesting prediction market question based on current trends.${category ? `\n\nCategory: ${category}` : ''}`;
+
+        const response = await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt },
+            ],
+            max_tokens: 1500,
+            temperature: 0.8, // Higher creativity for generation
+        });
+
+        let responseText = '';
+        if (response.response) {
+            responseText = response.response;
+        } else if (typeof response === 'string') {
+            responseText = response;
+        } else if (response.text) {
+            responseText = response.text;
+        } else {
+            responseText = JSON.stringify(response);
+        }
+
+        // Try to parse JSON from response
+        let predictionData;
+        try {
+            // Extract JSON from markdown code blocks if present
+            const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/) || 
+                             responseText.match(/```\s*([\s\S]*?)\s*```/);
+            const jsonText = jsonMatch ? jsonMatch[1] : responseText;
+            predictionData = JSON.parse(jsonText);
+        } catch {
+            // If JSON parsing fails, create structured data from text
+            const lines = responseText.split('\n').filter(l => l.trim());
+            predictionData = {
+                question: lines.find(l => l.toLowerCase().includes('question') || l.includes('?')) || 
+                         lines[0] || 'Will this prediction come true?',
+                category: category || 'Crypto',
+                description: responseText.substring(0, 200),
+                endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Default 7 days
+                reasoning: responseText,
+                confidence: 75,
+            };
+        }
+
+        // Validate and normalize the prediction data
+        const validCategories = ['Crypto', 'Sports', 'Pop Culture', 'Politics', 'Tech'];
+        const prediction = {
+            question: predictionData.question || 'Will this prediction come true?',
+            category: validCategories.includes(predictionData.category) 
+                ? predictionData.category 
+                : (category || 'Crypto'),
+            description: predictionData.description || predictionData.reasoning || '',
+            endDate: predictionData.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            reasoning: predictionData.reasoning || predictionData.description || '',
+            confidence: Math.min(100, Math.max(0, predictionData.confidence || 75)),
+            isAiGenerated: true,
+        };
+
+        return c.json({
+            prediction,
+            rawResponse: responseText,
+            timestamp: new Date().toISOString(),
+        });
+    } catch (error: any) {
+        console.error('AI prediction generation error:', error);
+        return c.json({ 
+            error: error.message || 'Failed to generate prediction',
+            message: 'AI prediction generation failed. Please try again.',
+        }, 500);
     }
 });
 

@@ -24,7 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
  * Comprehensive operations and management system for Soulcast
  */
 const OperationsDashboard: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'stats'>('overview');
   const [transactions, setTransactions] = useState<TreasuryTransaction[]>([]);
   const [stats, setStats] = useState<OperationsStats | null>(null);
@@ -34,9 +34,6 @@ const OperationsDashboard: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
   const [refreshInterval, setRefreshInterval] = useState<number>(30); // seconds
-
-  // Check if user is admin
-  const isAdmin = user?.isAdmin || false;
 
   // Auto-refresh functionality
   useEffect(() => {

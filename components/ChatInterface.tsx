@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
-import { aiApi, ChatMessage } from '../services/api';
+import { Send, Bot, User, Sparkles, Loader2, Wand2 } from 'lucide-react';
+import { aiApi, ChatMessage, AIPrediction } from '../services/api';
 import { cn } from '../utils';
+import AIPredictionSuggestion from './AIPredictionSuggestion';
 
 const ChatInterface: React.FC = memo(() => {
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([
-    { role: 'assistant', text: "Hello! I'm your SoulCast AI assistant powered by Cloudflare AI. Ask me anything about KOL intent predictions, markets, or trending topics!" }
+    { role: 'assistant', text: "Hello! I'm your SoulCast AI assistant powered by Cloudflare AI. Ask me anything about KOL intent predictions, markets, or trending topics! I can also generate prediction markets for you - just ask me to create one!" }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingPrediction, setIsGeneratingPrediction] = useState(false);
   const [currentModel, setCurrentModel] = useState<string>('llama-3.1-8b-instruct');
+  const [aiPrediction, setAiPrediction] = useState<AIPrediction | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -74,6 +77,48 @@ const ChatInterface: React.FC = memo(() => {
     }
   }, [handleSendMessage]);
 
+  const handleGeneratePrediction = useCallback(async (topic?: string, category?: string) => {
+    if (isGeneratingPrediction) return;
+
+    setIsGeneratingPrediction(true);
+    try {
+      const response = await aiApi.generatePrediction({
+        topic: topic || inputValue || undefined,
+        category,
+      });
+
+      if (response.prediction) {
+        setAiPrediction(response.prediction);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          text: `I've generated a prediction market for you! Check it out below. 🎯`
+        }]);
+      }
+    } catch (error: any) {
+      console.error('Failed to generate prediction:', error);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        text: error.message?.includes('AI service not available')
+          ? "AI prediction generation is currently unavailable. Please try again later."
+          : "Sorry, I couldn't generate a prediction right now. Please try again."
+      }]);
+    } finally {
+      setIsGeneratingPrediction(false);
+    }
+  }, [inputValue, isGeneratingPrediction]);
+
+  const handlePredictionCreated = useCallback(() => {
+    setAiPrediction(null);
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      text: "Great! Your market has been created. You can view it in the feed! 🎉"
+    }]);
+  }, []);
+
+  const handleDismissPrediction = useCallback(() => {
+    setAiPrediction(null);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen max-h-screen pb-20 sm:pb-0 bg-white border-x border-[#e5e5ea]/50">
       {/* Header */}
@@ -121,17 +166,48 @@ const ChatInterface: React.FC = memo(() => {
                 </div>
             </div>
         )}
+        {/* AI Prediction Suggestion */}
+        {aiPrediction && (
+          <div className="max-w-[85%]">
+            <AIPredictionSuggestion
+              prediction={aiPrediction}
+              onDismiss={handleDismissPrediction}
+              onCreated={handlePredictionCreated}
+            />
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
       <div className="p-4 border-t border-[#e5e5ea] bg-white/90 backdrop-blur">
+        {/* Quick Actions */}
+        <div className="mb-2 flex items-center gap-2">
+          <button
+            onClick={() => handleGeneratePrediction()}
+            disabled={isGeneratingPrediction || isLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#fff9e6] hover:bg-[#ffd700] text-[#1d1d1f] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Generate AI prediction"
+          >
+            {isGeneratingPrediction ? (
+              <>
+                <Loader2 size={12} className="animate-spin" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Wand2 size={12} />
+                <span>Generate Prediction</span>
+              </>
+            )}
+          </button>
+        </div>
         <div className="relative flex items-end gap-2 bg-[#f5f5f7] rounded-xl border border-[#e5e5ea] p-2 focus-within:ring-2 focus-within:ring-[#ffd700] focus-within:bg-white transition-all">
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about markets..."
+            placeholder="Ask about markets or request a prediction..."
             className="w-full bg-transparent text-[#1d1d1f] placeholder:text-[#86868b] text-sm resize-none focus:outline-none p-2 max-h-32"
             rows={1}
             style={{ minHeight: '44px' }}

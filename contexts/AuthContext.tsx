@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useWeb3Auth } from './Web3AuthContext';
 import { User } from '../types';
 import { usersApi } from '../services/api';
+import { isContractOwner } from '../services/contractAdminService';
 
 interface AuthContextType {
   user: User | null;
@@ -13,6 +14,7 @@ interface AuthContextType {
   soulBalance: number;
   updateSoulBalance: (amount: number) => void;
   deductSoul: (amount: number) => Promise<boolean>;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,33 +47,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [soulBalance, setSoulBalance] = useState<number>(0);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  // Sync Web3Auth user with app user
+  // Sync Web3Auth user with app user and check admin status
   useEffect(() => {
-    if (isConnected && web3AuthUser) {
-      const appUser: User = {
-        id: web3AuthUser.verifierId || walletAddress || 'user',
-        name: web3AuthUser.name || 'Anonymous User',
-        handle: web3AuthUser.email ? `@${web3AuthUser.email.split('@')[0]}` :
-          walletAddress ? `@${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '@user',
-        avatar: web3AuthUser.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress || 'default'}`,
-        isVerified: !!web3AuthUser.email,
-        walletAddressEth: walletAddress || undefined,
-        sosTokenBalance: 0, // Will be fetched from API
-      };
-      setUser(appUser);
+    const syncUserAndCheckAdmin = async () => {
+      if (isConnected && web3AuthUser) {
+        // First, check admin status if wallet is connected
+        let adminStatus = false;
+        if (walletAddress && provider) {
+          try {
+            const soulTokenAddress = import.meta.env.VITE_SOUL_TOKEN_SEPOLIA;
+            if (soulTokenAddress) {
+              adminStatus = await isContractOwner(walletAddress, provider, soulTokenAddress);
+              setIsAdmin(adminStatus);
+            }
+          } catch (error) {
+            console.error('Error checking admin status:', error);
+            setIsAdmin(false);
+          }
+        }
 
-      // Save to localStorage for persistence display
-      localStorage.setItem('socialbet_auth', JSON.stringify({
-        user: appUser,
-        provider: web3AuthUser.verifier || 'web3auth',
-      }));
-    } else if (!isConnected && !isLoading) {
-      setUser(null);
-      setSoulBalance(0);
-      localStorage.removeItem('socialbet_auth');
-    }
-  }, [isConnected, web3AuthUser, walletAddress, isLoading]);
+        const appUser: User = {
+          id: web3AuthUser.verifierId || walletAddress || 'user',
+          name: web3AuthUser.name || 'Anonymous User',
+          handle: web3AuthUser.email ? `@${web3AuthUser.email.split('@')[0]}` :
+            walletAddress ? `@${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : '@user',
+          avatar: web3AuthUser.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress || 'default'}`,
+          isVerified: !!web3AuthUser.email,
+          walletAddressEth: walletAddress || undefined,
+          sosTokenBalance: 0, // Will be fetched from API
+          isAdmin: adminStatus,
+        };
+        setUser(appUser);
+
+        // Save to localStorage for persistence display
+        localStorage.setItem('socialbet_auth', JSON.stringify({
+          user: appUser,
+          provider: web3AuthUser.verifier || 'web3auth',
+        }));
+      } else if (!isConnected && !isLoading) {
+        setUser(null);
+        setSoulBalance(0);
+        setIsAdmin(false);
+        localStorage.removeItem('socialbet_auth');
+      }
+    };
+
+    syncUserAndCheckAdmin();
+  }, [isConnected, web3AuthUser, walletAddress, isLoading, provider]);
 
   // Load and sync Soul balance from both API and on-chain
   useEffect(() => {
@@ -207,6 +231,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userId = user?.id;
       setUser(null);
       setSoulBalance(0); // Reset Soul balance on logout
+      setIsAdmin(false); // Reset admin status on logout
       localStorage.removeItem('socialbet_auth');
       // Clear user-specific Soul balance from localStorage
       if (userId) {
@@ -221,7 +246,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: user ? { ...user, isAdmin } : null,
         isAuthenticated: !!user,
         isConnecting: isConnecting || isLoading,
         connect,
@@ -230,6 +255,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         soulBalance,
         updateSoulBalance,
         deductSoul,
+        isAdmin,
       }}
     >
       {children}

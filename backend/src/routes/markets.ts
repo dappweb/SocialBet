@@ -120,13 +120,13 @@ marketsRoutes.get('/:id', async (c) => {
 // POST /api/markets - Create new market
 marketsRoutes.post('/', async (c) => {
     const body = await c.req.json();
-    const { question, category, endDate, image, creatorId = 'me' } = body;
+    const { question, category, endDate, image, creatorId = 'me', isAiGenerated = false } = body;
 
     if (!question || !category || !endDate) {
         return c.json({ error: 'Missing required fields: question, category, endDate' }, 400);
     }
 
-    // Check and deduct Soul balance (10 SOUL required)
+    // Check and deduct Soul balance (10 SOUL required, waived for AI-generated markets)
     const SOUL_REQUIRED = 10;
     const user = await c.env.DB.prepare('SELECT sos_token_balance FROM users WHERE id = ?').bind(creatorId).first();
     
@@ -135,7 +135,8 @@ marketsRoutes.post('/', async (c) => {
     }
 
     const userBalance: any = user;
-    if (userBalance.sos_token_balance < SOUL_REQUIRED) {
+    // AI-generated markets don't require SOUL tokens (they're created by the AI system)
+    if (!isAiGenerated && userBalance.sos_token_balance < SOUL_REQUIRED) {
         return c.json({ 
             error: `Insufficient Soul balance. ${SOUL_REQUIRED} SOUL required to create a market.`,
             required: SOUL_REQUIRED,
@@ -143,19 +144,21 @@ marketsRoutes.post('/', async (c) => {
         }, 400);
     }
 
-    // Deduct Soul tokens
-    await c.env.DB.prepare(`
-        UPDATE users 
-        SET sos_token_balance = sos_token_balance - ?
-        WHERE id = ?
-    `).bind(SOUL_REQUIRED, creatorId).run();
+    // Deduct Soul tokens only for user-created markets
+    if (!isAiGenerated) {
+        await c.env.DB.prepare(`
+            UPDATE users 
+            SET sos_token_balance = sos_token_balance - ?
+            WHERE id = ?
+        `).bind(SOUL_REQUIRED, creatorId).run();
+    }
 
     const id = crypto.randomUUID();
 
     await c.env.DB.prepare(`
-    INSERT INTO markets (id, creator_id, question, category, end_date, image)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).bind(id, creatorId, question, category, endDate, image || null).run();
+    INSERT INTO markets (id, creator_id, question, category, end_date, image, is_ai_generated)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).bind(id, creatorId, question, category, endDate, image || null, isAiGenerated ? 1 : 0).run();
 
     // Fetch the created market
     const market = await c.env.DB.prepare(`
