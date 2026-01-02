@@ -1,28 +1,82 @@
 
-import React, { useState, useEffect } from 'react';
-import { X, Loader2, Info, Wallet, Sparkles, BrainCircuit } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { X, Loader2, Info, Wallet, Sparkles, BrainCircuit, ChevronDown, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { PredictionMarket, BetType } from '../types';
 import { cn, formatCurrency } from '../utils';
 import { GoogleGenAI } from "@google/genai";
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useWallet } from '../contexts/WalletContext';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
 
 interface BetModalProps {
   market: PredictionMarket | null;
   betType: BetType | null;
   isOpen: boolean;
   onClose: () => void;
-  onPlaceBet: (marketId: string, amount: number, type: BetType) => Promise<void>;
+  onPlaceBet: (marketId: string, amount: number, type: BetType, blockchain?: string) => Promise<void>;
 }
 
 const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, onPlaceBet }) => {
   const [amount, setAmount] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBlockchain, setSelectedBlockchain] = useState<'ethereum' | 'solana' | 'bsc' | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
   const { showToast } = useToast();
+  const { isAuthenticated, user } = useAuth();
+  const { isConnected, currentChain, walletAddress } = useWallet();
+  const { provider } = useWeb3Auth();
   
   // AI Analysis State
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Set default blockchain based on connected wallet
+  useEffect(() => {
+    if (isOpen && currentChain) {
+      setSelectedBlockchain(currentChain);
+    } else if (isOpen && !selectedBlockchain) {
+      setSelectedBlockchain('ethereum'); // Default to Ethereum
+    }
+  }, [isOpen, currentChain, selectedBlockchain]);
+
+  // Fetch wallet balance
+  const fetchWalletBalance = useCallback(async () => {
+    if (!isAuthenticated || !walletAddress || !selectedBlockchain) {
+      setWalletBalance(null);
+      return;
+    }
+
+    setIsLoadingBalance(true);
+    try {
+      // Mock balance for now - in production, fetch from blockchain
+      // For Ethereum/BSC, use ethers.js to get USDC balance
+      // For Solana, use @solana/web3.js to get USDC balance
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const mockBalances: Record<string, number> = {
+        ethereum: 1240.50,
+        bsc: 850.25,
+        solana: 2100.75,
+      };
+      
+      setWalletBalance(mockBalances[selectedBlockchain] || 0);
+    } catch (error) {
+      console.error('Failed to fetch wallet balance:', error);
+      setWalletBalance(null);
+    } finally {
+      setIsLoadingBalance(false);
+    }
+  }, [isAuthenticated, walletAddress, selectedBlockchain]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchWalletBalance();
+    }
+  }, [isOpen, fetchWalletBalance]);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -32,6 +86,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
       setError(null);
       setAnalysis(null);
       setIsAnalyzing(false);
+      setTxHash(null);
     }
   }, [isOpen]);
 
@@ -73,10 +128,22 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!numericAmount || numericAmount <= 0) {
       setError("Please enter a valid amount.");
       showToast("Please enter a valid bet amount", 'warning');
+      return;
+    }
+
+    if (walletBalance !== null && numericAmount > walletBalance) {
+      setError(`Insufficient balance. Available: $${walletBalance.toFixed(2)}`);
+      showToast(`Insufficient balance. Available: $${walletBalance.toFixed(2)}`, 'error');
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setError("Please connect your wallet to place a bet.");
+      showToast("Please connect your wallet to place a bet.", 'warning');
       return;
     }
     
@@ -84,22 +151,63 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
     setError(null);
 
     try {
-      await onPlaceBet(market.id, numericAmount, betType);
-      onClose();
-    } catch (err) {
+      // Simulate on-chain transaction
+      if (isConnected && provider && selectedBlockchain) {
+        showToast('Preparing transaction...', 'info');
+        
+        // In production, this would:
+        // 1. Approve USDC spending if needed
+        // 2. Call prediction market contract to place bet
+        // 3. Wait for transaction confirmation
+        // 4. Get transaction hash
+        
+        // Mock transaction for now
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const mockTxHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+        setTxHash(mockTxHash);
+        
+        // Place bet via API
+        await onPlaceBet(market.id, numericAmount, betType, selectedBlockchain);
+        
+        showToast(`Bet placed! Transaction: ${mockTxHash.slice(0, 10)}...`, 'success');
+        
+        // Close modal after a short delay
+        setTimeout(() => {
+          onClose();
+        }, 1500);
+      } else {
+        // Fallback to API-only if no wallet connected
+        await onPlaceBet(market.id, numericAmount, betType, selectedBlockchain || undefined);
+        showToast(`Bet placed successfully!`, 'success');
+        onClose();
+      }
+    } catch (err: any) {
       console.error(err);
-      setError("Transaction failed. Please try again.");
-      showToast("Transaction failed. Please try again.", 'error');
+      const errorMessage = err.message || "Transaction failed. Please try again.";
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [numericAmount, walletBalance, isAuthenticated, isConnected, provider, selectedBlockchain, market, betType, onPlaceBet, showToast, onClose]);
 
   const isYes = betType === 'YES';
   const colorClass = isYes ? 'text-[#34c759]' : 'text-[#ff3b30]';
   const bgClass = isYes ? 'bg-[#34c759]' : 'bg-[#ff3b30]';
   const bgSoftClass = isYes ? 'bg-[#34c759]/10' : 'bg-[#ff3b30]/10';
   const borderClass = isYes ? 'border-[#34c759]/30' : 'border-[#ff3b30]/30';
+
+  // Calculate max amount based on balance
+  const maxAmount = useMemo(() => {
+    return walletBalance !== null ? walletBalance : 0;
+  }, [walletBalance]);
+
+  // Blockchain options
+  const blockchainOptions = [
+    { value: 'ethereum', label: 'Ethereum', icon: 'Ξ' },
+    { value: 'solana', label: 'Solana', icon: '◎' },
+    { value: 'bsc', label: 'BSC', icon: 'BNB' },
+  ] as const;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">
@@ -131,7 +239,14 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
             <label className="text-sm font-medium text-[#1d1d1f] flex justify-between">
               <span>Wager Amount (USDC)</span>
               <span className="flex items-center gap-1 text-[#86868b] text-xs">
-                <Wallet size={12} /> Balance: $1,240.50
+                <Wallet size={12} />
+                {isLoadingBalance ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : walletBalance !== null ? (
+                  `Balance: ${formatCurrency(walletBalance)}`
+                ) : (
+                  'Connect wallet'
+                )}
               </span>
             </label>
             <div className="relative">
@@ -147,22 +262,55 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
             </div>
             
             {/* Quick Selectors */}
-            <div className="flex gap-2 mt-2">
-              {[10, 50, 100].map((val) => (
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {[10, 50, 100, 250].map((val) => (
                 <button
                   key={val}
                   onClick={() => handleQuickAmount(val)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f5f5f7] hover:bg-[#fff9e6] hover:border hover:border-[#ffd700]/30 text-[#1d1d1f] transition-all duration-200"
+                  disabled={walletBalance !== null && val > walletBalance}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f5f5f7] hover:bg-[#fff9e6] hover:border hover:border-[#ffd700]/30 text-[#1d1d1f] transition-all duration-200",
+                    walletBalance !== null && val > walletBalance && "opacity-50 cursor-not-allowed"
+                  )}
                 >
                   ${val}
                 </button>
               ))}
               <button
-                  onClick={() => handleQuickAmount(1240.50)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f5f5f7] hover:bg-[#fff9e6] hover:border hover:border-[#ffd700]/30 text-[#1d1d1f] transition-all duration-200 ml-auto"
+                onClick={() => handleQuickAmount(maxAmount)}
+                disabled={maxAmount <= 0}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f5f5f7] hover:bg-[#fff9e6] hover:border hover:border-[#ffd700]/30 text-[#1d1d1f] transition-all duration-200 ml-auto",
+                  maxAmount <= 0 && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                Max
+              </button>
+            </div>
+          </div>
+
+          {/* Blockchain Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-[#1d1d1f]">Blockchain Network</label>
+            <div className="grid grid-cols-3 gap-2">
+              {blockchainOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setSelectedBlockchain(option.value)}
+                  className={cn(
+                    "p-3 rounded-xl border-2 transition-all duration-200 text-sm font-medium",
+                    selectedBlockchain === option.value
+                      ? "border-[#ffd700] bg-[#fff9e6] text-[#1d1d1f]"
+                      : "border-[#e5e5ea] bg-white text-[#86868b] hover:border-[#ffd700]/50"
+                  )}
                 >
-                  Max
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-lg">{option.icon}</span>
+                    <span>{option.label}</span>
+                  </div>
                 </button>
+              ))}
             </div>
           </div>
 
@@ -210,6 +358,27 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
              )}
           </div>
           
+          {/* Transaction Success */}
+          {txHash && (
+            <div className="bg-[#34c759]/10 border border-[#34c759]/30 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-[#34c759]">
+                <CheckCircle2 size={20} />
+                <span className="font-semibold text-sm">Transaction Submitted</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-mono text-[#86868b] break-all">{txHash}</span>
+                <a
+                  href={`https://etherscan.io/tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#ffd700] hover:text-[#ffc107] flex items-center gap-1"
+                >
+                  View <ExternalLink size={12} />
+                </a>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="text-[#ff3b30] text-sm flex items-center gap-2 bg-[#ff3b30]/10 p-3 rounded-xl border border-[#ff3b30]/20 relative">
               <Info size={16} className="flex-shrink-0" />
@@ -226,20 +395,22 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
 
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting || numericAmount <= 0}
+            disabled={isSubmitting || numericAmount <= 0 || (walletBalance !== null && numericAmount > walletBalance) || !isAuthenticated}
             className={cn(
               "w-full py-4 rounded-xl font-semibold text-lg text-white shadow-md transform transition-all duration-200 active:scale-[0.97] flex items-center justify-center gap-2",
               bgClass,
-              (isSubmitting || numericAmount <= 0) && "opacity-50 cursor-not-allowed"
+              (isSubmitting || numericAmount <= 0 || (walletBalance !== null && numericAmount > walletBalance) || !isAuthenticated) && "opacity-50 cursor-not-allowed"
             )}
           >
             {isSubmitting ? (
               <>
                 <Loader2 size={20} className="animate-spin" />
-                Confirming on Chain...
+                {txHash ? 'Confirming...' : 'Preparing Transaction...'}
               </>
+            ) : !isAuthenticated ? (
+              'Connect Wallet to Bet'
             ) : (
-              `Review & Bet ${betType}`
+              `Place ${betType} Bet`
             )}
           </button>
           

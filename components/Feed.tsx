@@ -40,7 +40,7 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets = [] }) => {
     setIsModalOpen(true);
   }, [isAuthenticated, showToast]);
 
-  const handlePlaceBet = async (marketId: string, amount: number, type: BetType) => {
+  const handlePlaceBet = async (marketId: string, amount: number, type: BetType, blockchain?: string) => {
     try {
       const market = markets.find(m => m.id === marketId);
       if (!market) throw new Error('Market not found');
@@ -52,6 +52,7 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets = [] }) => {
         amount,
         priceAtBet: type === 'YES' ? market.outcomeStats.yesPrice : market.outcomeStats.noPrice,
         userId: 'me',
+        blockchain,
       });
 
       // Update local state to reflect the bet

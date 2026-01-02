@@ -1,4 +1,4 @@
-import React, { useState, memo, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, memo, useCallback, useMemo, useEffect, lazy, Suspense } from 'react';
 import { Calendar, Link as LinkIcon, MapPin, ArrowLeft, Ghost, Loader2 } from 'lucide-react';
 import { MOCK_MARKETS } from '../constants';
 import PredictionCard from './PredictionCard';
@@ -7,12 +7,15 @@ import { cn } from '../utils';
 import { usersApi, betsApi, marketsApi } from '../services/api';
 import LazyImage from './LazyImage';
 import { useAuth } from '../contexts/AuthContext';
+import LoadingSpinner from './LoadingSpinner';
+
+const TradingDashboard = lazy(() => import('./TradingDashboard'));
 
 interface ProfileProps {
   onBack?: () => void;
 }
 
-type ProfileTab = 'bets' | 'created' | 'likes';
+type ProfileTab = 'bets' | 'created' | 'likes' | 'trading';
 
 // Moved outside Profile component to prevent recreation on every render
 const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, label: string, activeTab: ProfileTab, onClick: (id: ProfileTab) => void }) => (
@@ -94,6 +97,17 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
   }, []);
 
   const renderContent = () => {
+    // Show Trading Dashboard for trading tab
+    if (activeTab === 'trading') {
+      return (
+        <Suspense fallback={<LoadingSpinner text="Loading trading dashboard..." />}>
+          <div className="p-4">
+            <TradingDashboard markets={allMarkets} />
+          </div>
+        </Suspense>
+      );
+    }
+
     let data = userBets;
     let emptyMsg = "No bets placed yet.";
 
@@ -206,6 +220,7 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack }) => {
       {/* Tabs */}
       <div className="flex border-b border-[#e5e5ea] bg-white">
         <TabButton id="bets" label="Bets" activeTab={activeTab} onClick={handleTabChange} />
+        <TabButton id="trading" label="Trading" activeTab={activeTab} onClick={handleTabChange} />
         <TabButton id="created" label="Created" activeTab={activeTab} onClick={handleTabChange} />
         <TabButton id="likes" label="Likes" activeTab={activeTab} onClick={handleTabChange} />
       </div>
