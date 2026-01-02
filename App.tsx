@@ -44,6 +44,7 @@ const AppContent: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTradingModalOpen, setIsTradingModalOpen] = useState(false);
   const [isStakingModalOpen, setIsStakingModalOpen] = useState(false);
+  const [isTokenSaleModalOpen, setIsTokenSaleModalOpen] = useState(false);
   const { showToast, toasts, removeToast } = useToast();
   const { user } = useAuth();
   // Initialize with mock data immediately, then try to fetch from API
