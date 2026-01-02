@@ -5,6 +5,7 @@ import { cn } from '../utils';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import LazyImage from './LazyImage';
+import ThemeToggle from './ThemeToggle';
 
 type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper' | 'operations';
 
@@ -31,8 +32,8 @@ const NavItem = ({
     className={cn(
       "flex items-center gap-4 px-4 py-3 rounded-xl w-fit transition-all duration-200 group relative",
       active
-        ? "font-semibold text-[#1d1d1f] bg-[#fff9e6]"
-        : "text-[#86868b] hover:bg-[#f5f5f7] hover:text-[#1d1d1f]"
+        ? "font-semibold text-[#1d1d1f] dark:text-white bg-[#fff9e6] dark:bg-[#332d1a]"
+        : "text-[#86868b] dark:text-[#a1a1a6] hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] hover:text-[#1d1d1f] dark:hover:text-white"
     )}
   >
     <Icon
@@ -108,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
   }, []);
 
   return (
-    <div className="h-screen sticky top-0 flex flex-col justify-between py-6 pl-6 pr-4">
+    <div className="h-screen sticky top-0 flex flex-col justify-between py-6 pl-6 pr-4 bg-white dark:bg-black transition-colors duration-300">
       <div className="space-y-1">
         {/* Top Section: Logo and User Profile */}
         <div className="px-2 py-2 mb-6 space-y-4">
@@ -300,7 +301,7 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
         />
 
         {/* DAO Governance, Operations & White Paper (PC Platform Only) */}
-        <div className="hidden xl:block mt-6 pt-6 border-t border-[#e5e5ea] space-y-1">
+        <div className="hidden xl:block mt-6 pt-6 border-t border-[#e5e5ea] dark:border-[#38383a] space-y-1 transition-colors duration-300">
           <NavItem
             icon={Users}
             label="DAO Governance"
@@ -319,6 +320,11 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
             active={currentView === 'whitepaper'}
             onClick={() => onNavigate('whitepaper')}
           />
+        </div>
+
+        {/* Theme Toggle */}
+        <div className="mt-6 flex items-center justify-center xl:justify-start px-2">
+          <ThemeToggle size="md" />
         </div>
 
         {/* Create Market Button - Bright Yellow */}

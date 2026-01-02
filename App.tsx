@@ -28,7 +28,8 @@ const ChatInterface = lazy(() => import('./components/ChatInterface'));
 const CreateMarketModal = lazy(() => import('./components/CreateMarketModal'));
 const DAOGovernance = lazy(() => import('./components/DAOGovernance'));
 const WhitePaper = lazy(() => import('./components/WhitePaper'));
-const LoginModal = lazy(() => import('./components/LoginModal'));
+// LoginModal imported directly to avoid dynamic import errors in production
+import LoginModal from './components/LoginModal';
 const WalletBalance = lazy(() => import('./components/WalletBalance'));
 const SoulTokenTrading = lazy(() => import('./components/SoulTokenTrading'));
 const TreasuryManagement = lazy(() => import('./components/TreasuryManagement'));
@@ -208,14 +209,14 @@ const AppContent: React.FC = () => {
           {/* Main Feed / Content Area */}
           <main className={cn(
             "flex-1 min-h-screen relative",
-            currentView !== 'whitepaper' && "max-w-[600px] border-r border-[#e5e5ea]/50"
+            currentView !== 'whitepaper' && "max-w-[600px] border-r border-[#e5e5ea]/50 dark:border-[#38383a]/50 transition-colors duration-300"
           )}>
             {renderView}
           </main>
 
           {/* Right Panel (Desktop) - Hidden on whitepaper for better reading experience */}
           {currentView !== 'whitepaper' && (
-            <aside className="hidden lg:block w-[350px] shrink-0 bg-white/80 backdrop-blur-xl border-l border-[#e5e5ea]">
+            <aside className="hidden lg:block w-[350px] shrink-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-l border-[#e5e5ea] dark:border-[#38383a] transition-colors duration-300">
               <div className="sticky top-0 h-screen overflow-y-auto no-scrollbar">
                 <Suspense fallback={<div className="h-32 bg-white rounded-xl mb-4 animate-pulse" />}>
                   <WalletBalance />
@@ -231,7 +232,7 @@ const AppContent: React.FC = () => {
         </div>
 
         {/* Mobile Bottom Nav */}
-        <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-[#e5e5ea] flex justify-around px-2 py-3 z-40 safe-area-pb shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-t border-[#e5e5ea] dark:border-[#38383a] flex justify-around px-2 py-3 z-40 safe-area-pb shadow-[0_-2px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_-2px_10px_rgba(255,255,255,0.05)] transition-colors duration-300">
           <button
             onClick={handleNavigateHome}
             className={cn("p-2 rounded-full transition-all duration-200", currentView === 'home' ? "text-[#ffd700]" : "text-[#86868b]")}
@@ -284,12 +285,10 @@ const AppContent: React.FC = () => {
           </Suspense>
         )}
         {isLoginModalOpen && (
-          <Suspense fallback={null}>
-            <LoginModal
-              isOpen={isLoginModalOpen}
-              onClose={handleCloseLoginModal}
-            />
-          </Suspense>
+          <LoginModal
+            isOpen={isLoginModalOpen}
+            onClose={handleCloseLoginModal}
+          />
         )}
         {isTradingModalOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
