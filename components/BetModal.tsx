@@ -8,6 +8,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useWallet } from '../contexts/WalletContext';
 import { useWeb3Auth } from '../contexts/Web3AuthContext';
+import { placeBet as placeBetOnChain } from '../services/predictionMarketService';
 
 interface BetModalProps {
   market: PredictionMarket | null;
@@ -151,32 +152,50 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
     setError(null);
 
     try {
-      // Simulate on-chain transaction
-      if (isConnected && provider && selectedBlockchain) {
+      // Place bet on-chain if wallet connected and on Sepolia
+      if (isConnected && provider && selectedBlockchain === 'ethereum') {
+        const contractAddress = import.meta.env.VITE_PREDICTION_MARKET_SEPOLIA;
+        if (!contractAddress) {
+          throw new Error('Prediction market contract not configured');
+        }
+
+        // Extract market ID from market.id (could be string or number)
+        const marketId = typeof market.id === 'string' ? parseInt(market.id) : market.id;
+        if (isNaN(marketId)) {
+          throw new Error('Invalid market ID');
+        }
+
         showToast('Preparing transaction...', 'info');
         
-        // In production, this would:
-        // 1. Approve USDC spending if needed
-        // 2. Call prediction market contract to place bet
-        // 3. Wait for transaction confirmation
-        // 4. Get transaction hash
+        // Place bet on-chain
+        const result = await placeBetOnChain(
+          provider,
+          contractAddress,
+          marketId,
+          betType,
+          numericAmount
+        );
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to place bet');
+        }
+
+        setTxHash(result.txHash || undefined);
+        showToast(`Bet placed! Transaction: ${result.txHash?.slice(0, 10)}...`, 'success');
         
-        // Mock transaction for now
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        const mockTxHash = `0x${Math.random().toString(16).substr(2, 64)}`;
-        setTxHash(mockTxHash);
-        
-        // Place bet via API
-        await onPlaceBet(market.id, numericAmount, betType, selectedBlockchain);
-        
-        showToast(`Bet placed! Transaction: ${mockTxHash.slice(0, 10)}...`, 'success');
+        // Also update backend for UI sync
+        try {
+          await onPlaceBet(market.id, numericAmount, betType, selectedBlockchain);
+        } catch (apiError) {
+          console.warn('Backend sync failed, but on-chain bet succeeded:', apiError);
+        }
         
         // Close modal after a short delay
         setTimeout(() => {
           onClose();
         }, 1500);
       } else {
-        // Fallback to API-only if no wallet connected
+        // Fallback to API-only if no wallet connected or not on Ethereum
         await onPlaceBet(market.id, numericAmount, betType, selectedBlockchain || undefined);
         showToast(`Bet placed successfully!`, 'success');
         onClose();

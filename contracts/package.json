@@ -10,6 +10,7 @@
         "deploy:mainnet": "hardhat run scripts/deploy.ts --network mainnet",
         "deploy:bsc": "hardhat run scripts/deploy.ts --network bsc",
         "deploy:bsc-testnet": "hardhat run scripts/deploy.ts --network bscTestnet",
+        "deploy:prediction-market:sepolia": "hardhat run scripts/deploy-prediction-market.ts --network sepolia",
         "verify": "hardhat verify"
     },
     "devDependencies": {

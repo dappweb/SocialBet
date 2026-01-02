@@ -6,8 +6,11 @@ import { cn } from '../utils';
 import { GoogleGenAI } from "@google/genai";
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
+import { useWallet } from '../contexts/WalletContext';
 import SoulPurchaseModal from './SoulPurchaseModal';
 import { usersApi, aiApi, CurrentEvent } from '../services/api';
+import { createMarket as createMarketOnChain } from '../services/predictionMarketService';
 
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -21,6 +24,8 @@ const SOUL_REQUIRED_FOR_MARKET = 10; // 10 SOUL tokens required to create a mark
 const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, onCreate }) => {
   const { soulBalance, deductSoul, isAuthenticated, user } = useAuth();
   const { showToast } = useToast();
+  const { provider } = useWeb3Auth();
+  const { isConnected, currentChain } = useWallet();
   const [question, setQuestion] = useState('');
   const [category, setCategory] = useState<MarketCategory>('Crypto');
   const [endDate, setEndDate] = useState('');
@@ -190,13 +195,51 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
           return;
         }
 
-        // Create market (backend will also deduct Soul and validate balance)
+        let onChainMarketId: number | undefined;
+        let txHash: string | undefined;
+
+        // Create market on-chain if wallet connected and on Ethereum
+        if (isConnected && provider && currentChain === 'ethereum') {
+          const contractAddress = import.meta.env.VITE_PREDICTION_MARKET_SEPOLIA;
+          if (contractAddress) {
+            try {
+              showToast('Creating market on blockchain...', 'info');
+              const endDateObj = new Date(endDate);
+              const initialLiquidity = parseFloat(liquidity) || 10; // Default 10 tokens
+              
+              const result = await createMarketOnChain(
+                provider,
+                contractAddress,
+                question,
+                category,
+                endDateObj,
+                initialLiquidity
+              );
+
+              if (result.success && result.marketId) {
+                onChainMarketId = result.marketId;
+                txHash = result.txHash;
+                showToast(`Market created on-chain! ID: ${result.marketId}`, 'success');
+              } else {
+                console.warn('On-chain market creation failed, falling back to API:', result.error);
+                showToast('On-chain creation failed, using API fallback', 'warning');
+              }
+            } catch (onChainError) {
+              console.error('On-chain market creation error:', onChainError);
+              showToast('On-chain creation failed, using API fallback', 'warning');
+            }
+          }
+        }
+
+        // Create market in backend (for UI sync and metadata)
         await onCreate({ 
             question, 
             category, 
             endDate, 
             liquidity: parseFloat(liquidity),
-            image: imagePreview 
+            image: imagePreview,
+            onChainMarketId,
+            txHash
         });
         
         // Refresh Soul balance from backend

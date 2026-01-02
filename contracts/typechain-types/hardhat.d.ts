@@ -222,6 +222,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Checkpoints__factory>;
     getContractFactory(
+      name: "PredictionMarket",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PredictionMarket__factory>;
+    getContractFactory(
       name: "SoulCastGovernor",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SoulCastGovernor__factory>;
@@ -503,6 +507,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Checkpoints>;
     getContractAt(
+      name: "PredictionMarket",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PredictionMarket>;
+    getContractAt(
       name: "SoulCastGovernor",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -737,6 +746,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Checkpoints>;
     deployContract(
+      name: "PredictionMarket",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PredictionMarket>;
+    deployContract(
       name: "SoulCastGovernor",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SoulCastGovernor>;
@@ -1017,6 +1030,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Checkpoints>;
+    deployContract(
+      name: "PredictionMarket",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PredictionMarket>;
     deployContract(
       name: "SoulCastGovernor",
       args: any[],

@@ -110,6 +110,8 @@ export type { Strings } from "./@openzeppelin/contracts/utils/Strings";
 export { Strings__factory } from "./factories/@openzeppelin/contracts/utils/Strings__factory";
 export type { Checkpoints } from "./@openzeppelin/contracts/utils/structs/Checkpoints";
 export { Checkpoints__factory } from "./factories/@openzeppelin/contracts/utils/structs/Checkpoints__factory";
+export type { PredictionMarket } from "./contracts/PredictionMarket";
+export { PredictionMarket__factory } from "./factories/contracts/PredictionMarket__factory";
 export type { SoulCastGovernor } from "./contracts/SoulCastGovernor";
 export { SoulCastGovernor__factory } from "./factories/contracts/SoulCastGovernor__factory";
 export type { SoulCastToken } from "./contracts/SoulCastToken";
