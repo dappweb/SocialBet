@@ -28,9 +28,9 @@ const ChatInterface = lazy(() => import('./components/ChatInterface'));
 const CreateMarketModal = lazy(() => import('./components/CreateMarketModal'));
 const DAOGovernance = lazy(() => import('./components/DAOGovernance'));
 const WhitePaper = lazy(() => import('./components/WhitePaper'));
-// LoginModal imported directly to avoid dynamic import errors in production
+// LoginModal and WalletBalance imported directly to avoid dynamic import errors in production
 import LoginModal from './components/LoginModal';
-const WalletBalance = lazy(() => import('./components/WalletBalance'));
+import WalletBalance from './components/WalletBalance';
 const SoulTokenTrading = lazy(() => import('./components/SoulTokenTrading'));
 const TreasuryManagement = lazy(() => import('./components/TreasuryManagement'));
 const SoulTokenBalance = lazy(() => import('./components/SoulTokenBalance'));
@@ -226,9 +226,7 @@ const AppContent: React.FC = () => {
           {currentView !== 'whitepaper' && (
             <aside className="hidden lg:block w-[350px] shrink-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-l border-[#e5e5ea] dark:border-[#38383a] transition-colors duration-300">
               <div className="sticky top-0 h-screen overflow-y-auto no-scrollbar">
-                <Suspense fallback={<div className="h-32 bg-white rounded-xl mb-4 animate-pulse" />}>
-                  <WalletBalance />
-                </Suspense>
+                <WalletBalance />
                 <RightPanel 
                   onTradeClick={handleOpenTradingModal} 
                   onStakeClick={handleOpenStakingModal}
