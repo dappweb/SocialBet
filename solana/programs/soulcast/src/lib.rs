@@ -20,9 +20,10 @@ pub mod soulcast {
 
     /// Mint SOUL Tokens
     pub fn mint_tokens(ctx: Context<MintTokens>, amount: u64) -> Result<()> {
+        let mint_authority_bump = ctx.bumps.mint_authority;
         let seeds = &[
-            b"mint_authority",
-            &[ctx.bumps.mint_authority],
+            b"mint_authority".as_ref(),
+            &[mint_authority_bump],
         ];
         let signer = &[&seeds[..]];
 
@@ -85,9 +86,10 @@ pub mod soulcast {
         let rewards = calculate_rewards(user_stake, &ctx.accounts.staking_state)?;
         if rewards > 0 {
             // Mint rewards to user
+            let mint_authority_bump = ctx.bumps.mint_authority;
             let seeds = &[
-                b"mint_authority",
-                &[ctx.bumps.mint_authority],
+                b"mint_authority".as_ref(),
+                &[mint_authority_bump],
             ];
             let signer = &[&seeds[..]];
 
@@ -136,11 +138,12 @@ pub mod soulcast {
         require!(rewards > 0, ErrorCode::NoRewards);
 
         // Mint rewards to user
+        let mint_authority_bump = ctx.bumps.mint_authority;
         let seeds = &[
-            b"mint_authority",
-            &[ctx.bumps.mint_authority],
+            b"mint_authority".as_ref(),
+            &[mint_authority_bump],
         ];
-        let signer = &[&seeds[..]];
+        let signer = &[&seeds[..]];  
 
         let cpi_accounts = MintTo {
             mint: ctx.accounts.mint.to_account_info(),
@@ -199,33 +202,34 @@ pub mod soulcast {
         Ok(())
     }
 
-    /// Calculate rewards for a user
-    fn calculate_rewards(user_stake: &Account<UserStake>, state: &Account<StakingState>) -> Result<u64> {
-        if user_stake.amount == 0 {
-            return Ok(0);
-        }
+}
 
-        let duration = Clock::get()?.unix_timestamp - user_stake.last_reward_claim;
-        if duration <= 0 {
-            return Ok(0);
-        }
-
-        // Annual reward = staked * rate / 10000
-        // Per second reward = annual / (365 * 24 * 3600)
-        let annual_reward = (user_stake.amount as u128)
-            .checked_mul(state.reward_rate_bps as u128)
-            .unwrap()
-            .checked_div(10000)
-            .unwrap();
-        
-        let rewards = (annual_reward as u128)
-            .checked_mul(duration as u128)
-            .unwrap()
-            .checked_div(365 * 24 * 3600)
-            .unwrap();
-
-        Ok(rewards as u64)
+/// Calculate rewards for a user (outside #[program] module)
+fn calculate_rewards(user_stake: &Account<UserStake>, state: &Account<StakingState>) -> Result<u64> {
+    if user_stake.amount == 0 {
+        return Ok(0);
     }
+
+    let duration = Clock::get()?.unix_timestamp - user_stake.last_reward_claim;
+    if duration <= 0 {
+        return Ok(0);
+    }
+
+    // Annual reward = staked * rate / 10000
+    // Per second reward = annual / (365 * 24 * 3600)
+    let annual_reward = (user_stake.amount as u128)
+        .checked_mul(state.reward_rate_bps as u128)
+        .unwrap()
+        .checked_div(10000)
+        .unwrap();
+    
+    let rewards = (annual_reward as u128)
+        .checked_mul(duration as u128)
+        .unwrap()
+        .checked_div(365 * 24 * 3600)
+        .unwrap();
+
+    Ok(rewards as u64)
 }
 
 // ============ Accounts ============

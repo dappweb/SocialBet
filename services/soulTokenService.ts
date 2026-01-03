@@ -103,7 +103,7 @@ export async function getSolanaBalance(
   try {
     const mintPubkey = mintAddress 
       ? new PublicKey(mintAddress)
-      : new PublicKey(SOUL_TOKEN_CONFIG.addresses.solana || 'SoulCastTokenProgramID111111111111111111111111');
+      : new PublicKey(SOUL_TOKEN_CONFIG.addresses.solana || 'HNjY4deYs1Nuvui7kQwHppmRUw7tiUEPCSEC4q8AH7E6');
     
     const userPubkey = new PublicKey(address);
     const tokenAccount = await getAssociatedTokenAddress(mintPubkey, userPubkey);
@@ -242,7 +242,7 @@ export async function transferSolana(
   try {
     const mintPubkey = mintAddress 
       ? new PublicKey(mintAddress)
-      : new PublicKey(SOUL_TOKEN_CONFIG.addresses.solana || 'SoulCastTokenProgramID111111111111111111111111');
+      : new PublicKey(SOUL_TOKEN_CONFIG.addresses.solana || 'HNjY4deYs1Nuvui7kQwHppmRUw7tiUEPCSEC4q8AH7E6');
     
     const toPubkey = new PublicKey(to);
     const fromTokenAccount = await getAssociatedTokenAddress(mintPubkey, fromKeypair.publicKey);
