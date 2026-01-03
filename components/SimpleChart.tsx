@@ -211,3 +211,8 @@ const SimpleChart: React.FC<SimpleChartProps> = ({
 
 export default SimpleChart;
 
+
+
+
+
+

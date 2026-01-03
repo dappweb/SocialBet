@@ -17,3 +17,8 @@ SELECT id, name, handle, is_admin FROM users WHERE is_admin = 1;
 -- - Email addresses
 -- - Specific user IDs from your authentication system
 
+
+
+
+
+

@@ -36,3 +36,8 @@ echo "Next steps:"
 echo "1. Set up admin users: node scripts/setup-admin.js <user_id>"
 echo "2. Verify tables: wrangler d1 execute $DB_NAME --command='SELECT name FROM sqlite_master WHERE type=\"table\" AND name LIKE \"%operations%\" OR name LIKE \"%treasury%\"'"
 
+
+
+
+
+

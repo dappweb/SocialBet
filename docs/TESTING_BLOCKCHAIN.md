@@ -203,3 +203,8 @@ console.log('Sepolia:', import.meta.env.VITE_SOUL_TOKEN_SEPOLIA);
 5. Test each step above
 6. Verify all operations work correctly
 
+
+
+
+
+

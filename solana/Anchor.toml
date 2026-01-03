@@ -3,7 +3,7 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-soulcast = "SoulCastTokenProgramID111111111111111111111111"
+soulcast = "HNjY4deYs1Nuvui7kQwHppmRUw7tiUEPCSEC4q8AH7E6"
 
 [registry]
 url = "https://api.apr.dev"
@@ -13,10 +13,7 @@ cluster = "Devnet"
 wallet = "./deployer-keypair.json"
 
 [programs.devnet]
-soulcast = "SoulCastTokenProgramID111111111111111111111111"
-
-[programs.localnet]
-soulcast = "SoulCastTokenProgramID111111111111111111111111"
+soulcast = "HNjY4deYs1Nuvui7kQwHppmRUw7tiUEPCSEC4q8AH7E6"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

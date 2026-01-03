@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer, Burn, MintTo};
 
-declare_id!("SoulCastTokenProgramID111111111111111111111111");
+declare_id!("HNjY4deYs1Nuvui7kQwHppmRUw7tiUEPCSEC4q8AH7E6");
 
 #[program]
 pub mod soulcast {
