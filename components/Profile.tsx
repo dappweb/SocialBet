@@ -22,10 +22,10 @@ type ProfileTab = 'bets' | 'created' | 'likes' | 'trading';
 const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, label: string, activeTab: ProfileTab, onClick: (id: ProfileTab) => void }) => (
   <button
     onClick={() => onClick(id)}
-    className="flex-1 py-4 hover:bg-[#f5f5f7] transition-colors duration-200 relative"
+    className="flex-1 py-4 hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] transition-colors duration-200 relative"
     aria-label={label}
   >
-    <span className={cn("font-semibold text-sm transition-colors duration-200", activeTab === id ? "text-[#1d1d1f]" : "text-[#86868b]")}>
+    <span className={cn("font-semibold text-sm transition-colors duration-200", activeTab === id ? "text-[#1d1d1f] dark:text-white" : "text-[#86868b] dark:text-[#a1a1a6]")}>
       {label}
     </span>
     {activeTab === id && (
@@ -193,8 +193,8 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
 
     if (data.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center py-24 text-[#86868b]">
-          <div className="bg-[#f5f5f7] rounded-full p-6 mb-4">
+        <div className="flex flex-col items-center justify-center py-24 text-[#86868b] dark:text-[#a1a1a6]">
+          <div className="bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-full p-6 mb-4">
             <Ghost size={40} className="opacity-50" />
           </div>
           <p className="font-medium">{emptyMsg}</p>

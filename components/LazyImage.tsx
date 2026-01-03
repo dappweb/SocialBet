@@ -75,7 +75,8 @@ const LazyImage: React.FC<LazyImageProps> = ({
       )}
       loading="lazy"
       decoding="async"
-      fetchPriority={imageSrc === placeholder ? 'low' : 'auto'}
+      // @ts-ignore
+      fetchpriority={imageSrc === placeholder ? 'low' : 'auto'}
       onLoad={handleLoad}
       onError={handleError}
     />

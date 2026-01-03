@@ -119,7 +119,7 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets = [] }) => {
   const TabButton = ({ id, label }: { id: TabType, label: string }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className="flex-1 py-4 hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] transition-colors duration-200 relative"
+      className="flex-1 py-4 hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] transition-colors duration-200 relative"
     >
       <span className={cn("font-semibold text-sm sm:text-base transition-colors duration-200", activeTab === id ? "text-[#1d1d1f] dark:text-white" : "text-[#86868b] dark:text-[#a1a1a6]")}>
         {label}
@@ -161,7 +161,7 @@ const Feed: React.FC<FeedProps> = ({ markets: initialMarkets = [] }) => {
           alt={authUser?.name || 'User avatar'}
         />
         <div className="flex-1">
-          <div className="bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-xl h-10 flex items-center px-4 text-[#86868b] dark:text-[#a1a1a6] font-medium cursor-text hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] hover:border hover:border-[#ffd700]/30 transition-all duration-200">
+          <div className="bg-[#f5f5f7] dark:bg-[#0a0a0a] rounded-xl h-10 flex items-center px-4 text-[#86868b] dark:text-[#a1a1a6] font-medium cursor-text hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] hover:border hover:border-[#ffd700]/30 transition-all duration-200">
             What do you want to predict?
           </div>
         </div>

@@ -247,23 +247,23 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-white border border-[#e5e5ea] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-colors duration-300">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#e5e5ea]">
-          <h3 className="text-lg font-semibold flex items-center gap-2 text-[#1d1d1f]">
+        <div className="flex items-center justify-between p-5 border-b border-[#e5e5ea] dark:border-[#38383a]">
+          <h3 className="text-lg font-semibold flex items-center gap-2 text-[#1d1d1f] dark:text-white">
             Bet <span className={cn("uppercase", colorClass)}>{betType}</span>
           </h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200">
-            <X size={20} className="text-[#86868b]" />
+          <button onClick={onClose} className="p-1.5 hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] rounded-full transition-colors duration-200">
+            <X size={20} className="text-[#86868b] dark:text-[#a1a1a6]" />
           </button>
         </div>
 
         {/* Market Context */}
-        <div className="p-4 bg-[#f5f5f7] border-b border-[#e5e5ea]">
-          <p className="text-sm text-[#1d1d1f] line-clamp-2 font-medium">{market.question}</p>
-          <div className="mt-2 flex items-center gap-2 text-xs text-[#86868b]">
-            <span>Current Price: <span className="text-[#1d1d1f] font-semibold">{price * 100}¢</span></span>
+        <div className="p-4 bg-[#f5f5f7] dark:bg-[#0a0a0a] border-b border-[#e5e5ea] dark:border-[#38383a]">
+          <p className="text-sm text-[#1d1d1f] dark:text-white line-clamp-2 font-medium">{market.question}</p>
+          <div className="mt-2 flex items-center gap-2 text-xs text-[#86868b] dark:text-[#a1a1a6]">
+            <span>Current Price: <span className="text-[#1d1d1f] dark:text-white font-semibold">{price * 100}¢</span></span>
             <span>•</span>
             <span>Est. Return: <span className={cn("font-semibold", colorClass)}>{returnPercentage.toFixed(0)}%</span></span>
           </div>
@@ -272,9 +272,9 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
         {/* Input Section */}
         <div className="p-6 space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#1d1d1f] flex justify-between">
+            <label className="text-sm font-medium text-[#1d1d1f] dark:text-white flex justify-between">
               <span>Wager Amount (SOUL)</span>
-              <span className="flex items-center gap-1 text-[#86868b] text-xs">
+              <span className="flex items-center gap-1 text-[#86868b] dark:text-[#a1a1a6] text-xs">
                 <Wallet size={12} />
                 {isLoadingBalance ? (
                   <Loader2 size={12} className="animate-spin" />
@@ -286,7 +286,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
               </span>
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#86868b] font-semibold">⚡</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#86868b] dark:text-[#a1a1a6] font-semibold">⚡</span>
               <input
                 type="number"
                 value={amount}
@@ -294,7 +294,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
                 placeholder="0.00"
                 min="1"
                 step="0.01"
-                className="w-full bg-[#f5f5f7] border border-[#e5e5ea] rounded-xl py-4 pl-8 pr-4 text-2xl font-bold text-[#1d1d1f] placeholder:text-[#c7c7cc] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white focus:border-[#ffd700] transition-all duration-200"
+                className="w-full bg-[#f5f5f7] dark:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#38383a] rounded-xl py-4 pl-8 pr-4 text-2xl font-bold text-[#1d1d1f] dark:text-white placeholder:text-[#c7c7cc] dark:placeholder:text-[#636366] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white dark:focus:bg-[#1c1c1e] focus:border-[#ffd700] transition-all duration-200"
                 autoFocus
               />
             </div>
@@ -307,7 +307,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
                   onClick={() => handleQuickAmount(val)}
                   disabled={walletBalance !== null && val > walletBalance}
                   className={cn(
-                    "px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f5f5f7] hover:bg-[#fff9e6] hover:border hover:border-[#ffd700]/30 text-[#1d1d1f] transition-all duration-200",
+                    "px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f5f5f7] dark:bg-[#0a0a0a] hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] hover:border hover:border-[#ffd700]/30 text-[#1d1d1f] dark:text-white transition-all duration-200",
                     walletBalance !== null && val > walletBalance && "opacity-50 cursor-not-allowed"
                   )}
                 >
@@ -318,7 +318,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
                 onClick={() => handleQuickAmount(maxAmount)}
                 disabled={maxAmount <= 0}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f5f5f7] hover:bg-[#fff9e6] hover:border hover:border-[#ffd700]/30 text-[#1d1d1f] transition-all duration-200 ml-auto",
+                  "px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f5f5f7] dark:bg-[#0a0a0a] hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] hover:border hover:border-[#ffd700]/30 text-[#1d1d1f] dark:text-white transition-all duration-200 ml-auto",
                   maxAmount <= 0 && "opacity-50 cursor-not-allowed"
                 )}
               >
@@ -329,7 +329,7 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
 
           {/* Blockchain Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#1d1d1f]">Blockchain Network</label>
+            <label className="text-sm font-medium text-[#1d1d1f] dark:text-white">Blockchain Network</label>
             <div className="grid grid-cols-3 gap-2">
               {blockchainOptions.map((option) => (
                 <button
@@ -339,8 +339,8 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
                   className={cn(
                     "p-3 rounded-xl border-2 transition-all duration-200 text-sm font-medium",
                     selectedBlockchain === option.value
-                      ? "border-[#ffd700] bg-[#fff9e6] text-[#1d1d1f]"
-                      : "border-[#e5e5ea] bg-white text-[#86868b] hover:border-[#ffd700]/50"
+                      ? "border-[#ffd700] bg-[#fff9e6] dark:bg-[#332d1a] text-[#1d1d1f] dark:text-white"
+                      : "border-[#e5e5ea] dark:border-[#38383a] bg-white dark:bg-[#1c1c1e] text-[#86868b] dark:text-[#a1a1a6] hover:border-[#ffd700]/50"
                   )}
                 >
                   <div className="flex flex-col items-center gap-1">
@@ -355,21 +355,21 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
           {/* Calculations */}
           <div className={cn("p-4 rounded-xl space-y-2 border", bgSoftClass, borderClass)}>
             <div className="flex justify-between text-sm">
-              <span className="text-[#86868b]">Total Shares</span>
-              <span className="font-mono text-[#1d1d1f] font-semibold">{(estimatedReturn || 0).toFixed(2)} SOUL</span>
+              <span className="text-[#86868b] dark:text-[#a1a1a6]">Total Shares</span>
+              <span className="font-mono text-[#1d1d1f] dark:text-white font-semibold">{(estimatedReturn || 0).toFixed(2)} SOUL</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-[#86868b]">Potential Payout</span>
-              <span className="font-mono font-bold text-[#1d1d1f]">{(estimatedReturn || 0).toFixed(2)} SOUL</span>
+              <span className="text-[#86868b] dark:text-[#a1a1a6]">Potential Payout</span>
+              <span className="font-mono font-bold text-[#1d1d1f] dark:text-white">{(estimatedReturn || 0).toFixed(2)} SOUL</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-[#86868b]">Potential Profit</span>
+              <span className="text-[#86868b] dark:text-[#a1a1a6]">Potential Profit</span>
               <span className={cn("font-mono font-bold", colorClass)}>+{(potentialProfit || 0).toFixed(2)} SOUL</span>
             </div>
           </div>
 
           {/* AI Analysis Section */}
-          <div className="bg-[#fff9e6] border border-[#ffd700]/30 rounded-xl p-3">
+          <div className="bg-[#fff9e6] dark:bg-[#332d1a] border border-[#ffd700]/30 rounded-xl p-3">
              <div className="flex items-center justify-between mb-2">
                  <div className="flex items-center gap-2 text-[#ffc107] text-xs font-semibold uppercase tracking-wider">
                      <BrainCircuit size={14} /> AI Intelligence
@@ -386,11 +386,11 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
                  )}
              </div>
              {analysis ? (
-                 <p className="text-xs text-[#1d1d1f] leading-relaxed animate-in fade-in">
+                 <p className="text-xs text-[#1d1d1f] dark:text-white leading-relaxed animate-in fade-in">
                      {analysis}
                  </p>
              ) : (
-                 <p className="text-[10px] text-[#86868b] italic">
+                 <p className="text-[10px] text-[#86868b] dark:text-[#a1a1a6] italic">
                      Get AI-powered risk assessment before you bet.
                  </p>
              )}

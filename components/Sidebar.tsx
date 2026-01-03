@@ -7,7 +7,7 @@ import { useToast } from '../contexts/ToastContext';
 import LazyImage from './LazyImage';
 import ThemeToggle from './ThemeToggle';
 
-type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper' | 'operations';
+type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'dao' | 'whitepaper' | 'operations' | 'test-eth';
 
 interface SidebarProps {
   currentView: View;
@@ -33,7 +33,7 @@ const NavItem = ({
       "flex items-center gap-4 px-4 py-3 rounded-xl w-fit transition-all duration-200 group relative",
       active
         ? "font-semibold text-[#1d1d1f] dark:text-white bg-[#fff9e6] dark:bg-[#332d1a]"
-        : "text-[#86868b] dark:text-[#a1a1a6] hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] hover:text-[#1d1d1f] dark:hover:text-white"
+        : "text-[#86868b] dark:text-[#a1a1a6] hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] hover:text-[#1d1d1f] dark:hover:text-white"
     )}
   >
     <Icon
@@ -127,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
               {/* Profile Button */}
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] w-full text-left transition-all duration-200 group"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] w-full text-left transition-all duration-200 group"
                 aria-expanded={isProfileMenuOpen}
                 aria-haspopup="true"
               >
@@ -172,9 +172,9 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
 
               {/* Profile Dropdown Menu */}
               {isProfileMenuOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-xl shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden transition-colors duration-300">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#38383a] rounded-xl shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden transition-colors duration-300">
                   {/* User Info Section */}
-                  <div className="p-4 border-b border-[#e5e5ea] dark:border-[#38383a] bg-[#f5f5f7] dark:bg-[#2c2c2e] transition-colors duration-300">
+                  <div className="p-4 border-b border-[#e5e5ea] dark:border-[#38383a] bg-[#f5f5f7] dark:bg-[#1c1c1e] transition-colors duration-300">
                     <div className="flex items-center gap-3 mb-3">
                       {user.avatar ? (
                         <LazyImage 
@@ -193,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
                       </div>
                     </div>
                     {walletAddress && (
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] transition-colors duration-300">
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#38383a] transition-colors duration-300">
                         <Wallet size={14} className="text-[#86868b] dark:text-[#a1a1a6] flex-shrink-0" />
                         <span className="text-xs font-mono text-[#86868b] dark:text-[#a1a1a6] truncate flex-1">{walletAddress}</span>
                         <button
@@ -292,6 +292,13 @@ const Sidebar: React.FC<SidebarProps> = memo(({ currentView, onNavigate, onCreat
             label="DAO Governance"
             active={currentView === 'dao'}
             onClick={() => onNavigate('dao')}
+          />
+          {/* Test ETH Purchase - Development only */}
+          <NavItem
+            icon={Wallet}
+            label="Test ETH Purchase"
+            active={currentView === 'test-eth'}
+            onClick={() => onNavigate('test-eth')}
           />
           {/* Operations - Only visible to admin/owner */}
           {isAdmin && (

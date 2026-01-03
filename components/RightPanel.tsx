@@ -10,7 +10,7 @@ interface RightPanelProps {
 }
 
 const TrendingItem = ({ category, title, posts }: { category: string, title: string, posts: string }) => (
-  <div className="py-3 px-4 hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] transition-colors duration-200 cursor-pointer relative">
+  <div className="py-3 px-4 hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] transition-colors duration-200 cursor-pointer relative">
     <div className="flex justify-between items-start">
       <div className="text-xs text-[#86868b] dark:text-[#a1a1a6] font-medium">{category} • Trending</div>
       <MoreHorizontal size={14} className="text-[#86868b] dark:text-[#a1a1a6] hover:text-[#1d1d1f] dark:hover:text-white" />
@@ -45,7 +45,7 @@ const RightPanel = memo(({ onTradeClick, onStakeClick, onTokenSaleClick }: Right
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 rounded-xl leading-5 bg-white dark:bg-[#1c1c1e] text-[#1d1d1f] dark:text-white placeholder-[#86868b] dark:placeholder-[#a1a1a6] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white dark:focus:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] focus:border-[#ffd700] transition-all duration-200 shadow-sm"
+            className="block w-full pl-10 pr-3 py-3 rounded-xl leading-5 bg-white dark:bg-[#0a0a0a] text-[#1d1d1f] dark:text-white placeholder-[#86868b] dark:placeholder-[#a1a1a6] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white dark:focus:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#38383a] focus:border-[#ffd700] transition-all duration-200 shadow-sm"
             placeholder="Search markets"
           />
         </form>
@@ -92,7 +92,7 @@ const RightPanel = memo(({ onTradeClick, onStakeClick, onTokenSaleClick }: Right
       )}
 
       {/* AI Predictions Section */}
-      <div className="mt-4 bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl overflow-hidden shadow-sm transition-colors duration-300">
+      <div className="mt-4 bg-white dark:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl overflow-hidden shadow-sm transition-colors duration-300">
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[#1d1d1f] dark:text-white flex items-center gap-2">
             <Sparkles className="text-[#ffd700]" size={18} />
@@ -118,7 +118,7 @@ const RightPanel = memo(({ onTradeClick, onStakeClick, onTokenSaleClick }: Right
       </div>
 
       {/* Trending Box */}
-      <div className="mt-4 bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl overflow-hidden shadow-sm transition-colors duration-300">
+      <div className="mt-4 bg-white dark:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl overflow-hidden shadow-sm transition-colors duration-300">
         <h2 className="px-4 pt-4 pb-2 text-lg font-semibold text-[#1d1d1f] dark:text-white">Trends for you</h2>
 
         <TrendingItem

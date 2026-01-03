@@ -29,7 +29,15 @@ const SoulTokenBalance: React.FC<SoulTokenBalanceProps> = ({
 }) => {
   const { user, soulBalance } = useAuth();
   const { web3auth, provider, isConnected } = useWeb3Auth();
-  const { solanaWallet, solanaConnection } = useWallet();
+  const { currentChain, walletAddress } = useWallet();
+
+  // Solana connection (devnet for now)
+  const solanaConnection = useMemo(() => {
+    if (currentChain === 'solana') {
+      return new Connection('https://api.devnet.solana.com', 'confirmed');
+    }
+    return null;
+  }, [currentChain]);
 
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [totalBalance, setTotalBalance] = useState(0);
@@ -46,11 +54,11 @@ const SoulTokenBalance: React.FC<SoulTokenBalanceProps> = ({
   }, [provider, isConnected]);
 
   const solanaAddress = useMemo(() => {
-    if (solanaWallet?.publicKey) {
-      return solanaWallet.publicKey.toString();
+    if (currentChain === 'solana' && walletAddress) {
+      return walletAddress;
     }
     return null;
-  }, [solanaWallet]);
+  }, [currentChain, walletAddress]);
 
   // Fetch balances
   useEffect(() => {

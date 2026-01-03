@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -25,6 +26,7 @@ contract SoulCastToken is
     ERC20Upgradeable, 
     ERC20BurnableUpgradeable, 
     ERC20PermitUpgradeable, 
+    ERC20VotesUpgradeable,
     AccessControlUpgradeable, 
     ReentrancyGuardUpgradeable,
     UUPSUpgradeable 
@@ -119,6 +121,7 @@ contract SoulCastToken is
         __ERC20_init("SoulCast Token", "SOUL");
         __ERC20Burnable_init();
         __ERC20Permit_init("SoulCast Token");
+        __ERC20Votes_init();
         __AccessControl_init();
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
@@ -463,5 +466,23 @@ contract SoulCastToken is
             a.beneficiary,
             getReleasableAmount(_id)
         );
+    }
+
+    // The following functions are overrides required by Solidity.
+
+    function _update(address from, address to, uint256 value)
+        internal
+        override(ERC20Upgradeable, ERC20VotesUpgradeable)
+    {
+        super._update(from, to, value);
+    }
+
+    function nonces(address owner)
+        public
+        view
+        override(ERC20PermitUpgradeable, NoncesUpgradeable)
+        returns (uint256)
+    {
+        return super.nonces(owner);
     }
 }

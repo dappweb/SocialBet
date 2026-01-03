@@ -49,26 +49,26 @@ const config: HardhatUserConfig = {
         },
         mainnet: {
             url: process.env.ETH_MAINNET_RPC_URL || "https://eth.llamarpc.com",
-            accounts: [PRIVATE_KEY],
+            accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             chainId: 1,
         },
 
         // BSC (Binance Smart Chain)
         bsc: {
             url: process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/",
-            accounts: [PRIVATE_KEY],
+            accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             chainId: 56,
         },
         bscTestnet: {
             url: process.env.BSC_TESTNET_RPC_URL || "https://data-seed-prebsc-1-s1.binance.org:8545/",
-            accounts: [PRIVATE_KEY],
+            accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             chainId: 97,
         },
 
         // Moon Island ETH Testnet
         moonisland: {
             url: process.env.MOON_ISLAND_RPC_URL || "https://rpc.moonisland.eth",
-            accounts: [PRIVATE_KEY],
+            accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
             chainId: parseInt(process.env.MOON_ISLAND_CHAIN_ID || "0x123456", 16),
         },
     },

@@ -15,7 +15,7 @@ const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) =
   const noPercentage = Math.round(market.outcomeStats.noPercent);
 
   return (
-    <div className="border-b border-[#e5e5ea] dark:border-[#38383a] bg-white dark:bg-black hover:bg-[#fafafa] dark:hover:bg-[#1c1c1e] transition-all duration-200 cursor-pointer group relative overflow-hidden">
+    <div className="border-b border-[#e5e5ea] dark:border-[#38383a] bg-white dark:bg-black hover:bg-[#fafafa] dark:hover:bg-[#0a0a0a] transition-all duration-200 cursor-pointer group relative overflow-hidden">
       <div className="p-5 flex gap-4">
         {/* Avatar Section */}
         <div className="flex-shrink-0">
@@ -41,7 +41,7 @@ const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) =
               <span className="text-[#c7c7cc] dark:text-[#636366] text-[10px] align-middle">•</span>
               <span className="text-[#86868b] dark:text-[#a1a1a6] text-[14px]">2h</span>
             </div>
-            <button className="text-[#86868b] dark:text-[#a1a1a6] hover:text-[#1d1d1f] dark:hover:text-white p-2 -mr-2 rounded-full hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] transition-colors duration-200">
+            <button className="text-[#86868b] dark:text-[#a1a1a6] hover:text-[#1d1d1f] dark:hover:text-white p-2 -mr-2 rounded-full hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] transition-colors duration-200">
               <MoreHorizontal size={18} />
             </button>
           </div>
@@ -61,9 +61,9 @@ const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) =
             
             {/* Market Image if available */}
             {market.image && (
-                <div className="mt-3 rounded-2xl overflow-hidden border border-[#e5e5ea] dark:border-[#38383a] bg-[#f5f5f7] dark:bg-[#1c1c1e] shadow-sm">
+                <div className="mt-3 rounded-2xl overflow-hidden border border-[#e5e5ea] dark:border-[#38383a] bg-[#f5f5f7] dark:bg-[#0a0a0a] shadow-sm">
                     <LazyImage 
-                      src={market.image} 
+                      src={market.image}  
                       alt="Market" 
                       className="w-full h-auto max-h-[300px] object-cover hover:scale-[1.02] transition-transform duration-300" 
                     />
@@ -71,10 +71,10 @@ const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) =
             )}
 
             <div className="mt-2.5 flex flex-wrap gap-2">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-[#f5f5f7] dark:bg-[#1c1c1e] text-[#86868b] dark:text-[#a1a1a6] border border-[#e5e5ea] dark:border-[#38383a] hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] hover:border-[#ffd700]/30 transition-colors duration-200">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-[#f5f5f7] dark:bg-[#0a0a0a] text-[#86868b] dark:text-[#a1a1a6] border border-[#e5e5ea] dark:border-[#38383a] hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] hover:border-[#ffd700]/30 transition-colors duration-200">
                 {market.category}
               </span>
-              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-[#f5f5f7] dark:bg-[#1c1c1e] text-[#86868b] dark:text-[#a1a1a6] border border-[#e5e5ea] dark:border-[#38383a]">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-[#f5f5f7] dark:bg-[#0a0a0a] text-[#86868b] dark:text-[#a1a1a6] border border-[#e5e5ea] dark:border-[#38383a]">
                 Ends {new Date(market.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
               </span>
             </div>
@@ -147,7 +147,7 @@ const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) =
               </button>
             </div>
             
-            <span className="text-xs text-[#86868b] dark:text-[#a1a1a6] font-medium px-2.5 py-1 bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-lg border border-[#e5e5ea] dark:border-[#38383a]">
+            <span className="text-xs text-[#86868b] dark:text-[#a1a1a6] font-medium px-2.5 py-1 bg-[#f5f5f7] dark:bg-[#0a0a0a] rounded-lg border border-[#e5e5ea] dark:border-[#38383a]">
                Vol: {formatNumber(market.volume)}
             </span>
           </div>

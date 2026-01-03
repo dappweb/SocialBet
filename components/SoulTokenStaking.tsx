@@ -8,12 +8,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { useWallet } from '../contexts/WalletContext';
 import { useToast } from '../contexts/ToastContext';
+import { Connection } from '@solana/web3.js';
 import { 
-  stakeEthereum,
-  getEthereumStakeInfo,
-  getSolanaStakeInfo,
-  StakeInfo,
-} from '../services/soulTokenService';
+  stake,
+  unstake,
+  claimRewards,
+  getStakeInfo,
+  StakeInfo as ContractStakeInfo,
+} from '../services/soulContractService';
+import { getSolanaStakeInfo } from '../services/soulTokenService';
 import SoulTokenBalance from './SoulTokenBalance';
 import './SoulTokenStaking.css';
 
@@ -24,17 +27,35 @@ interface SoulTokenStakingProps {
   onClose?: () => void;
 }
 
+// Interface for component state (using numbers for easy calculation)
+interface ComponentStakeInfo {
+  stakedAmount: number;
+  stakedAt: number;
+  pendingRewards: number;
+  lastClaim: number;
+}
+
 const SoulTokenStaking: React.FC<SoulTokenStakingProps> = ({ onClose }) => {
   const { user } = useAuth();
   const { provider, isConnected } = useWeb3Auth();
-  const { solanaWallet, solanaConnection } = useWallet();
+  const { currentChain, walletAddress } = useWallet();
   const { showToast } = useToast();
+
+  // Solana connection (devnet for now)
+  const solanaConnection = React.useMemo(() => {
+    if (currentChain === 'solana') {
+      return new Connection('https://api.devnet.solana.com', 'confirmed');
+    }
+    return null;
+  }, [currentChain]);
+
+  const isSolanaConnected = currentChain === 'solana' && walletAddress;
 
   const [selectedChain, setSelectedChain] = useState<ChainType>('ethereum');
   const [action, setAction] = useState<ActionType>('stake');
   const [amount, setAmount] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [stakeInfo, setStakeInfo] = useState<{ ethereum?: StakeInfo; solana?: StakeInfo }>({});
+  const [stakeInfo, setStakeInfo] = useState<{ ethereum?: ComponentStakeInfo; solana?: ComponentStakeInfo }>({});
 
   // Get available chains
   const availableChains = useMemo(() => {
@@ -42,11 +63,11 @@ const SoulTokenStaking: React.FC<SoulTokenStakingProps> = ({ onClose }) => {
     if (provider && isConnected) {
       chains.push('ethereum');
     }
-    if (solanaWallet && solanaConnection) {
+    if (isSolanaConnected && solanaConnection) {
       chains.push('solana');
     }
     return chains;
-  }, [provider, isConnected, solanaWallet, solanaConnection]);
+  }, [provider, isConnected, isSolanaConnected, solanaConnection]);
 
   // Fetch stake info
   const fetchStakeInfo = useCallback(async () => {
@@ -62,14 +83,25 @@ const SoulTokenStaking: React.FC<SoulTokenStakingProps> = ({ onClose }) => {
         }
       }
 
-      const [ethStake, solStake] = await Promise.all([
+      const [ethStakeData, solStakeData] = await Promise.all([
         ethAddress && provider
-          ? getEthereumStakeInfo(ethAddress, provider).catch(() => undefined)
+          ? getStakeInfo(ethAddress, provider).catch(() => undefined)
           : Promise.resolve(undefined),
-        solanaWallet?.publicKey && solanaConnection
-          ? getSolanaStakeInfo(solanaWallet.publicKey.toString(), solanaConnection).catch(() => undefined)
+        isSolanaConnected && solanaConnection && walletAddress
+          ? getSolanaStakeInfo(walletAddress, solanaConnection).catch(() => undefined)
           : Promise.resolve(undefined),
       ]);
+
+      // Convert contract string data to numbers for component
+      const ethStake: ComponentStakeInfo | undefined = ethStakeData ? {
+        stakedAmount: parseFloat(ethStakeData.stakedAmount),
+        stakedAt: parseFloat(ethStakeData.stakedAt),
+        pendingRewards: parseFloat(ethStakeData.pendingRewards),
+        lastClaim: parseFloat(ethStakeData.lastClaim),
+      } : undefined;
+
+      // Solana service returns numbers directly, matching ComponentStakeInfo
+      const solStake: ComponentStakeInfo | undefined = solStakeData;
 
       setStakeInfo({
         ethereum: ethStake,
@@ -78,7 +110,7 @@ const SoulTokenStaking: React.FC<SoulTokenStakingProps> = ({ onClose }) => {
     } catch (error) {
       console.error('Error fetching stake info:', error);
     }
-  }, [user, provider, isConnected, solanaWallet, solanaConnection]);
+  }, [user, provider, isConnected, isSolanaConnected, solanaConnection, walletAddress]);
 
   // Initial fetch
   React.useEffect(() => {
@@ -100,18 +132,17 @@ const SoulTokenStaking: React.FC<SoulTokenStakingProps> = ({ onClose }) => {
           throw new Error('Ethereum wallet not connected');
         }
 
-        const txHash = await stakeEthereum(parseFloat(amount), provider);
+        const { txHash } = await stake(parseFloat(amount), provider);
         showToast(`Staking transaction submitted: ${txHash.slice(0, 10)}...`, 'info');
-        
-        // Wait for confirmation (in production, use proper transaction waiting)
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        
         showToast('Successfully staked SOUL tokens!', 'success');
         await fetchStakeInfo();
       } else {
-        // Solana staking
-        // TODO: Implement Solana staking
-        showToast('Solana staking coming soon!', 'info');
+        // Solana staking - requires deployed Solana program
+        if (!isSolanaConnected || !solanaConnection) {
+          throw new Error('Solana wallet not connected');
+        }
+        // Solana staking program not yet deployed
+        showToast('Solana staking requires the staking program to be deployed. Coming soon!', 'info');
       }
 
       setAmount('');
@@ -121,7 +152,7 @@ const SoulTokenStaking: React.FC<SoulTokenStakingProps> = ({ onClose }) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [amount, selectedChain, provider, showToast, fetchStakeInfo]);
+  }, [amount, selectedChain, provider, isSolanaConnected, solanaConnection, showToast, fetchStakeInfo]);
 
   const handleUnstake = useCallback(async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -140,8 +171,22 @@ const SoulTokenStaking: React.FC<SoulTokenStakingProps> = ({ onClose }) => {
 
     setIsProcessing(true);
     try {
-      // TODO: Implement unstaking
-      showToast('Unstaking functionality coming soon!', 'info');
+      if (selectedChain === 'ethereum') {
+        if (!provider) {
+          throw new Error('Ethereum wallet not connected');
+        }
+
+        const { txHash } = await unstake(parseFloat(amount), provider);
+        showToast(`Unstaking transaction submitted: ${txHash.slice(0, 10)}...`, 'info');
+        showToast('Successfully unstaked SOUL tokens!', 'success');
+        await fetchStakeInfo();
+      } else {
+        // Solana unstaking - requires deployed Solana program
+        if (!isSolanaConnected || !solanaConnection) {
+          throw new Error('Solana wallet not connected');
+        }
+        showToast('Solana unstaking requires the staking program to be deployed. Coming soon!', 'info');
+      }
       setAmount('');
     } catch (error: any) {
       console.error('Unstaking error:', error);
@@ -149,20 +194,31 @@ const SoulTokenStaking: React.FC<SoulTokenStakingProps> = ({ onClose }) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [amount, selectedChain, stakeInfo, showToast]);
+  }, [amount, selectedChain, stakeInfo, provider, isSolanaConnected, solanaConnection, showToast, fetchStakeInfo]);
 
   const handleClaimRewards = useCallback(async () => {
     setIsProcessing(true);
     try {
-      // TODO: Implement claim rewards
-      showToast('Claim rewards functionality coming soon!', 'info');
+      if (selectedChain === 'ethereum') {
+        if (!provider) throw new Error('Wallet not connected');
+        const { txHash, rewards } = await claimRewards(provider);
+        showToast(`Claim transaction submitted: ${txHash.slice(0, 10)}...`, 'info');
+        showToast(`Successfully claimed ${rewards} SOUL!`, 'success');
+        await fetchStakeInfo();
+      } else {
+        // Solana claim rewards - requires deployed Solana program
+        if (!isSolanaConnected || !solanaConnection) {
+          throw new Error('Solana wallet not connected');
+        }
+        showToast('Solana claim rewards requires the staking program to be deployed. Coming soon!', 'info');
+      }
     } catch (error: any) {
       console.error('Claim rewards error:', error);
       showToast(error.message || 'Failed to claim rewards', 'error');
     } finally {
       setIsProcessing(false);
     }
-  }, [showToast]);
+  }, [selectedChain, provider, isSolanaConnected, solanaConnection, showToast, fetchStakeInfo]);
 
   const currentStakeInfo = selectedChain === 'ethereum' 
     ? stakeInfo.ethereum 

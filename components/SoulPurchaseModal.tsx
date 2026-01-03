@@ -1,9 +1,18 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { X, Loader2, Wallet, CreditCard, Coins } from 'lucide-react';
+import { X, Loader2, Wallet, CreditCard, Coins, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWallet } from '../contexts/WalletContext';
 import { useToast } from '../contexts/ToastContext';
-import { buySoulWithFiat, buySoulWithETH, calculateSoulTokensFromFiat, SOUL_TOKEN_CONFIG, validateTradeAmount } from '../services/tokenTrading';
+import { 
+  buySoulWithETH, 
+  calculateSoulTokensFromFiat, 
+  SOUL_TOKEN_CONFIG, 
+  validateTradeAmount,
+  getETHBalance,
+  estimateGasForPurchase,
+  getSoulPrice
+} from '../services/tokenTradingImproved';
+import { buySoulWithFiat } from '../services/tokenTrading';
 import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { cn } from '../utils';
 import FiatOnRampModal from './FiatOnRampModal';
@@ -23,18 +32,108 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
   const { web3auth, provider } = useWeb3Auth();
   
   const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'fiat' | 'crypto'>('fiat');
+  const [paymentMethod, setPaymentMethod] = useState<'fiat' | 'crypto'>('crypto');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFiatModalOpen, setIsFiatModalOpen] = useState(false);
+  const [ethBalance, setEthBalance] = useState<number | null>(null);
+  const [gasEstimate, setGasEstimate] = useState<string>('0.001');
+  const [currentEthPrice, setCurrentEthPrice] = useState<number>(2000);
+
+  // Load ETH balance and price when modal opens
+  React.useEffect(() => {
+    if (isOpen && provider && isConnected) {
+      loadWalletData();
+    }
+  }, [isOpen, provider, isConnected]);
+
+  const loadWalletData = useCallback(async () => {
+    if (!provider) return;
+    
+    try {
+      // Load ETH balance
+      const balanceInfo = await getETHBalance(provider);
+      setEthBalance(balanceInfo.balance);
+      
+      // Load current ETH price
+      const priceInfo = await getSoulPrice();
+      setCurrentEthPrice(priceInfo.ethPriceUSD);
+      
+      // Estimate gas if amount is set
+      if (amount && parseFloat(amount) > 0) {
+        const ethAmount = paymentMethod === 'fiat' ? parseFloat(amount) / priceInfo.ethPriceUSD : parseFloat(amount);
+        const gasInfo = await estimateGasForPurchase(provider, ethAmount);
+        setGasEstimate(gasInfo.estimatedCost);
+      }
+    } catch (error) {
+      console.error('Failed to load wallet data:', error);
+    }
+  }, [provider, amount, paymentMethod]);
+
+  // Update gas estimate when amount changes
+  React.useEffect(() => {
+    if (provider && amount && parseFloat(amount) > 0) {
+      const updateGasEstimate = async () => {
+        try {
+          const ethAmount = paymentMethod === 'fiat' ? parseFloat(amount) / currentEthPrice : parseFloat(amount);
+          const gasInfo = await estimateGasForPurchase(provider, ethAmount);
+          setGasEstimate(gasInfo.estimatedCost);
+        } catch (error) {
+          console.error('Failed to estimate gas:', error);
+        }
+      };
+      updateGasEstimate();
+    }
+  }, [amount, paymentMethod, provider, currentEthPrice]);
 
   // Memoize calculations to prevent hooks violations
   const soulAmount = useMemo(() => {
-    return amount ? calculateSoulTokensFromFiat(parseFloat(amount) || 0) : 0;
-  }, [amount]);
+    if (!amount) return 0;
+    if (paymentMethod === 'fiat') {
+      return calculateSoulTokensFromFiat(parseFloat(amount) || 0);
+    } else {
+      // For crypto, convert ETH to USD first, then to SOUL
+      const usdAmount = (parseFloat(amount) || 0) * currentEthPrice;
+      return calculateSoulTokensFromFiat(usdAmount);
+    }
+  }, [amount, paymentMethod, currentEthPrice]);
 
   const validation = useMemo(() => {
-    return amount ? validateTradeAmount(parseFloat(amount), paymentMethod) : { valid: false };
-  }, [amount, paymentMethod]);
+    if (!amount) return { valid: false };
+    
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      return { valid: false, error: 'Please enter a valid amount' };
+    }
+
+    // Check minimum/maximum based on payment method
+    if (paymentMethod === 'fiat') {
+      if (amountNum < SOUL_TOKEN_CONFIG.minTradeAmount) {
+        return { valid: false, error: `Minimum purchase is $${SOUL_TOKEN_CONFIG.minTradeAmount}` };
+      }
+      if (amountNum > SOUL_TOKEN_CONFIG.maxTradeAmount) {
+        return { valid: false, error: `Maximum purchase is $${SOUL_TOKEN_CONFIG.maxTradeAmount}` };
+      }
+    } else {
+      // For crypto, check ETH balance and convert to USD for limits
+      const usdAmount = amountNum * currentEthPrice;
+      if (usdAmount < SOUL_TOKEN_CONFIG.minTradeAmount) {
+        return { valid: false, error: `Minimum purchase is $${SOUL_TOKEN_CONFIG.minTradeAmount} (${(SOUL_TOKEN_CONFIG.minTradeAmount / currentEthPrice).toFixed(6)} ETH)` };
+      }
+      if (usdAmount > SOUL_TOKEN_CONFIG.maxTradeAmount) {
+        return { valid: false, error: `Maximum purchase is $${SOUL_TOKEN_CONFIG.maxTradeAmount} (${(SOUL_TOKEN_CONFIG.maxTradeAmount / currentEthPrice).toFixed(6)} ETH)` };
+      }
+      
+      // Check ETH balance
+      if (ethBalance !== null) {
+        const totalNeeded = amountNum + parseFloat(gasEstimate);
+        if (ethBalance < totalNeeded) {
+          return { valid: false, error: `Insufficient ETH balance. You need ${totalNeeded.toFixed(6)} ETH (including gas)` };
+        }
+      }
+    }
+    
+    return { valid: true };
+  }, [amount, paymentMethod, ethBalance, gasEstimate, currentEthPrice]);
 
   // Early return AFTER all hooks
   if (!isOpen) return null;
@@ -68,15 +167,18 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
         if (!isConnected || !currentChain || !provider) {
           throw new Error('Please connect your wallet to purchase with crypto');
         }
-        // For crypto, convert USD to ETH first
-        const ethAmount = amountNum / 2000; // Assuming ETH = $2000
-        result = await buySoulWithETH(ethAmount, provider);
+        
+        // Use the improved ETH purchase function
+        result = await buySoulWithETH(amountNum, provider);
       }
 
       if (result.success && result.tokensReceived) {
         // Update Soul balance in context and backend
         await updateSoulBalance(result.tokensReceived);
-        showToast(`Successfully purchased ${result.tokensReceived.toFixed(2)} SOUL tokens!`, 'success');
+        showToast(
+          `Successfully purchased ${result.tokensReceived.toFixed(2)} SOUL tokens! Transaction: ${result.transactionHash?.slice(0, 10)}...`, 
+          'success'
+        );
         onPurchaseSuccess?.(result.tokensReceived);
         setAmount('');
         onClose();
@@ -89,7 +191,7 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
     } finally {
       setIsProcessing(false);
     }
-  }, [amount, paymentMethod, validation, isAuthenticated, isConnected, currentChain, web3auth, provider, showToast, updateSoulBalance, onPurchaseSuccess, onClose]);
+  }, [amount, paymentMethod, validation, isAuthenticated, isConnected, currentChain, provider, showToast, updateSoulBalance, onPurchaseSuccess, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">
@@ -153,7 +255,9 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
 
           {/* Amount Input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#1d1d1f]">Amount ({paymentMethod === 'fiat' ? 'USD' : 'ETH'})</label>
+            <label className="text-sm font-medium text-[#1d1d1f]">
+              Amount ({paymentMethod === 'fiat' ? 'USD' : 'ETH'})
+            </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] font-medium">
                 {paymentMethod === 'fiat' ? '$' : 'Ξ'}
@@ -163,14 +267,38 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                min={SOUL_TOKEN_CONFIG.minTradeAmount}
-                max={SOUL_TOKEN_CONFIG.maxTradeAmount}
-                step="0.01"
+                min={paymentMethod === 'fiat' ? SOUL_TOKEN_CONFIG.minTradeAmount : (SOUL_TOKEN_CONFIG.minTradeAmount / currentEthPrice).toFixed(6)}
+                max={paymentMethod === 'fiat' ? SOUL_TOKEN_CONFIG.maxTradeAmount : (SOUL_TOKEN_CONFIG.maxTradeAmount / currentEthPrice).toFixed(6)}
+                step={paymentMethod === 'fiat' ? "0.01" : "0.000001"}
                 className="w-full bg-[#f5f5f7] border border-[#e5e5ea] rounded-xl p-3 pl-8 text-[#1d1d1f] placeholder:text-[#c7c7cc] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white focus:border-[#ffd700] transition-all duration-200"
               />
             </div>
             {validation.error && (
               <p className="text-xs text-[#ff3b30]">{validation.error}</p>
+            )}
+            
+            {/* ETH Balance Display */}
+            {paymentMethod === 'crypto' && ethBalance !== null && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#86868b]">Available ETH:</span>
+                <span className="text-[#1d1d1f] font-medium">{ethBalance.toFixed(6)} ETH</span>
+              </div>
+            )}
+            
+            {/* Gas Estimate */}
+            {paymentMethod === 'crypto' && amount && parseFloat(amount) > 0 && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#86868b]">Estimated gas fee:</span>
+                <span className="text-[#1d1d1f] font-medium">~{parseFloat(gasEstimate).toFixed(6)} ETH</span>
+              </div>
+            )}
+            
+            {/* Current ETH Price */}
+            {paymentMethod === 'crypto' && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#86868b]">ETH Price:</span>
+                <span className="text-[#1d1d1f] font-medium">${currentEthPrice.toLocaleString()}</span>
+              </div>
             )}
           </div>
 
@@ -178,21 +306,29 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
           <div className="space-y-2">
             <label className="text-sm font-medium text-[#1d1d1f]">Quick Select</label>
             <div className="grid grid-cols-3 gap-2">
-              {PRESET_AMOUNTS.map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => handlePresetAmount(preset)}
-                  className={cn(
-                    "p-2 rounded-lg border border-[#e5e5ea] text-sm font-medium transition-all duration-200",
-                    amount === preset.toString()
-                      ? "bg-[#ffd700] border-[#ffd700] text-[#1d1d1f]"
-                      : "bg-white hover:bg-[#fff9e6] hover:border-[#ffd700]/50 text-[#1d1d1f]"
-                  )}
-                >
-                  ${preset}
-                </button>
-              ))}
+              {PRESET_AMOUNTS.map((preset) => {
+                const displayAmount = paymentMethod === 'fiat' ? preset : (preset / currentEthPrice);
+                const displayText = paymentMethod === 'fiat' ? `$${preset}` : `${displayAmount.toFixed(4)} ETH`;
+                const isSelected = paymentMethod === 'fiat' 
+                  ? amount === preset.toString()
+                  : Math.abs(parseFloat(amount) - displayAmount) < 0.0001;
+                
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setAmount(paymentMethod === 'fiat' ? preset.toString() : displayAmount.toFixed(6))}
+                    className={cn(
+                      "p-2 rounded-lg border border-[#e5e5ea] text-sm font-medium transition-all duration-200",
+                      isSelected
+                        ? "bg-[#ffd700] border-[#ffd700] text-[#1d1d1f]"
+                        : "bg-white hover:bg-[#fff9e6] hover:border-[#ffd700]/50 text-[#1d1d1f]"
+                    )}
+                  >
+                    {displayText}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -211,33 +347,67 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
                   ${SOUL_TOKEN_CONFIG.priceUSD.toFixed(4)}
                 </span>
               </div>
+              {paymentMethod === 'crypto' && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#86868b]">ETH equivalent:</span>
+                  <span className="text-[#1d1d1f] font-medium">
+                    {(parseFloat(amount) || 0).toFixed(6)} ETH
+                  </span>
+                </div>
+              )}
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[#86868b]">Platform fee ({SOUL_TOKEN_CONFIG.platformFeePercent}%):</span>
                 <span className="text-[#1d1d1f] font-medium">
-                  ${(parseFloat(amount) * SOUL_TOKEN_CONFIG.platformFeePercent / 100).toFixed(2)}
+                  {paymentMethod === 'fiat' 
+                    ? `$${(parseFloat(amount) * SOUL_TOKEN_CONFIG.platformFeePercent / 100).toFixed(2)}`
+                    : `${((parseFloat(amount) || 0) * SOUL_TOKEN_CONFIG.platformFeePercent / 100).toFixed(6)} ETH`
+                  }
                 </span>
               </div>
+              {paymentMethod === 'crypto' && (
+                <div className="flex items-center justify-between text-xs border-t border-[#ffd700]/20 pt-2">
+                  <span className="text-[#86868b]">Total cost (including gas):</span>
+                  <span className="text-[#1d1d1f] font-semibold">
+                    {((parseFloat(amount) || 0) + parseFloat(gasEstimate)).toFixed(6)} ETH
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Wallet Connection Warning */}
+          {paymentMethod === 'crypto' && !isConnected && (
+            <div className="bg-[#fff3cd] border border-[#ffeaa7] rounded-xl p-3 flex items-center gap-2">
+              <AlertTriangle size={16} className="text-[#856404]" />
+              <p className="text-sm text-[#856404]">
+                Please connect your wallet to purchase with ETH
+              </p>
             </div>
           )}
 
           {/* Purchase Button */}
           <button
             onClick={handlePurchase}
-            disabled={!amount || !validation.valid || isProcessing || !isAuthenticated}
+            disabled={!amount || !validation.valid || isProcessing || !isAuthenticated || (paymentMethod === 'crypto' && !isConnected)}
             className={cn(
               "w-full py-4 rounded-xl font-semibold text-lg text-[#1d1d1f] shadow-md flex items-center justify-center gap-2 bg-[#ffd700] hover:bg-[#ffeb3b] transition-all duration-200 active:scale-[0.97]",
-              (!amount || !validation.valid || isProcessing || !isAuthenticated) && "opacity-50 cursor-not-allowed"
+              (!amount || !validation.valid || isProcessing || !isAuthenticated || (paymentMethod === 'crypto' && !isConnected)) && "opacity-50 cursor-not-allowed"
             )}
           >
             {isProcessing ? (
               <>
                 <Loader2 size={20} className="animate-spin" />
-                Processing...
+                {paymentMethod === 'crypto' ? 'Processing Transaction...' : 'Processing...'}
+              </>
+            ) : paymentMethod === 'crypto' && !isConnected ? (
+              <>
+                <Wallet size={20} />
+                Connect Wallet First
               </>
             ) : (
               <>
                 <Coins size={20} />
-                Purchase SOUL
+                {paymentMethod === 'crypto' ? 'Buy with ETH' : 'Buy with Fiat'}
               </>
             )}
           </button>
@@ -245,6 +415,12 @@ const SoulPurchaseModal: React.FC<SoulPurchaseModalProps> = ({ isOpen, onClose, 
           {!isAuthenticated && (
             <p className="text-xs text-center text-[#86868b]">
               Please sign in to purchase Soul tokens
+            </p>
+          )}
+
+          {paymentMethod === 'crypto' && isConnected && (
+            <p className="text-xs text-center text-[#86868b]">
+              Transaction will be sent to your connected wallet for approval
             </p>
           )}
         </div>

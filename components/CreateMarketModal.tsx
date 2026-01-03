@@ -282,23 +282,23 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
-        <div className="w-full max-w-lg bg-white border border-[#e5e5ea] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-8">
-          <div className="flex items-center justify-between p-5 border-b border-[#e5e5ea]">
-            <h3 className="text-lg font-semibold text-[#1d1d1f]">Create New Market</h3>
-            <button onClick={onClose} className="p-1.5 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200">
-              <X size={20} className="text-[#86868b]" />
+        <div className="w-full max-w-lg bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-8 transition-colors duration-300">
+          <div className="flex items-center justify-between p-5 border-b border-[#e5e5ea] dark:border-[#38383a]">
+            <h3 className="text-lg font-semibold text-[#1d1d1f] dark:text-white">Create New Market</h3>
+            <button onClick={onClose} className="p-1.5 hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] rounded-full transition-colors duration-200">
+              <X size={20} className="text-[#86868b] dark:text-[#a1a1a6]" />
           </button>
         </div>
 
           {/* Soul Balance Warning */}
           {!hasEnoughSoul && isAuthenticated && showSoulWarning && (
-            <div className="mx-5 mt-5 p-4 bg-[#fff3cd] border border-[#ffd700] rounded-xl flex items-start gap-3 relative">
+            <div className="mx-5 mt-5 p-4 bg-[#fff3cd] dark:bg-[#332d1a] border border-[#ffd700] rounded-xl flex items-start gap-3 relative">
               <AlertCircle size={20} className="text-[#ff9800] flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <div className="font-semibold text-sm text-[#1d1d1f] mb-1">
+                <div className="font-semibold text-sm text-[#1d1d1f] dark:text-white mb-1">
                   Insufficient Soul Balance
                 </div>
-                <p className="text-xs text-[#86868b] mb-2">
+                <p className="text-xs text-[#86868b] dark:text-[#a1a1a6] mb-2">
                   You need {SOUL_REQUIRED_FOR_MARKET} SOUL to create a market. Your current balance: {soulBalance.toFixed(2)} SOUL
                 </p>
                 <button
@@ -313,22 +313,22 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
                 className="absolute top-2 right-2 p-1 hover:bg-[#ffd700]/20 rounded-full transition-colors duration-200"
                 aria-label="Close warning"
               >
-                <X size={16} className="text-[#86868b]" />
+                <X size={16} className="text-[#86868b] dark:text-[#a1a1a6]" />
               </button>
             </div>
           )}
 
           {/* Soul Balance Display */}
           {isAuthenticated && (
-            <div className="mx-5 mt-5 p-3 bg-[#fff9e6] border border-[#ffd700]/30 rounded-xl flex items-center justify-between">
+            <div className="mx-5 mt-5 p-3 bg-[#fff9e6] dark:bg-[#332d1a] border border-[#ffd700]/30 rounded-xl flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Coins size={18} className="text-[#ffd700]" />
-                <span className="text-sm font-medium text-[#1d1d1f]">Soul Balance</span>
+                <span className="text-sm font-medium text-[#1d1d1f] dark:text-white">Soul Balance</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className={cn(
                   "text-lg font-bold",
-                  hasEnoughSoul ? "text-[#1d1d1f]" : "text-[#ff3b30]"
+                  hasEnoughSoul ? "text-[#1d1d1f] dark:text-white" : "text-[#ff3b30]"
                 )}>
                   {soulBalance.toFixed(2)} SOUL
                 </span>
@@ -349,14 +349,14 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             {currentEvents.length > 0 && (
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-semibold text-[#1d1d1f] flex items-center gap-2">
+                        <label className="text-sm font-semibold text-[#1d1d1f] dark:text-white flex items-center gap-2">
                             <TrendingUp size={14} className="text-[#ffd700]" /> Current Events
                         </label>
                         <button
                             type="button"
                             onClick={fetchCurrentEvents}
                             disabled={isLoadingEvents}
-                            className="text-xs text-[#86868b] hover:text-[#1d1d1f] flex items-center gap-1 transition-colors"
+                            className="text-xs text-[#86868b] dark:text-[#a1a1a6] hover:text-[#1d1d1f] dark:hover:text-white flex items-center gap-1 transition-colors"
                         >
                             {isLoadingEvents ? (
                                 <>
@@ -372,7 +372,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
                         {currentEvents.map((event, idx) => (
                             <div
                                 key={idx}
-                                className="group bg-[#f5f5f7] hover:bg-[#fff9e6] border border-[#e5e5ea] hover:border-[#ffd700]/50 rounded-xl p-3 cursor-pointer transition-all duration-200"
+                                className="group bg-[#f5f5f7] dark:bg-[#0a0a0a] hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] border border-[#e5e5ea] dark:border-[#38383a] hover:border-[#ffd700]/50 rounded-xl p-3 cursor-pointer transition-all duration-200"
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1 min-w-0">
@@ -387,10 +387,10 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
                                             )}>
                                                 {event.category}
                                             </span>
-                                            <h4 className="text-sm font-semibold text-[#1d1d1f] truncate">{event.title}</h4>
+                                            <h4 className="text-sm font-semibold text-[#1d1d1f] dark:text-white truncate">{event.title}</h4>
                                         </div>
-                                        <p className="text-xs text-[#86868b] line-clamp-2 mb-2">{event.description}</p>
-                                        <p className="text-xs font-medium text-[#1d1d1f] mb-2">{event.suggestedQuestion}</p>
+                                        <p className="text-xs text-[#86868b] dark:text-[#a1a1a6] line-clamp-2 mb-2">{event.description}</p>
+                                        <p className="text-xs font-medium text-[#1d1d1f] dark:text-white mb-2">{event.suggestedQuestion}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 mt-2">
