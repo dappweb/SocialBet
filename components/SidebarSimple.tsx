@@ -23,6 +23,7 @@ import { cn } from '../utils';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import LazyImage from './LazyImage';
+import ThemeToggle from './ThemeToggle';
 
 interface SidebarProps {
   currentView: string;
@@ -56,6 +57,7 @@ const SidebarSimple: React.FC<SidebarProps> = ({
   ];
 
   const featureItems = [
+    { id: 'swap', label: 'Swap', icon: TrendingUp },
     { id: 'referral', label: 'Referral', icon: TrendingUp },
     { id: 'red-envelope', label: 'Red Envelope', icon: Sparkles },
     { id: 'airdrop', label: 'Airdrop', icon: Crown },
@@ -164,7 +166,7 @@ const SidebarSimple: React.FC<SidebarProps> = ({
 
             {/* Profile Menu */}
             {isProfileMenuOpen && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#2c2c2c2e] rounded-xl shadow-lg z-10">
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#2c2c2e] rounded-xl shadow-lg z-10">
                 <div className="p-2">
                   <button
                     onClick={handleLogout}
@@ -179,6 +181,10 @@ const SidebarSimple: React.FC<SidebarProps> = ({
           </div>
         </div>
       )}
+      
+      <div className="p-4 border-t border-[#e5e5ea] dark:border-[#2c2c2e]">
+        <ThemeToggle size="md" />
+      </div>
     </div>
   );
 };

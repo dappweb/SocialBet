@@ -1,7 +1,7 @@
 // API Service Layer for SoulCast
 // Provides typed methods for all backend API calls
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://socialbet-api.dappweb.workers.dev';
+const API_BASE_URL = (import.meta.env as any).VITE_API_URL || 'https://socialbet-api.dappweb.workers.dev';
 
 // Types matching backend responses
 export interface User {
@@ -17,6 +17,14 @@ export interface User {
     sosTokenBalance?: number;
     isCreator?: boolean;
     isAdmin?: boolean;
+    bio?: string;
+    location?: string;
+    website?: string;
+    twitter?: string;
+    github?: string;
+    joinedAt?: string;
+    followersCount?: number;
+    followingCount?: number;
 }
 
 export interface Market {
@@ -70,6 +78,16 @@ export interface UserStats {
     wins: number;
     likesReceived: number;
     winRate: string;
+    // Additional fields for achievements system
+    totalBets: number;
+    totalMarkets: number;
+    correctPredictions: number;
+    accuracy: number;
+    followersCount: number;
+    followingCount: number;
+    achievementsUnlocked: number;
+    currentStreak: number;
+    bestStreak: number;
 }
 
 export interface ChatMessage {
@@ -97,6 +115,9 @@ export class ApiError extends Error {
         this.name = 'ApiError';
     }
 }
+
+// Import messaging types
+import { Message, ConversationSummary, MessageThread, MessageSettings } from '../types/messaging';
 
 // Fetch wrapper with error handling
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -169,10 +190,38 @@ export const usersApi = {
     },
 
     // Update user profile
-    async update(id: string, data: Partial<User>): Promise<{ success: boolean }> {
-        return fetchApi<{ success: boolean }>(`/api/users/${id}`, {
+    async update(id: string, data: Partial<User>): Promise<{ success: boolean; user: User }> {
+        return fetchApi<{ success: boolean; user: User }>(`/api/users/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data),
+        });
+    },
+
+    // Update profile specifically
+    async updateProfile(id: string, data: {
+        name?: string;
+        bio?: string;
+        location?: string;
+        website?: string;
+        twitter?: string;
+        github?: string;
+        avatar?: string;
+    }): Promise<{ success: boolean; user: User }> {
+        return fetchApi<{ success: boolean; user: User }>(`/api/users/${id}/profile`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Upload avatar
+    async uploadAvatar(id: string, file: File): Promise<{ success: boolean; avatarUrl: string }> {
+        const formData = new FormData();
+        formData.append('avatar', file);
+        
+        return fetchApi<{ success: boolean; avatarUrl: string }>(`/api/users/${id}/avatar`, {
+            method: 'POST',
+            body: formData,
+            headers: {}, // Let browser set Content-Type for FormData
         });
     },
 
@@ -196,6 +245,175 @@ export const usersApi = {
         return fetchApi<{ success: boolean; newBalance: number }>(`/api/users/${id}/soul`, {
             method: 'POST',
             body: JSON.stringify({ amount }),
+        });
+    },
+
+    // Follow a user
+    async follow(userId: string, targetUserId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/follow`, {
+            method: 'POST',
+            body: JSON.stringify({ targetUserId }),
+        });
+    },
+
+    // Unfollow a user
+    async unfollow(userId: string, targetUserId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/follow/${targetUserId}`, {
+            method: 'DELETE',
+        });
+    },
+
+    // Get user's followers
+    async getFollowers(userId: string, options?: { limit?: number; offset?: number }): Promise<User[]> {
+        const params = new URLSearchParams();
+        if (options?.limit) params.set('limit', String(options.limit));
+        if (options?.offset) params.set('offset', String(options.offset));
+
+        const query = params.toString() ? `?${params}` : '';
+        return fetchApi<User[]>(`/api/users/${userId}/followers${query}`);
+    },
+
+    // Get user's following
+    async getFollowing(userId: string, options?: { limit?: number; offset?: number }): Promise<User[]> {
+        const params = new URLSearchParams();
+        if (options?.limit) params.set('limit', String(options.limit));
+        if (options?.offset) params.set('offset', String(options.offset));
+
+        const query = params.toString() ? `?${params}` : '';
+        return fetchApi<User[]>(`/api/users/${userId}/following${query}`);
+    },
+
+    // Check if user is following another user
+    async isFollowing(userId: string, targetUserId: string): Promise<{ isFollowing: boolean }> {
+        return fetchApi<{ isFollowing: boolean }>(`/api/users/${userId}/following/${targetUserId}`);
+    },
+
+    // Search users
+    async search(query: string, options?: { limit?: number; offset?: number }): Promise<User[]> {
+        const params = new URLSearchParams();
+        params.set('q', query);
+        if (options?.limit) params.set('limit', String(options.limit));
+        if (options?.offset) params.set('offset', String(options.offset));
+
+        const queryString = params.toString();
+        return fetchApi<User[]>(`/api/users/search?${queryString}`);
+    },
+};
+
+// ==================== Messaging API ====================
+
+export const messagesApi = {
+    // Get user conversations
+    async getConversations(userId: string, options?: { limit?: number; offset?: number; archived?: boolean }): Promise<ConversationSummary[]> {
+        const params = new URLSearchParams();
+        if (options?.limit) params.set('limit', String(options.limit));
+        if (options?.offset) params.set('offset', String(options.offset));
+        if (options?.archived !== undefined) params.set('archived', String(options.archived));
+
+        const query = params.toString() ? `?${params}` : '';
+        return fetchApi<ConversationSummary[]>(`/api/users/${userId}/conversations${query}`);
+    },
+
+    // Get conversation details
+    async getConversation(userId: string, conversationId: string): Promise<MessageThread> {
+        return fetchApi<MessageThread>(`/api/users/${userId}/conversations/${conversationId}`);
+    },
+
+    // Send message
+    async sendMessage(senderId: string, receiverId: string, content: string, messageType: 'text' | 'image' | 'system' = 'text'): Promise<Message> {
+        return fetchApi<Message>('/api/messages', {
+            method: 'POST',
+            body: JSON.stringify({
+                senderId,
+                receiverId,
+                content,
+                messageType,
+            }),
+        });
+    },
+
+    // Mark messages as read
+    async markAsRead(userId: string, conversationId: string, messageIds?: string[]): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/conversations/${conversationId}/read`, {
+            method: 'POST',
+            body: JSON.stringify({ messageIds }),
+        });
+    },
+
+    // Delete message
+    async deleteMessage(userId: string, messageId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/messages/${messageId}`, {
+            method: 'DELETE',
+        });
+    },
+
+    // Archive conversation
+    async archiveConversation(userId: string, conversationId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/conversations/${conversationId}/archive`, {
+            method: 'POST',
+        });
+    },
+
+    // Unarchive conversation
+    async unarchiveConversation(userId: string, conversationId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/conversations/${conversationId}/unarchive`, {
+            method: 'POST',
+        });
+    },
+
+    // Mute conversation
+    async muteConversation(userId: string, conversationId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/conversations/${conversationId}/mute`, {
+            method: 'POST',
+        });
+    },
+
+    // Unmute conversation
+    async unmuteConversation(userId: string, conversationId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/conversations/${conversationId}/unmute`, {
+            method: 'POST',
+        });
+    },
+
+    // Block user
+    async blockUser(userId: string, blockedUserId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/block`, {
+            method: 'POST',
+            body: JSON.stringify({ blockedUserId }),
+        });
+    },
+
+    // Unblock user
+    async unblockUser(userId: string, blockedUserId: string): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/unblock`, {
+            method: 'POST',
+            body: JSON.stringify({ blockedUserId }),
+        });
+    },
+
+    // Get blocked users
+    async getBlockedUsers(userId: string): Promise<User[]> {
+        return fetchApi<User[]>(`/api/users/${userId}/blocked`);
+    },
+
+    // Send typing indicator
+    async sendTypingIndicator(conversationId: string, userId: string, isTyping: boolean): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/conversations/${conversationId}/typing`, {
+            method: 'POST',
+            body: JSON.stringify({ userId, isTyping }),
+        });
+    },
+
+    // Get message settings
+    async getSettings(userId: string): Promise<MessageSettings> {
+        return fetchApi<MessageSettings>(`/api/users/${userId}/message-settings`);
+    },
+
+    // Update message settings
+    async updateSettings(userId: string, settings: Partial<MessageSettings>): Promise<{ success: boolean }> {
+        return fetchApi<{ success: boolean }>(`/api/users/${userId}/message-settings`, {
+            method: 'PUT',
+            body: JSON.stringify(settings),
         });
     },
 };

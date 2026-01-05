@@ -11,8 +11,16 @@ interface PredictionCardProps {
 }
 
 const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) => {
-  const yesPercentage = Math.round(market.outcomeStats.yesPercent);
-  const noPercentage = Math.round(market.outcomeStats.noPercent);
+  // Add safety check for outcomeStats
+  const outcomeStats = market.outcomeStats || {
+    yesPercent: 50,
+    noPercent: 50,
+    yesPrice: 0.5,
+    noPrice: 0.5,
+  };
+  
+  const yesPercentage = Math.round(outcomeStats.yesPercent);
+  const noPercentage = Math.round(outcomeStats.noPercent);
 
   return (
     <div className="border-b border-[#e5e5ea] dark:border-[#38383a] bg-white dark:bg-black hover:bg-[#fafafa] dark:hover:bg-[#0a0a0a] transition-all duration-200 cursor-pointer group relative overflow-hidden">
@@ -34,7 +42,7 @@ const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) =
               <span className="font-semibold text-[#1d1d1f] dark:text-white truncate text-[15px] hover:underline decoration-[#86868b] dark:decoration-[#a1a1a6] underline-offset-2">
                 {market.creator.name}
               </span>
-              {market.creator.isVerified && (
+              {'isVerified' in market.creator && market.creator.isVerified && (
                 <CheckCircle2 size={16} className="text-[#ffd700] fill-[#fff9e6] dark:fill-[#332d1a]" />
               )}
               <span className="text-[#86868b] dark:text-[#a1a1a6] text-[14px] truncate">{market.creator.handle}</span>
@@ -120,14 +128,14 @@ const PredictionCard: React.FC<PredictionCardProps> = memo(({ market, onBet }) =
               className="relative overflow-hidden flex flex-col items-center justify-center py-3 rounded-xl bg-[#34c759]/10 hover:bg-[#34c759]/15 border border-[#34c759]/20 hover:border-[#34c759]/40 transition-all duration-200 group/btn active:scale-[0.97] shadow-sm hover:shadow-md"
             >
               <span className="text-[#34c759] font-semibold group-hover/btn:scale-105 transition-transform relative z-10">Bet YES</span>
-              <span className="text-xs text-[#34c759]/70 font-mono relative z-10 mt-0.5">Price: {Math.floor(market.outcomeStats.yesPrice * 100)}¢</span>
+              <span className="text-xs text-[#34c759]/70 font-mono relative z-10 mt-0.5">Price: {Math.floor(outcomeStats.yesPrice * 100)}¢</span>
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); onBet(market, 'NO'); }}
               className="relative overflow-hidden flex flex-col items-center justify-center py-3 rounded-xl bg-[#ff3b30]/10 hover:bg-[#ff3b30]/15 border border-[#ff3b30]/20 hover:border-[#ff3b30]/40 transition-all duration-200 group/btn active:scale-[0.97] shadow-sm hover:shadow-md"
             >
               <span className="text-[#ff3b30] font-semibold group-hover/btn:scale-105 transition-transform relative z-10">Bet NO</span>
-              <span className="text-xs text-[#ff3b30]/70 font-mono relative z-10 mt-0.5">Price: {Math.floor(market.outcomeStats.noPrice * 100)}¢</span>
+              <span className="text-xs text-[#ff3b30]/70 font-mono relative z-10 mt-0.5">Price: {Math.floor(outcomeStats.noPrice * 100)}¢</span>
             </button>
           </div>
 

@@ -8,6 +8,8 @@ import { getAllProposals, castVote, createProposal } from '../services/soulGover
 import { useToast } from '../contexts/ToastContext';
 
 const DAOGovernance: React.FC = () => {
+  const MOCK_DAO_BALANCE = 1250000;
+  const MOCK_PLATFORM_BALANCE = 850000;
   const { provider, isConnected } = useWeb3Auth();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'proposals' | 'treasury'>('proposals');
@@ -77,13 +79,13 @@ const DAOGovernance: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-[#fff9e6] border-[#ffd700]/30 text-[#ffc107]';
+        return 'bg-[#fff9e6] dark:bg-[#332d1a] border-[#ffd700]/30 text-[#ffc107] dark:text-[#ffeb3b]';
       case 'passed':
-        return 'bg-[#34c759]/10 border-[#34c759]/30 text-[#34c759]';
+        return 'bg-[#34c759]/10 dark:bg-[#1a2b1a] border-[#34c759]/30 text-[#34c759]';
       case 'rejected':
-        return 'bg-[#ff3b30]/10 border-[#ff3b30]/30 text-[#ff3b30]';
+        return 'bg-[#ff3b30]/10 dark:bg-[#2c1a1a] border-[#ff3b30]/30 text-[#ff3b30]';
       default:
-        return 'bg-[#f5f5f7] border-[#e5e5ea] text-[#86868b]';
+        return 'bg-[#f5f5f7] dark:bg-[#2c2c2e] border-[#e5e5ea] dark:border-[#38383a] text-[#86868b] dark:text-[#a1a1a6]';
     }
   };
 
@@ -274,51 +276,51 @@ const DAOGovernance: React.FC = () => {
           <div className="space-y-6">
             {/* Treasury Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white border border-[#e5e5ea] rounded-2xl p-5 shadow-sm">
+              <div className="bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-[#1d1d1f]">DAO Treasury</h3>
+                  <h3 className="font-semibold text-[#1d1d1f] dark:text-white">DAO Treasury</h3>
                   <TrendingUp className="text-[#ffd700]" size={20} />
                 </div>
-                <div className="text-3xl font-bold text-[#1d1d1f] mb-1">
+                <div className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1">
                   {formatCurrency(MOCK_DAO_BALANCE)}
                 </div>
-                <div className="text-sm text-[#86868b]">SOS Tokens</div>
+                <div className="text-sm text-[#86868b] dark:text-[#a1a1a6]">SOS Tokens</div>
               </div>
 
-              <div className="bg-white border border-[#e5e5ea] rounded-2xl p-5 shadow-sm">
+              <div className="bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-[#1d1d1f]">Platform Balance</h3>
+                  <h3 className="font-semibold text-[#1d1d1f] dark:text-white">Platform Balance</h3>
                   <Zap className="text-[#ffd700]" size={20} />
                 </div>
-                <div className="text-3xl font-bold text-[#1d1d1f] mb-1">
+                <div className="text-3xl font-bold text-[#1d1d1f] dark:text-white mb-1">
                   {formatCurrency(MOCK_PLATFORM_BALANCE)}
                 </div>
-                <div className="text-sm text-[#86868b]">SOS Tokens on PC Platform</div>
+                <div className="text-sm text-[#86868b] dark:text-[#a1a1a6]">SOS Tokens on PC Platform</div>
               </div>
             </div>
 
             {/* Recent Contributions */}
-            <div className="bg-white border border-[#e5e5ea] rounded-2xl p-5 shadow-sm">
-              <h3 className="font-semibold text-[#1d1d1f] mb-4">Recent Token Contributions</h3>
+            <div className="bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl p-5 shadow-sm">
+              <h3 className="font-semibold text-[#1d1d1f] dark:text-white mb-4">Recent Token Contributions</h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-[#f5f5f7] rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-[#f5f5f7] dark:bg-[#2c2c2e] rounded-xl">
                   <div>
-                    <div className="font-semibold text-sm text-[#1d1d1f]">Liquidity Pool Addition</div>
-                    <div className="text-xs text-[#86868b]">2 days ago</div>
+                    <div className="font-semibold text-sm text-[#1d1d1f] dark:text-white">Liquidity Pool Addition</div>
+                    <div className="text-xs text-[#86868b] dark:text-[#a1a1a6]">2 days ago</div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-[#ffd700]">+500K SOS</div>
-                    <div className="text-xs text-[#86868b]">Ethereum Pool</div>
+                    <div className="text-xs text-[#86868b] dark:text-[#a1a1a6]">Ethereum Pool</div>
                   </div>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-[#f5f5f7] rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-[#f5f5f7] dark:bg-[#2c2c2e] rounded-xl">
                   <div>
-                    <div className="font-semibold text-sm text-[#1d1d1f]">Community Rewards</div>
-                    <div className="text-xs text-[#86868b]">5 days ago</div>
+                    <div className="font-semibold text-sm text-[#1d1d1f] dark:text-white">Community Rewards</div>
+                    <div className="text-xs text-[#86868b] dark:text-[#a1a1a6]">5 days ago</div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-[#ffd700]">+200K SOS</div>
-                    <div className="text-xs text-[#86868b]">Reward Pool</div>
+                    <div className="text-xs text-[#86868b] dark:text-[#a1a1a6]">Reward Pool</div>
                   </div>
                 </div>
               </div>

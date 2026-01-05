@@ -1,5 +1,5 @@
 import React, { useState, memo, useCallback, useMemo, useEffect, lazy, Suspense } from 'react';
-import { Calendar, Link as LinkIcon, MapPin, ArrowLeft, Ghost, Loader2, LogIn, AlertCircle } from 'lucide-react';
+import { Calendar, Link as LinkIcon, MapPin, ArrowLeft, Ghost, Loader2, LogIn, AlertCircle, Trophy, MessageSquare, Bell, Download, Settings, User, BarChart3 } from 'lucide-react';
 import { MOCK_MARKETS } from '../constants';
 import PredictionCard from './PredictionCard';
 import { PredictionMarket, BetType } from '../types';
@@ -8,6 +8,12 @@ import { usersApi, betsApi, marketsApi } from '../services/api';
 import LazyImage from './LazyImage';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
+import EditProfileModal from './EditProfileModal';
+import AchievementsPage from './AchievementsPage';
+import NotificationSettings from './NotificationSettings';
+import DataExport from './DataExport';
+import UserStatsDashboard from './UserStatsDashboard';
+import QuickNavigation from './QuickNavigation';
 
 const TradingDashboard = lazy(() => import('./TradingDashboard'));
 
@@ -16,7 +22,7 @@ interface ProfileProps {
   onLoginClick?: () => void;
 }
 
-type ProfileTab = 'bets' | 'created' | 'likes' | 'trading';
+type ProfileTab = 'bets' | 'created' | 'likes' | 'trading' | 'achievements' | 'messages' | 'notifications' | 'settings' | 'export';
 
 // Moved outside Profile component to prevent recreation on every render
 const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, label: string, activeTab: ProfileTab, onClick: (id: ProfileTab) => void }) => (
@@ -37,7 +43,7 @@ const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, lab
 TabButton.displayName = 'TabButton';
 
 const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
-  const { user: authUser, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<ProfileTab>('bets');
   const [userMarkets, setUserMarkets] = useState<PredictionMarket[]>([]);
   const [allMarkets, setAllMarkets] = useState<PredictionMarket[]>([]);
@@ -45,6 +51,8 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
   const [userStats, setUserStats] = useState({ betsCount: 0 });
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [savedAuth, setSavedAuth] = useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   // Check for saved auth in localStorage as fallback (for mobile persistence)
   // Make it reactive so it updates when auth state changes
@@ -81,11 +89,19 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
 
   // Use authenticated user data, saved auth, or fallback to mock data
   const displayUser = useMemo(() => {
-    if (isAuthenticated && authUser) {
+    if (isAuthenticated && user) {
       return {
-        name: authUser.name,
-        handle: authUser.handle,
-        avatar: authUser.avatar,
+        name: user.name,
+        handle: user.handle,
+        avatar: user.avatar,
+        bio: user.bio,
+        location: user.location,
+        website: user.website,
+        twitter: user.twitter,
+        github: user.github,
+        joinedAt: user.joinedAt,
+        followersCount: user.followersCount || 0,
+        followingCount: user.followingCount || 0,
       };
     }
     
@@ -95,6 +111,14 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
         name: savedAuth.user.name,
         handle: savedAuth.user.handle,
         avatar: savedAuth.user.avatar,
+        bio: savedAuth.user.bio,
+        location: savedAuth.user.location,
+        website: savedAuth.user.website,
+        twitter: savedAuth.user.twitter,
+        github: savedAuth.user.github,
+        joinedAt: savedAuth.user.joinedAt,
+        followersCount: savedAuth.user.followersCount || 0,
+        followingCount: savedAuth.user.followingCount || 0,
       };
     }
     
@@ -103,20 +127,28 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
       name: 'Degen Trader',
       handle: '@degen_eth',
       avatar: 'https://picsum.photos/id/100/200/200',
+      bio: 'Full-time crypto speculator. Betting on volatility. Not financial advice. 🚀',
+      location: 'Metaverse',
+      website: 'https://degentrader.eth',
+      twitter: 'degentrader',
+      github: 'degentrader',
+      joinedAt: '2021-09-01',
+      followersCount: 6900,
+      followingCount: 420,
     };
-  }, [isAuthenticated, authUser, savedAuth]);
+  }, [isAuthenticated, user, savedAuth]);
 
   // Show login prompt ONLY if not authenticated AND no saved auth
   // This ensures profile is accessible when logged in
   useEffect(() => {
     // Check both isAuthenticated and savedAuth for mobile persistence
-    const hasAuth = isAuthenticated || authUser || (savedAuth?.user !== null && savedAuth?.user !== undefined);
+    const hasAuth = isAuthenticated || user || (savedAuth?.user !== null && savedAuth?.user !== undefined);
     
     // Debug logging (remove in production)
     if (process.env.NODE_ENV === 'development') {
       console.log('Profile auth check:', {
         isAuthenticated,
-        hasAuthUser: !!authUser,
+        hasUser: !!user,
         hasSavedAuth: !!savedAuth?.user,
         hasAuth,
         showLoginPrompt: !hasAuth
@@ -130,7 +162,7 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
     }, 100);
     
     return () => clearTimeout(timer);
-  }, [isAuthenticated, savedAuth, authUser]);
+  }, [isAuthenticated, savedAuth, user]);
 
   // Fetch user data and markets
   useEffect(() => {
@@ -161,7 +193,26 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
   const likedMarkets = useMemo(() => allMarkets.slice(2, 4), [allMarkets]);
 
   const handleBet = useCallback((market: PredictionMarket, type: BetType) => {
-    console.log("Bet clicked on profile", market.id, type);
+    try {
+      console.log("Bet clicked on profile", {
+        marketId: market.id,
+        question: market.question,
+        type,
+        outcomeStats: market.outcomeStats
+      });
+      
+      // TODO: Implement actual betting logic
+      // For now, just show a success message
+      const message = `✅ Bet ${type} placed successfully!\n\n📊 Market: ${market.question}\n💰 Price: ${Math.floor((type === 'YES' ? market.outcomeStats?.yesPrice : market.outcomeStats?.noPrice || 0.5) * 100)}¢\n\nThis is a demo. Actual betting functionality coming soon!`;
+      
+      // Use a more user-friendly notification
+      if (confirm(message)) {
+        console.log("User confirmed bet placement");
+      }
+    } catch (error) {
+      console.error("Error in handleBet:", error);
+      alert("❌ An error occurred while placing bet. Please try again.");
+    }
   }, []);
 
   const handleTabChange = useCallback((tab: ProfileTab) => {
@@ -177,6 +228,59 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
             <TradingDashboard markets={allMarkets} />
           </div>
         </Suspense>
+      );
+    }
+
+    // Show Achievements Page
+    if (activeTab === 'achievements') {
+      return (
+        <Suspense fallback={<LoadingSpinner text="Loading achievements..." />}>
+          <AchievementsPage onBack={() => setActiveTab('bets')} />
+        </Suspense>
+      );
+    }
+
+    // Show Messages (placeholder for now)
+    if (activeTab === 'messages') {
+      return (
+        <div className="flex flex-col items-center justify-center py-24 text-[#86868b] dark:text-[#a1a1a6]">
+          <div className="bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-full p-6 mb-4">
+            <MessageSquare size={40} className="opacity-50" />
+          </div>
+          <p className="font-medium">Messages coming soon!</p>
+          <p className="text-sm mt-2">Private messaging functionality is in development.</p>
+        </div>
+      );
+    }
+
+    // Show Notification Settings
+    if (activeTab === 'notifications') {
+      return (
+        <Suspense fallback={<LoadingSpinner text="Loading settings..." />}>
+          <NotificationSettings onBack={() => setActiveTab('bets')} />
+        </Suspense>
+      );
+    }
+
+    // Show Data Export
+    if (activeTab === 'export') {
+      return (
+        <Suspense fallback={<LoadingSpinner text="Loading export..." />}>
+          <DataExport onBack={() => setActiveTab('bets')} />
+        </Suspense>
+      );
+    }
+
+    // Show Settings (placeholder for now)
+    if (activeTab === 'settings') {
+      return (
+        <div className="flex flex-col items-center justify-center py-24 text-[#86868b] dark:text-[#a1a1a6]">
+          <div className="bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-full p-6 mb-4">
+            <Settings size={40} className="opacity-50" />
+          </div>
+          <p className="font-medium">Settings coming soon!</p>
+          <p className="text-sm mt-2">Advanced settings and preferences.</p>
+        </div>
       );
     }
 
@@ -215,11 +319,9 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
     ));
   };
 
-
-
   // Determine if we should show login prompt
   // Only show if we have NO authentication at all (neither isAuthenticated nor savedAuth)
-  const hasAnyAuth = isAuthenticated || authUser || (savedAuth?.user !== null && savedAuth?.user !== undefined);
+  const hasAnyAuth = isAuthenticated || user || (savedAuth?.user !== null && savedAuth?.user !== undefined);
   const shouldShowLoginPrompt = !hasAnyAuth;
   
   if (shouldShowLoginPrompt) {
@@ -270,82 +372,178 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
         <button onClick={() => onBack?.()} className="p-2 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200 group">
           <ArrowLeft size={20} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
         </button>
-        <div>
-          <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f]">{displayUser.name}</h1>
-          <p className="text-xs text-[#86868b]">{userStats.betsCount.toLocaleString()} Bets</p>
+        <div className="flex-1">
+          <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f]">Profile</h1>
+          <p className="text-xs text-[#86868b]">
+            {displayUser.name} • {displayUser.followersCount.toLocaleString()} followers
+          </p>
         </div>
+        <button
+          onClick={() => setShowSidebar(!showSidebar)}
+          className="p-2 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200 group"
+        >
+          <BarChart3 size={20} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
+        </button>
       </div>
 
-      {/* Banner */}
-      <div className="h-32 sm:h-48 bg-gradient-to-r from-[#ffd700] via-[#ffeb3b] to-[#fff9e6] relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent"></div>
-      </div>
+      {/* Main Content with Sidebar */}
+      <div className="flex">
+        {/* Sidebar */}
+        {showSidebar && (
+          <div className="w-80 border-r border-[#e5e5ea] bg-white/50 backdrop-blur-sm">
+            <div className="h-full overflow-y-auto">
+              <UserStatsDashboard className="border-b border-[#e5e5ea]" />
+              <QuickNavigation />
+            </div>
+          </div>
+        )}
 
-      {/* Profile Info */}
-      <div className="px-5 relative mb-4">
-        <div className="absolute -top-14 sm:-top-16 left-5">
-          <LazyImage
-            src={displayUser.avatar}
-            alt={displayUser.name}
-            className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white object-cover bg-white shadow-lg"
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Profile Info */}
+          <div className="px-5 relative mb-4">
+            <div className="absolute -top-14 sm:-top-16 left-5">
+              <LazyImage
+                src={displayUser.avatar}
+                alt={displayUser.name}
+                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white object-cover bg-white shadow-lg"
+              />
+            </div>
+            <div className="flex justify-end py-3">
+              <button 
+                onClick={() => setIsEditModalOpen(true)}
+                className="px-5 py-2 border border-[#e5e5ea] rounded-xl font-semibold text-sm hover:bg-[#f5f5f7] hover:border-[#ffd700] transition-all duration-200 active:scale-95 text-[#1d1d1f]"
+              >
+                Edit Profile
+              </button>
+            </div>
+
+            <div className="mt-3">
+              <h2 className="text-2xl font-semibold text-[#1d1d1f] flex items-center gap-2">
+                {displayUser.name}
+                {user?.isVerified && (
+                  <svg className="w-5 h-5 text-[#ffd700]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </h2>
+              <p className="text-[#86868b] font-medium">{displayUser.handle}</p>
+
+              {/* Bio */}
+              {displayUser.bio && (
+                <p className="mt-4 text-[#1d1d1f] text-[15px] leading-relaxed max-w-md">
+                  {displayUser.bio}
+                </p>
+              )}
+
+              {/* Location and Links */}
+              <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-[#86868b] text-sm">
+                {/* Location */}
+                {displayUser.location && (
+                  <div className="flex items-center gap-1.5 hover:text-[#1d1d1f] transition-colors duration-200 cursor-default">
+                    <MapPin size={16} /> <span>{displayUser.location}</span>
+                  </div>
+                )}
+                
+                {/* Website */}
+                {displayUser.website && (
+                  <div className="flex items-center gap-1.5 hover:text-[#ffd700] transition-colors duration-200 cursor-pointer">
+                    <LinkIcon size={16} /> 
+                    <a 
+                      href={displayUser.website.startsWith('http') ? displayUser.website : `https://${displayUser.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {displayUser.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                    </a>
+                  </div>
+                )}
+                
+                {/* Twitter */}
+                {displayUser.twitter && (
+                  <div className="flex items-center gap-1.5 hover:text-[#1d1d1f] transition-colors duration-200 cursor-pointer">
+                    <LinkIcon size={16} /> 
+                    <a 
+                      href={`https://twitter.com/${displayUser.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      @{displayUser.twitter}
+                    </a>
+                  </div>
+                )}
+                
+                {/* GitHub */}
+                {displayUser.github && (
+                  <div className="flex items-center gap-1.5 hover:text-[#1d1d1f] transition-colors duration-200 cursor-pointer">
+                    <LinkIcon size={16} /> 
+                    <a 
+                      href={`https://github.com/${displayUser.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {displayUser.github}
+                    </a>
+                  </div>
+                )}
+                
+                {/* Join Date */}
+                {displayUser.joinedAt && (
+                  <div className="flex items-center gap-1.5 hover:text-[#1d1d1f] transition-colors duration-200 cursor-default">
+                    <Calendar size={16} /> 
+                    <span>Joined {new Date(displayUser.joinedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Follow Stats */}
+              <div className="flex gap-6 mt-5 text-sm">
+                <div className="hover:underline cursor-pointer group">
+                  <span className="font-semibold text-[#1d1d1f] group-hover:text-[#ffd700] transition-colors duration-200">
+                    {displayUser.followingCount.toLocaleString()}
+                  </span> 
+                  <span className="text-[#86868b] group-hover:text-[#1d1d1f] transition-colors duration-200">Following</span>
+                </div>
+                <div className="hover:underline cursor-pointer group">
+                  <span className="font-semibold text-[#1d1d1f] group-hover:text-[#ffd700] transition-colors duration-200">
+                    {displayUser.followersCount >= 1000 
+                      ? `${(displayUser.followersCount / 1000).toFixed(1)}K`
+                      : displayUser.followersCount.toLocaleString()
+                    }
+                  </span> 
+                  <span className="text-[#86868b] group-hover:text-[#1d1d1f] transition-colors duration-200">Followers</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b border-[#e5e5ea] bg-white overflow-x-auto">
+            <TabButton id="bets" label="Bets" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="trading" label="Trading" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="created" label="Created" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="likes" label="Likes" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="achievements" label="🏆" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="messages" label="💬" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="notifications" label="🔔" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="export" label="📥" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="settings" label="⚙️" activeTab={activeTab} onClick={handleTabChange} />
+          </div>
+
+          {/* Content List */}
+          <div className="min-h-[200px]">
+            {renderContent()}
+          </div>
+
+          {/* Edit Profile Modal */}
+          <EditProfileModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
           />
         </div>
-        <div className="flex justify-end py-3">
-          <button className="px-5 py-2 border border-[#e5e5ea] rounded-xl font-semibold text-sm hover:bg-[#f5f5f7] hover:border-[#ffd700] transition-all duration-200 active:scale-95 text-[#1d1d1f]">
-            Edit Profile
-          </button>
-        </div>
-
-        <div className="mt-3">
-          <h2 className="text-2xl font-semibold text-[#1d1d1f] flex items-center gap-2">
-            {displayUser.name}
-            {authUser?.isVerified && (
-              <svg className="w-5 h-5 text-[#ffd700]" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            )}
-          </h2>
-          <p className="text-[#86868b] font-medium">{displayUser.handle}</p>
-
-          <p className="mt-4 text-[#1d1d1f] text-[15px] leading-relaxed max-w-md">
-            Full-time crypto speculator. Betting on volatility. <br />
-            Not financial advice. 🚀
-          </p>
-
-          <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-[#86868b] text-sm">
-            <div className="flex items-center gap-1.5 hover:text-[#1d1d1f] transition-colors duration-200 cursor-default">
-              <MapPin size={16} /> <span>Metaverse</span>
-            </div>
-            <div className="flex items-center gap-1.5 hover:text-[#ffd700] transition-colors duration-200 cursor-pointer">
-              <LinkIcon size={16} /> <a href="#">degentrader.eth</a>
-            </div>
-            <div className="flex items-center gap-1.5 hover:text-[#1d1d1f] transition-colors duration-200 cursor-default">
-              <Calendar size={16} /> <span>Joined September 2021</span>
-            </div>
-          </div>
-
-          <div className="flex gap-6 mt-5 text-sm">
-            <div className="hover:underline cursor-pointer group">
-              <span className="font-semibold text-[#1d1d1f] group-hover:text-[#ffd700] transition-colors duration-200">420</span> <span className="text-[#86868b] group-hover:text-[#1d1d1f] transition-colors duration-200">Following</span>
-            </div>
-            <div className="hover:underline cursor-pointer group">
-              <span className="font-semibold text-[#1d1d1f] group-hover:text-[#ffd700] transition-colors duration-200">6.9K</span> <span className="text-[#86868b] group-hover:text-[#1d1d1f] transition-colors duration-200">Followers</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-[#e5e5ea] bg-white">
-        <TabButton id="bets" label="Bets" activeTab={activeTab} onClick={handleTabChange} />
-        <TabButton id="trading" label="Trading" activeTab={activeTab} onClick={handleTabChange} />
-        <TabButton id="created" label="Created" activeTab={activeTab} onClick={handleTabChange} />
-        <TabButton id="likes" label="Likes" activeTab={activeTab} onClick={handleTabChange} />
-      </div>
-
-      {/* Content List */}
-      <div className="min-h-[200px]">
-        {renderContent()}
       </div>
     </div>
   );

@@ -1,6 +1,10 @@
 // Polyfills for Web3Auth
 import { Buffer } from 'buffer';
 (window as any).Buffer = Buffer;
+// Additional Node-style globals for browser compatibility
+import process from 'process';
+(window as any).process = process;
+(window as any).global = window;
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';

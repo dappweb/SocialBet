@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, LogIn, Loader2, AlertCircle } from 'lucide-react';
+import { X, LogIn, Loader2, AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { cn } from '../utils';
+import FallbackLogin from './FallbackLogin';
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     const { showToast } = useToast();
     const [error, setError] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(false);
+    const [showFallback, setShowFallback] = useState(false);
 
     // Early return AFTER all hooks
     if (!isOpen) return null;
@@ -181,7 +183,131 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
                 {/* Footer */}
                 <div className="px-6 py-4 bg-[#f5f5f7] border-t border-[#e5e5ea]">
-                    <p className="text-xs text-[#86868b] text-center">
+                    <button
+                        onClick={() => setShowFallback(true)}
+                        className="w-full py-2 px-4 border border-[#e5e5ea] dark:border-[#38383a] rounded-xl font-medium text-sm hover:bg-[#e5e5ea] dark:hover:bg-[#38383a] transition-all duration-200 text-[#1d1d1f] dark:text-white flex items-center justify-center gap-2"
+                    >
+                        <Shield size={16} />
+                        <span>Try Demo Login</span>
+                    </button>
+                    <p className="text-xs text-[#86868b] text-center mt-2">
+                        Powered by Web3Auth • Non-custodial wallet infrastructure
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+
+    // Fallback Login Modal
+    if (showFallback) {
+        return (
+            <FallbackLogin
+                isOpen={showFallback}
+                onClose={() => setShowFallback(false)}
+                onLogin={(userData) => {
+                    // Create a mock user session
+                    localStorage.setItem('socialbet_auth', JSON.stringify({
+                        user: userData,
+                        isAuthenticated: true,
+                        timestamp: Date.now()
+                    }));
+                    window.location.reload(); // Reload to trigger auth state update
+                }}
+            />
+        );
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="w-full max-w-md bg-white dark:bg-[#1c1c1e] border border-[#e5e5ea] dark:border-[#38383a] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-[#e5e5ea] dark:border-[#38383a]">
+                    <div>
+                        <h2 className="text-xl font-semibold text-[#1d1d1f] dark:text-white">Sign In</h2>
+                        <p className="text-sm text-[#86868b] dark:text-[#a1a1a6]">
+                            Connect your wallet to get started
+                        </p>
+                    </div>
+                    <button 
+                        onClick={onClose} 
+                        className="p-1.5 hover:bg-[#f5f5f7] dark:hover:bg-[#0a0a0a] rounded-full transition-colors duration-200"
+                    >
+                        <X size={20} className="text-[#86868b] dark:text-[#a1a1a6]" />
+                    </button>
+                </div>
+
+                {/* Error */}
+                {error && (
+                    <div className="mx-6 mt-4 p-3 bg-[#ff3b30]/10 border border-[#ff3b30]/20 rounded-xl">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle size={16} className="text-[#ff3b30] flex-shrink-0 mt-0.5" />
+                            <div>
+                                <h4 className="font-medium text-[#ff3b30] text-sm">Connection Error</h4>
+                                <p className="text-xs text-[#ff3b30] mt-1">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Sign In Button */}
+                <div className="p-6">
+                    <button
+                        onClick={handleConnect}
+                        disabled={isConnecting || isInitializing || web3AuthLoading}
+                        className={cn(
+                            'w-full py-4 px-6 bg-gradient-to-r from-[#ffd700] to-[#ffeb3b] text-[#1d1d1f] font-semibold rounded-xl hover:from-[#ffeb3b] hover:to-[#ffd700] transition-all duration-200 shadow-lg shadow-[#ffd700]/20 active:scale-[0.98] flex items-center justify-center gap-3',
+                            (isConnecting || isInitializing || web3AuthLoading) && 'opacity-50 cursor-not-allowed'
+                        )}
+                    >
+                        {isConnecting || isInitializing ? (
+                            <>
+                                <Loader2 size={20} className="animate-spin" />
+                                <span>{isInitializing ? 'Initializing...' : 'Connecting...'}</span>
+                            </>
+                        ) : !web3auth && web3AuthLoading ? (
+                            <>
+                                <Loader2 size={20} className="animate-spin" />
+                                <span>Loading...</span>
+                            </>
+                        ) : (
+                            <>
+                                <LogIn size={20} />
+                                <span>Sign In</span>
+                            </>
+                        )}
+                    </button>
+
+                    {/* Features */}
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="flex items-center gap-2 text-xs text-[#86868b]">
+                            <div className="w-1.5 h-1.5 bg-[#34c759] rounded-full"></div>
+                            Non-custodial
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-[#86868b]">
+                            <div className="w-1.5 h-1.5 bg-[#34c759] rounded-full"></div>
+                            Secure MPC
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-[#86868b]">
+                            <div className="w-1.5 h-1.5 bg-[#34c759] rounded-full"></div>
+                            No seed phrase
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-[#86868b]">
+                            <div className="w-1.5 h-1.5 bg-[#34c759] rounded-full"></div>
+                            Instant wallet
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-4 bg-[#f5f5f7] border-t border-[#e5e5ea]">
+                    <button
+                        onClick={() => setShowFallback(true)}
+                        className="w-full py-2 px-4 border border-[#e5e5ea] dark:border-[#38383a] rounded-xl font-medium text-sm hover:bg-[#e5e5ea] dark:hover:bg-[#38383a] transition-all duration-200 text-[#1d1d1f] dark:text-white flex items-center justify-center gap-2"
+                    >
+                        <Shield size={16} />
+                        <span>Try Demo Login</span>
+                    </button>
+                    <p className="text-xs text-[#86868b] text-center mt-2">
                         Powered by Web3Auth • Non-custodial wallet infrastructure
                     </p>
                 </div>

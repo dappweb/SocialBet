@@ -1,5 +1,4 @@
 import React, { useState, lazy, Suspense, useCallback, useMemo, useEffect } from 'react';
-import { Web3AuthProvider } from './contexts/Web3AuthContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { WalletProvider } from './contexts/WalletContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -14,6 +13,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import LoginModal from './components/LoginModal';
 import WalletBalance from './components/WalletBalanceSimple';
 import { MOCK_MARKETS } from './constants';
+import { Web3AuthProvider } from './contexts/Web3AuthContext';
 import { marketsApi } from './services/api';
 import { PredictionMarket } from './types';
 import { Home, Search, Trophy, User, Bell, PlusSquare, Bot } from 'lucide-react';
@@ -27,8 +27,33 @@ const Profile = lazy(() => import('./components/Profile'));
 const Explore = lazy(() => import('./components/Explore'));
 const Notifications = lazy(() => import('./components/Notifications'));
 const ChatInterface = lazy(() => import('./components/ChatInterface'));
+const WhitePaper = lazy(() => import('./components/WhitePaper'));
+const DAOGovernance = lazy(() => import('./components/DAOGovernance'));
+const ReferralProgram = lazy(() => import('./components/ReferralProgram'));
+const RedEnvelope = lazy(() => import('./components/RedEnvelope'));
+const Airdrop = lazy(() => import('./components/Airdrop'));
+const LPMining = lazy(() => import('./components/LPMining'));
+const AmbassadorProgram = lazy(() => import('./components/AmbassadorProgram'));
+const BuybackBurn = lazy(() => import('./components/BuybackBurn'));
+const SwapInterface = lazy(() => import('./components/SwapInterface'));
 
-type View = 'home' | 'explore' | 'leaderboard' | 'notifications' | 'profile' | 'assistant' | 'test';
+type View = 
+  | 'home' 
+  | 'explore' 
+  | 'leaderboard' 
+  | 'notifications' 
+  | 'profile' 
+  | 'assistant' 
+  | 'whitepaper'
+  | 'dao'
+  | 'referral'
+  | 'red-envelope'
+  | 'airdrop'
+  | 'lp-mining'
+  | 'ambassador'
+  | 'buyback-burn'
+  | 'swap'
+  | 'test';
 
 const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -143,6 +168,62 @@ const AppContent: React.FC = () => {
             <ChatInterface />
           </Suspense>
         );
+      case 'whitepaper':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading whitepaper..." />}>
+            <WhitePaper />
+          </Suspense>
+        );
+      case 'dao':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading DAO..." />}>
+            <DAOGovernance />
+          </Suspense>
+        );
+      case 'referral':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading referral..." />}>
+            <ReferralProgram />
+          </Suspense>
+        );
+      case 'red-envelope':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading red envelope..." />}>
+            <RedEnvelope />
+          </Suspense>
+        );
+      case 'airdrop':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading airdrop..." />}>
+            <Airdrop />
+          </Suspense>
+        );
+      case 'lp-mining':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading LP mining..." />}>
+            <LPMining />
+          </Suspense>
+        );
+      case 'ambassador':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading ambassador..." />}>
+            <AmbassadorProgram />
+          </Suspense>
+        );
+      case 'buyback-burn':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading buyback & burn..." />}>
+            <BuybackBurn />
+          </Suspense>
+        );
+      case 'swap':
+        return (
+          <Suspense fallback={<LoadingSpinner text="Loading swap..." />}>
+            <div className="p-4 pt-8">
+              <SwapInterface />
+            </div>
+          </Suspense>
+        );
       case 'test':
         return (
           <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-[#1d1d1f] dark:text-white p-8">
@@ -169,7 +250,7 @@ const AppContent: React.FC = () => {
       <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-[#1d1d1f] dark:text-white font-sans transition-colors duration-300">
         <div className="min-w-full max-w-[1600px] mx-auto flex justify-center lg:justify-start">
           {/* Left Sidebar (Desktop & Tablet) - Using original Sidebar */}
-          <header className="hidden lg:flex lg:flex-col w-[80px] xl:w-[275px] shrink-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-[#e5e5ea] dark:border-[#2c2c2e] transition-colors duration-300">
+          <header className="hidden lg:flex lg:flex-col w-[80px] xl:w-[275px] shrink-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-[#e5e5ea] dark:border-[#2c2c2e] transition-colors duration-300 sticky top-0 h-screen overflow-y-auto no-scrollbar">
             <Sidebar
               currentView={currentView}
               onNavigate={handleNavigate}

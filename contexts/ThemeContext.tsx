@@ -45,15 +45,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   // Apply theme to document whenever it changes
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
     
     // Remove both classes first to ensure clean state
     root.classList.remove('dark', 'light');
+    body.classList.remove('dark', 'light');
     
     // Add the appropriate class
     if (theme === 'dark') {
       root.classList.add('dark');
+      body.classList.add('dark');
     } else {
       root.classList.remove('dark');
+      body.classList.remove('dark');
     }
     
     // Persist to localStorage

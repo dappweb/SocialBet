@@ -19,17 +19,17 @@ const Explore = memo(() => {
   const trendingItems = useMemo(() => [1, 2, 3, 4, 5], []);
 
   return (
-    <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
+    <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 dark:border-[#2c2c2e]/50 bg-white dark:bg-[#0a0a0a]">
       {/* Search Header */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-4 py-3 border-b border-[#e5e5ea] shadow-sm">
+      <div className="sticky top-0 z-30 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl px-4 py-3 border-b border-[#e5e5ea] dark:border-[#2c2c2e] shadow-sm">
          <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-[#86868b] group-focus-within:text-[#ffd700] transition-colors duration-200" />
+            <Search className="h-5 w-5 text-[#86868b] dark:text-[#a1a1a6] group-focus-within:text-[#ffd700] transition-colors duration-200" />
           </div>
           <input
             type="text"
             onChange={handleSearch}
-            className="block w-full pl-11 pr-4 py-3 rounded-xl leading-5 bg-[#f5f5f7] text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white border border-[#e5e5ea] focus:border-[#ffd700] transition-all duration-200 shadow-sm"
+            className="block w-full pl-11 pr-4 py-3 rounded-xl leading-5 bg-[#f5f5f7] dark:bg-[#1c1c1e] text-[#1d1d1f] dark:text-white placeholder-[#86868b] dark:placeholder-[#a1a1a6] focus:outline-none focus:ring-2 focus:ring-[#ffd700] focus:bg-white dark:focus:bg-[#0a0a0a] border border-[#e5e5ea] dark:border-[#2c2c2e] focus:border-[#ffd700] transition-all duration-200 shadow-sm"
             placeholder="Search markets, users, topics..."
             aria-label="Search markets"
           />
@@ -58,26 +58,26 @@ const Explore = memo(() => {
         </section>
 
         {/* Trending Section */}
-        <section className="bg-white rounded-2xl border border-[#e5e5ea] overflow-hidden shadow-sm">
-             <div className="px-6 py-4 border-b border-[#e5e5ea] bg-[#f5f5f7] flex justify-between items-center">
-                 <h2 className="text-lg font-semibold text-[#1d1d1f] flex items-center gap-2">
+        <section className="bg-white dark:bg-[#1c1c1e] rounded-2xl border border-[#e5e5ea] dark:border-[#2c2c2e] overflow-hidden shadow-sm">
+             <div className="px-6 py-4 border-b border-[#e5e5ea] dark:border-[#2c2c2e] bg-[#f5f5f7] dark:bg-[#1c1c1e] flex justify-between items-center">
+                 <h2 className="text-lg font-semibold text-[#1d1d1f] dark:text-white flex items-center gap-2">
                      <TrendingUp className="text-[#ffd700]" /> Trending Now
                  </h2>
                  <button className="text-xs font-semibold text-[#ffd700] hover:text-[#ffc107] transition-colors duration-200">View All</button>
              </div>
              <div>
                  {trendingItems.map((i) => (
-                     <div key={i} className="px-6 py-4 hover:bg-[#f5f5f7] cursor-pointer border-b border-[#e5e5ea] last:border-0 flex items-start gap-4 transition-colors duration-200 group">
-                         <div className="text-[#86868b] font-mono text-sm mt-1 font-semibold w-4 text-center group-hover:text-[#ffd700] transition-colors duration-200">{i}</div>
+                     <div key={i} className="px-6 py-4 hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] cursor-pointer border-b border-[#e5e5ea] dark:border-[#2c2c2e] last:border-0 flex items-start gap-4 transition-colors duration-200 group">
+                         <div className="text-[#86868b] dark:text-[#a1a1a6] font-mono text-sm mt-1 font-semibold w-4 text-center group-hover:text-[#ffd700] transition-colors duration-200">{i}</div>
                          <div className="flex-1">
-                             <div className="flex items-center gap-2 text-[11px] text-[#86868b] mb-1">
-                                 <span className="font-semibold text-[#1d1d1f] group-hover:text-[#ffd700] transition-colors duration-200">Politics</span> • Trending
+                             <div className="flex items-center gap-2 text-[11px] text-[#86868b] dark:text-[#a1a1a6] mb-1">
+                                 <span className="font-semibold text-[#1d1d1f] dark:text-white group-hover:text-[#ffd700] transition-colors duration-200">Politics</span> • Trending
                              </div>
-                             <div className="font-semibold text-[#1d1d1f] text-[15px] group-hover:text-[#ffd700] transition-colors duration-200">Election 2024 Scenarios</div>
-                             <div className="text-xs text-[#86868b] mt-1.5 font-medium bg-[#f5f5f7] inline-block px-2 py-0.5 rounded-lg">52.4K Bets placed</div>
+                             <div className="font-semibold text-[#1d1d1f] dark:text-white text-[15px] group-hover:text-[#ffd700] transition-colors duration-200">Election 2024 Scenarios</div>
+                             <div className="text-xs text-[#86868b] dark:text-[#a1a1a6] mt-1.5 font-medium bg-[#f5f5f7] dark:bg-[#1c1c1e] inline-block px-2 py-0.5 rounded-lg">52.4K Bets placed</div>
                          </div>
                          <div className="self-center">
-                            <div className="w-8 h-8 rounded-full hover:bg-[#fff9e6] flex items-center justify-center text-[#86868b] hover:text-[#ffd700] transition-all duration-200">
+                            <div className="w-8 h-8 rounded-full hover:bg-[#fff9e6] dark:hover:bg-[#332d1a] flex items-center justify-center text-[#86868b] dark:text-[#a1a1a6] hover:text-[#ffd700] transition-all duration-200">
                                 <TrendingUp size={16} />
                             </div>
                          </div>

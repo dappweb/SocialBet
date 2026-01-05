@@ -116,10 +116,10 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
 
               <button
                 onClick={() => setSelectedChain('bsc')}
-                className="p-4 border-2 border-[#e5e5ea] rounded-xl hover:border-[#ffd700] hover:bg-[#fff9e6] transition-all duration-200 text-center group"
+                className="p-4 border-2 border-[#e5e5ea] rounded-xl hover:border-[#f3ba2f] hover:bg-[#fff9e6] transition-all duration-200 text-center group"
               >
-                <div className="text-2xl mb-2">◎</div>
-                <div className="text-sm font-semibold text-[#1d1d1f]">BSC</div>
+                <div className="text-2xl mb-2">🟡</div>
+                <div className="text-sm font-semibold text-[#1d1d1f]">BNB Chain</div>
               </button>
 
               <button
