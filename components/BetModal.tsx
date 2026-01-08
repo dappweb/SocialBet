@@ -11,6 +11,7 @@ import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import { placeBet as placeBetOnChain } from '../services/predictionMarketService';
 import { getEthereumBalance } from '../services/soulTokenService';
 import { getBalance } from '../services/soulContractService';
+import { CPMMEngine, formatPriceImpact, getSlippageColor } from '../services/predictionMarketCPMM';
 import FiatOnRampModal from './FiatOnRampModal';
 
 interface BetModalProps {
@@ -119,10 +120,28 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
   const price = betType === 'YES' ? market.outcomeStats.yesPrice : market.outcomeStats.noPrice;
   const numericAmount = parseFloat(amount) || 0;
   
-  // Potential return calculation (Simulated AMM logic)
-  const estimatedReturn = numericAmount > 0 ? numericAmount / price : 0;
+  // Initialize CPMM engine with market's pool size
+  const cpmmEngine = useMemo(() => {
+    const poolSize = market.poolSize || 10000;
+    return new CPMMEngine(poolSize, 0.02); // 2% fee
+  }, [market.poolSize]);
+
+  // Get trade quote with CPMM
+  const tradeQuote = useMemo(() => {
+    if (numericAmount <= 0) return null;
+    return betType === 'YES' 
+      ? cpmmEngine.quoteYesBuy(numericAmount)
+      : cpmmEngine.quoteNoBuy(numericAmount);
+  }, [cpmmEngine, numericAmount, betType]);
+
+  // Potential return calculation using CPMM
+  const estimatedReturn = tradeQuote ? tradeQuote.outputAmount : (numericAmount > 0 ? numericAmount / price : 0);
   const potentialProfit = estimatedReturn - numericAmount;
   const returnPercentage = numericAmount > 0 ? (potentialProfit / numericAmount) * 100 : 0;
+  
+  // Price impact info
+  const priceImpact = tradeQuote?.priceImpact || 0;
+  const slippageWarning = tradeQuote?.slippageWarning || 'low';
 
   const handleQuickAmount = (val: number) => {
     setAmount(val.toString());
@@ -366,7 +385,41 @@ const BetModal: React.FC<BetModalProps> = ({ market, betType, isOpen, onClose, o
               <span className="text-[#86868b] dark:text-[#a1a1a6]">Potential Profit</span>
               <span className={cn("font-mono font-bold", colorClass)}>+{(potentialProfit || 0).toFixed(2)} SOUL</span>
             </div>
+            {tradeQuote && tradeQuote.fee > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-[#86868b] dark:text-[#a1a1a6]">Fee (2%)</span>
+                <span className="font-mono text-[#86868b] dark:text-[#a1a1a6]">-{tradeQuote.fee.toFixed(2)} SOUL</span>
+              </div>
+            )}
           </div>
+
+          {/* Price Impact Warning */}
+          {numericAmount > 0 && tradeQuote && (
+            <div className={cn(
+              "p-3 rounded-xl border flex items-center justify-between",
+              slippageWarning === 'low' && "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800",
+              slippageWarning === 'medium' && "bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800",
+              slippageWarning === 'high' && "bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800",
+              slippageWarning === 'extreme' && "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
+            )}>
+              <div className="flex items-center gap-2">
+                <Info size={14} className={getSlippageColor(slippageWarning)} />
+                <span className="text-xs font-medium text-[#1d1d1f] dark:text-white">Price Impact</span>
+              </div>
+              <div className="text-right">
+                <span className={cn("text-sm font-bold", getSlippageColor(slippageWarning))}>
+                  {formatPriceImpact(priceImpact)}
+                </span>
+                {slippageWarning !== 'low' && (
+                  <p className={cn("text-[10px]", getSlippageColor(slippageWarning))}>
+                    {slippageWarning === 'medium' && 'Moderate impact'}
+                    {slippageWarning === 'high' && 'High impact - consider smaller amount'}
+                    {slippageWarning === 'extreme' && 'Very high impact!'}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* AI Analysis Section */}
           <div className="bg-[#fff9e6] dark:bg-[#332d1a] border border-[#ffd700]/30 rounded-xl p-3">

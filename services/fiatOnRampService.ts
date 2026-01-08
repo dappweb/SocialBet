@@ -204,7 +204,7 @@ export async function buyCryptoWithRamp(
     rampUrl.searchParams.set('swapAsset', 'ETH_ETHEREUM');
     rampUrl.searchParams.set('fiatValue', config.amount.toString());
     rampUrl.searchParams.set('fiatCurrency', config.currency || 'USD');
-    rampUrl.searchParams.set('hostAppName', 'SoulCast');
+    rampUrl.searchParams.set('hostAppName', 'KOL Market');
     rampUrl.searchParams.set('variant', 'hosted-auto');
 
     // Open Ramp in new window

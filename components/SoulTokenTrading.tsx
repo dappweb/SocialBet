@@ -398,7 +398,7 @@ const SoulTokenTrading: React.FC<SoulTokenTradingProps> = ({ onClose }) => {
       <div className="bg-[#f5f5f7] rounded-xl p-4 mb-6">
         <p className="text-xs text-[#86868b] leading-relaxed">
           <strong className="text-[#1d1d1f]">Platform Operations Funding:</strong> A portion of trading fees (2.5%) 
-          goes to platform operations, ensuring sustainable growth and development of Soulcast.
+          goes to platform operations, ensuring sustainable growth and development of KOL Market.
         </p>
       </div>
 

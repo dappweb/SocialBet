@@ -19,7 +19,7 @@ All critical deployment steps have been completed successfully!
 2. **Backend Deployment** ✅
    - Cloudflare Workers deployed
    - Database migrations executed
-   - API accessible at: `https://socialbet-api.dappweb.workers.dev`
+   - API accessible at: `https://api.kolmarket.ai`
    - CORS configured for frontend access
 
 3. **Smart Contract Deployment** ✅
@@ -30,7 +30,7 @@ All critical deployment steps have been completed successfully!
 4. **Frontend Deployment** ✅
    - Production build completed
    - Deployed to Cloudflare Pages
-   - Live URL: `https://51218b34.socialbet.pages.dev`
+   - Live URL: `https://kolmarket.ai`
 
 5. **Testing & Verification** ✅
    - Backend API health check: ✅ Working
@@ -42,8 +42,8 @@ All critical deployment steps have been completed successfully!
 ## 🌐 Live URLs
 
 ### Frontend
-- **Production**: https://51218b34.socialbet.pages.dev
-- **Backend API**: https://socialbet-api.dappweb.workers.dev
+- **Production**: https://kolmarket.ai
+- **Backend API**: https://api.kolmarket.ai
 
 ### Smart Contracts
 - **SOUL Token (Sepolia)**: `0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66`
@@ -58,7 +58,7 @@ All critical deployment steps have been completed successfully!
 - **Database**: D1 (socialbet-db)
 - **Database ID**: acf5ab8f-ea91-429c-bcd2-bf7899f91acc
 - **Status**: ✅ Deployed and operational
-- **Health Check**: https://socialbet-api.dappweb.workers.dev/api/health
+- **Health Check**: https://api.kolmarket.ai/health
 
 ### Frontend (Cloudflare Pages)
 - **Project**: socialbet
@@ -86,7 +86,7 @@ The contract deployment succeeded, but the initialization step encountered an er
 All required environment variables are configured in `.env.local`:
 - `VITE_DEFAULT_CHAIN=sepolia`
 - `VITE_SOUL_TOKEN_SEPOLIA=0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66`
-- `VITE_API_URL=https://socialbet-api.dappweb.workers.dev`
+- `VITE_API_URL=https://api.kolmarket.ai`
 - `VITE_WEB3AUTH_CLIENT_ID` (configured)
 - And other required variables
 
@@ -147,16 +147,16 @@ Backend CORS has been updated to include:
 
 ---
 
-## 🔗 Quick Links
+##  Quick Links
 
-- **Frontend**: https://51218b34.socialbet.pages.dev
-- **Backend API**: https://socialbet-api.dappweb.workers.dev
-- **API Health**: https://socialbet-api.dappweb.workers.dev/api/health
+- **Frontend**: https://kolmarket.ai
+- **Backend API**: https://api.kolmarket.ai
+- **API Health**: https://api.kolmarket.ai/health
 - **Contract on Etherscan**: https://sepolia.etherscan.io/address/0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66
 
 ---
 
-## ✅ Deployment Status: COMPLETE
+##  Deployment Status: COMPLETE
 
 All deployment steps have been executed successfully. The Gongen platform is now live and accessible!
 

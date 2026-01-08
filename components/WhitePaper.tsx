@@ -213,7 +213,7 @@ const WhitePaper: React.FC<WhitePaperProps> = memo(({ onBack }) => {
                   Executive Summary
                 </h2>
                 <p className="text-[#1d1d1f] leading-relaxed text-lg mb-6 max-w-4xl">
-                  The SOUL (SoulCast Token) is the native utility token of the SoulCast platform,
+                  The SOUL (KOL Market Token) is the native utility token of the KOL Market platform,
                   designed to power a decentralized KOL social intent prediction market ecosystem.
                   With a total supply of 2.1 billion tokens, SOUL serves as the economic backbone
                   for intent prediction, AI avatar creation, governance, rewards, and platform participation.
@@ -252,7 +252,7 @@ const WhitePaper: React.FC<WhitePaperProps> = memo(({ onBack }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm text-[#86868b] mb-1">Token Name</div>
-                      <div className="font-semibold text-[#1d1d1f]">SoulCast Token</div>
+                      <div className="font-semibold text-[#1d1d1f]">KOL Market Token</div>
                     </div>
                     <div>
                       <div className="text-sm text-[#86868b] mb-1">Token Symbol</div>
@@ -282,7 +282,7 @@ const WhitePaper: React.FC<WhitePaperProps> = memo(({ onBack }) => {
                       </div>
                       <div>
                         <div className="font-semibold text-[#1d1d1f] mb-1">Issuance Fee Burn</div>
-                        <div className="text-sm text-[#86868b]">Issued tokens are redeemed and destroyed by SoulCast as issuance fees, creating a deflationary mechanism that reduces supply over time.</div>
+                        <div className="text-sm text-[#86868b]">Issued tokens are redeemed and destroyed by KOL Market as issuance fees, creating a deflationary mechanism that reduces supply over time.</div>
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
@@ -543,7 +543,7 @@ const WhitePaper: React.FC<WhitePaperProps> = memo(({ onBack }) => {
                 This white paper is for informational purposes only and does not constitute financial advice.
               </p>
               <p className="text-xs text-[#86868b]">
-                © 2025 SoulCast. All rights reserved. | Version 1.0 | Last Updated: {new Date().toLocaleDateString()}
+                © 2025 KOL Market. All rights reserved. | Version 1.0 | Last Updated: {new Date().toLocaleDateString()}
               </p>
             </div>
           </div>

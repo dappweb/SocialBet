@@ -6,12 +6,12 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastContainer } from './components/Toast';
 import { useToast } from './contexts/ToastContext';
 import { useAuth } from './contexts/AuthContext';
-import Sidebar from './components/SidebarSimple';
 import RightPanel from './components/RightPanelSimple';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import LoginModal from './components/LoginModal';
 import WalletBalance from './components/WalletBalanceSimple';
+import TopNavBar from './components/TopNavBar';
 import { MOCK_MARKETS } from './constants';
 import { Web3AuthProvider } from './contexts/Web3AuthContext';
 import { marketsApi } from './services/api';
@@ -248,33 +248,34 @@ const AppContent: React.FC = () => {
   return (
     <>
       <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-[#1d1d1f] dark:text-white font-sans transition-colors duration-300">
-        <div className="min-w-full max-w-[1600px] mx-auto flex justify-center lg:justify-start">
-          {/* Left Sidebar (Desktop & Tablet) - Using original Sidebar */}
-          <header className="hidden lg:flex lg:flex-col w-[80px] xl:w-[275px] shrink-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-r border-[#e5e5ea] dark:border-[#2c2c2e] transition-colors duration-300 sticky top-0 h-screen overflow-y-auto no-scrollbar">
-            <Sidebar
-              currentView={currentView}
-              onNavigate={handleNavigate}
-              onCreateClick={handleOpenCreateModal}
-              onLoginClick={handleOpenLoginModal}
-            />
-          </header>
-
+        {/* Top Navigation Bar */}
+        <TopNavBar
+          onLoginClick={handleOpenLoginModal}
+          onNavigate={handleNavigate}
+          onCreateClick={handleOpenCreateModal}
+          currentView={currentView}
+          notificationCount={3}
+        />
+        
+        {/* Two Column Layout */}
+        <div className="max-w-[1400px] mx-auto flex justify-center">
           {/* Main Feed / Content Area */}
-          <main className={cn(
-            "flex-1 min-h-screen relative",
-            currentView !== 'whitepaper' && "max-w-[600px] md:max-w-[700px] border-r border-[#e5e5ea]/50 dark:border-[#2c2c2e]/50 transition-colors duration-300"
-          )}>
+          <main className="flex-1 min-h-[calc(100vh-64px)] relative transition-colors duration-300">
             {renderView}
           </main>
 
-          {/* Right Panel (Desktop) - Using original RightPanel */}
-          <aside className="hidden md:block w-[320px] xl:w-[350px] shrink-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-l border-[#e5e5ea] dark:border-[#2c2c2e] transition-colors duration-300">
-            <div className="sticky top-0 h-screen overflow-y-auto no-scrollbar">
-              <WalletBalance />
+          {/* Right Panel (Desktop) */}
+          <aside className="hidden lg:block w-[360px] shrink-0 border-l border-[#e5e5ea] dark:border-[#2c2c2e] bg-white/50 dark:bg-[#0a0a0a]/50 transition-colors duration-300">
+            <div className="sticky top-[64px] h-[calc(100vh-64px)] overflow-y-auto no-scrollbar">
+              <WalletBalance 
+                onBuyClick={handleOpenTokenSaleModal}
+                onSwapClick={() => setCurrentView('swap')}
+              />
               <RightPanel 
                 onTradeClick={handleOpenTradingModal} 
                 onStakeClick={handleOpenStakingModal}
                 onTokenSaleClick={handleOpenTokenSaleModal}
+                onNavigate={handleNavigate}
               />
             </div>
           </aside>

@@ -126,7 +126,7 @@ const ReferralProgram: React.FC = memo(() => {
             Join Referral Program
           </h2>
           <p className="text-[#86868b] mb-6">
-            Sign in to start earning rewards by referring friends to SoulCast
+            Sign in to start earning rewards by referring friends to KOL Market
           </p>
         </div>
       </div>
@@ -155,7 +155,7 @@ const ReferralProgram: React.FC = memo(() => {
           <div>
             <h1 className="text-3xl font-bold mb-2">Referral Program</h1>
             <p className="text-white/90">
-              Earn SOUL tokens by inviting friends to join SoulCast
+              Earn SOUL tokens by inviting friends to join KOL Market
             </p>
           </div>
           {stats && getTierIcon(stats.tier)}

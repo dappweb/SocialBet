@@ -232,7 +232,7 @@ const TreasuryManagement: React.FC = () => {
             <p className="text-xs text-[#86868b] leading-relaxed">
               A {treasuryData.platformFeePercent}% fee is collected on all SOUL token trades 
               (buy and sell). This fee directly funds platform operations, ensuring sustainable 
-              growth and continuous development of Soulcast features.
+              growth and continuous development of KOL Market features.
             </p>
           </div>
         </div>

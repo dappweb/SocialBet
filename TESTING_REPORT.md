@@ -109,7 +109,7 @@
 
 #### API Performance
 
-**Backend API**: https://socialbet-api.dappweb.workers.dev
+**Backend API**: https://api.kolmarket.ai
 
 **Response Times:**
 - Health Check Endpoint: **~0.10s** ✅

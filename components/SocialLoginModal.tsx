@@ -136,7 +136,7 @@ const SocialLoginModal: React.FC<SocialLoginModalProps> = ({ isOpen, onClose }) 
         {/* Footer */}
         <div className="px-6 py-4 bg-[#f5f5f7] border-t border-[#e5e5ea]">
           <p className="text-xs text-[#86868b] text-center">
-            By signing in, you agree to SoulCast's Terms of Service and Privacy Policy
+            By signing in, you agree to KOL Market's Terms of Service and Privacy Policy
           </p>
         </div>
       </div>

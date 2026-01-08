@@ -246,7 +246,7 @@ const WalletLoginModal: React.FC<WalletLoginModalProps> = ({ isOpen, onClose }) 
         {/* Footer */}
         <div className="px-6 py-4 bg-[#f5f5f7] border-t border-[#e5e5ea]">
           <p className="text-xs text-[#86868b] text-center">
-            By connecting, you agree to SoulCast's Terms of Service and Privacy Policy
+            By connecting, you agree to KOL Market's Terms of Service and Privacy Policy
           </p>
           {error && error.includes('Phantom') && (
             <div className="mt-2 text-center">

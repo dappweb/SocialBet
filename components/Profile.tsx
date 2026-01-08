@@ -1,17 +1,15 @@
 import React, { useState, memo, useCallback, useMemo, useEffect, lazy, Suspense } from 'react';
-import { Calendar, Link as LinkIcon, MapPin, ArrowLeft, Ghost, Loader2, LogIn, AlertCircle, Trophy, MessageSquare, Bell, Download, Settings, User, BarChart3 } from 'lucide-react';
+import { Calendar, Link as LinkIcon, MapPin, ArrowLeft, Ghost, LogIn, AlertCircle, BarChart3 } from 'lucide-react';
 import { MOCK_MARKETS } from '../constants';
 import PredictionCard from './PredictionCard';
 import { PredictionMarket, BetType } from '../types';
 import { cn } from '../utils';
-import { usersApi, betsApi, marketsApi } from '../services/api';
+import { usersApi, marketsApi } from '../services/api';
 import LazyImage from './LazyImage';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from './LoadingSpinner';
 import EditProfileModal from './EditProfileModal';
 import AchievementsPage from './AchievementsPage';
-import NotificationSettings from './NotificationSettings';
-import DataExport from './DataExport';
 import UserStatsDashboard from './UserStatsDashboard';
 import QuickNavigation from './QuickNavigation';
 
@@ -22,7 +20,7 @@ interface ProfileProps {
   onLoginClick?: () => void;
 }
 
-type ProfileTab = 'bets' | 'created' | 'likes' | 'trading' | 'achievements' | 'messages' | 'notifications' | 'settings' | 'export';
+type ProfileTab = 'bets' | 'created' | 'trading' | 'achievements';
 
 // Moved outside Profile component to prevent recreation on every render
 const TabButton = memo(({ id, label, activeTab, onClick }: { id: ProfileTab, label: string, activeTab: ProfileTab, onClick: (id: ProfileTab) => void }) => (
@@ -240,59 +238,12 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
       );
     }
 
-    // Show Messages (placeholder for now)
-    if (activeTab === 'messages') {
-      return (
-        <div className="flex flex-col items-center justify-center py-24 text-[#86868b] dark:text-[#a1a1a6]">
-          <div className="bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-full p-6 mb-4">
-            <MessageSquare size={40} className="opacity-50" />
-          </div>
-          <p className="font-medium">Messages coming soon!</p>
-          <p className="text-sm mt-2">Private messaging functionality is in development.</p>
-        </div>
-      );
-    }
-
-    // Show Notification Settings
-    if (activeTab === 'notifications') {
-      return (
-        <Suspense fallback={<LoadingSpinner text="Loading settings..." />}>
-          <NotificationSettings onBack={() => setActiveTab('bets')} />
-        </Suspense>
-      );
-    }
-
-    // Show Data Export
-    if (activeTab === 'export') {
-      return (
-        <Suspense fallback={<LoadingSpinner text="Loading export..." />}>
-          <DataExport onBack={() => setActiveTab('bets')} />
-        </Suspense>
-      );
-    }
-
-    // Show Settings (placeholder for now)
-    if (activeTab === 'settings') {
-      return (
-        <div className="flex flex-col items-center justify-center py-24 text-[#86868b] dark:text-[#a1a1a6]">
-          <div className="bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-full p-6 mb-4">
-            <Settings size={40} className="opacity-50" />
-          </div>
-          <p className="font-medium">Settings coming soon!</p>
-          <p className="text-sm mt-2">Advanced settings and preferences.</p>
-        </div>
-      );
-    }
-
     let data = userBets;
     let emptyMsg = "No bets placed yet.";
 
     if (activeTab === 'created') {
       data = createdMarkets;
       emptyMsg = "No markets created yet.";
-    } else if (activeTab === 'likes') {
-      data = likedMarkets;
-      emptyMsg = "No liked markets yet.";
     }
 
     if (data.length === 0) {
@@ -326,14 +277,14 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
   
   if (shouldShowLoginPrompt) {
     return (
-      <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
+      <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 dark:border-[#2c2c2e]/50 bg-white dark:bg-[#0a0a0a]">
         {/* Sticky Header */}
-        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-4 py-2 flex items-center gap-4 border-b border-[#e5e5ea] shadow-sm">
+        <div className="sticky top-0 z-30 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl px-4 py-2 flex items-center gap-4 border-b border-[#e5e5ea] dark:border-[#2c2c2e] shadow-sm">
           <button onClick={() => onBack?.()} className="p-2 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200 group">
-            <ArrowLeft size={20} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
+            <ArrowLeft size={20} className="text-[#86868b] group-hover:text-[#1d1d1f] dark:group-hover:text-white" />
           </button>
           <div>
-            <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f]">Profile</h1>
+            <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f] dark:text-white">Profile</h1>
           </div>
         </div>
 
@@ -366,14 +317,14 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
   }
 
   return (
-    <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 bg-white">
+    <div className="min-h-screen pb-20 sm:pb-0 border-x border-[#e5e5ea]/50 dark:border-[#2c2c2e]/50 bg-white dark:bg-[#0a0a0a]">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-4 py-2 flex items-center gap-4 border-b border-[#e5e5ea] shadow-sm">
+      <div className="sticky top-0 z-30 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl px-4 py-2 flex items-center gap-4 border-b border-[#e5e5ea] dark:border-[#2c2c2e] shadow-sm">
         <button onClick={() => onBack?.()} className="p-2 hover:bg-[#f5f5f7] rounded-full transition-colors duration-200 group">
-          <ArrowLeft size={20} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
+          <ArrowLeft size={20} className="text-[#86868b] group-hover:text-[#1d1d1f] dark:group-hover:text-white" />
         </button>
         <div className="flex-1">
-          <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f]">Profile</h1>
+          <h1 className="font-semibold text-lg leading-5 text-[#1d1d1f] dark:text-white">Profile</h1>
           <p className="text-xs text-[#86868b]">
             {displayUser.name} • {displayUser.followersCount.toLocaleString()} followers
           </p>
@@ -406,20 +357,20 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
               <LazyImage
                 src={displayUser.avatar}
                 alt={displayUser.name}
-                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white object-cover bg-white shadow-lg"
+                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-white dark:border-[#1c1c1e] object-cover bg-white dark:bg-[#1c1c1e] shadow-lg"
               />
             </div>
             <div className="flex justify-end py-3">
               <button 
                 onClick={() => setIsEditModalOpen(true)}
-                className="px-5 py-2 border border-[#e5e5ea] rounded-xl font-semibold text-sm hover:bg-[#f5f5f7] hover:border-[#ffd700] transition-all duration-200 active:scale-95 text-[#1d1d1f]"
+                className="px-5 py-2 border border-[#e5e5ea] dark:border-[#2c2c2e] rounded-xl font-semibold text-sm hover:bg-[#f5f5f7] dark:hover:bg-[#1c1c1e] hover:border-[#ffd700] transition-all duration-200 active:scale-95 text-[#1d1d1f] dark:text-white"
               >
                 Edit Profile
               </button>
             </div>
 
             <div className="mt-3">
-              <h2 className="text-2xl font-semibold text-[#1d1d1f] flex items-center gap-2">
+              <h2 className="text-2xl font-semibold text-[#1d1d1f] dark:text-white flex items-center gap-2">
                 {displayUser.name}
                 {user?.isVerified && (
                   <svg className="w-5 h-5 text-[#ffd700]" fill="currentColor" viewBox="0 0 20 20">
@@ -431,7 +382,7 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
 
               {/* Bio */}
               {displayUser.bio && (
-                <p className="mt-4 text-[#1d1d1f] text-[15px] leading-relaxed max-w-md">
+                <p className="mt-4 text-[#1d1d1f] dark:text-[#e5e5ea] text-[15px] leading-relaxed max-w-md">
                   {displayUser.bio}
                 </p>
               )}
@@ -521,16 +472,11 @@ const Profile: React.FC<ProfileProps> = memo(({ onBack, onLoginClick }) => {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-[#e5e5ea] bg-white overflow-x-auto">
+          <div className="flex border-b border-[#e5e5ea] dark:border-[#2c2c2e] bg-white dark:bg-[#0a0a0a] overflow-x-auto">
             <TabButton id="bets" label="Bets" activeTab={activeTab} onClick={handleTabChange} />
-            <TabButton id="trading" label="Trading" activeTab={activeTab} onClick={handleTabChange} />
             <TabButton id="created" label="Created" activeTab={activeTab} onClick={handleTabChange} />
-            <TabButton id="likes" label="Likes" activeTab={activeTab} onClick={handleTabChange} />
-            <TabButton id="achievements" label="🏆" activeTab={activeTab} onClick={handleTabChange} />
-            <TabButton id="messages" label="💬" activeTab={activeTab} onClick={handleTabChange} />
-            <TabButton id="notifications" label="🔔" activeTab={activeTab} onClick={handleTabChange} />
-            <TabButton id="export" label="📥" activeTab={activeTab} onClick={handleTabChange} />
-            <TabButton id="settings" label="⚙️" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="trading" label="Trading" activeTab={activeTab} onClick={handleTabChange} />
+            <TabButton id="achievements" label="Achievements" activeTab={activeTab} onClick={handleTabChange} />
           </div>
 
           {/* Content List */}

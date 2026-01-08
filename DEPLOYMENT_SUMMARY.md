@@ -144,8 +144,8 @@ wrangler pages deploy dist --project-name=socialbet
 ## 🔧 Configuration Details
 
 ### Backend API URL
-- **Current**: `https://socialbet-api.dappweb.workers.dev`
-- **CORS**: Configured for `https://socialbet.pages.dev`
+- **Current**: `https://api.kolmarket.ai`
+- **CORS**: Configured for `https://kolmarket.ai`
 - **Database**: D1 database ID: `acf5ab8f-ea91-429c-bcd2-bf7899f91acc`
 
 ### Frontend Hosting Options

@@ -5,14 +5,10 @@ import {
   Trophy, 
   User, 
   Bell, 
-  PlusSquare, 
   Bot, 
   ChevronDown, 
   Settings, 
   LogOut,
-  Menu,
-  X,
-  Wallet,
   TrendingUp,
   Sparkles,
   Crown,
@@ -23,7 +19,6 @@ import { cn } from '../utils';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import LazyImage from './LazyImage';
-import ThemeToggle from './ThemeToggle';
 
 interface SidebarProps {
   currentView: string;
@@ -95,13 +90,7 @@ const SidebarSimple: React.FC<SidebarProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="p-4">
-        <div className="w-10 h-10 bg-gradient-to-br from-[#ffd700] to-[#ffeb3b] rounded-xl flex items-center justify-center font-bold text-[#1d1d1f] shadow-md">
-          SB
-        </div>
-      </div>
-
+      
       {/* Navigation */}
       <div className="flex-1 px-4 overflow-y-auto">
         <nav className="space-y-1">
@@ -181,10 +170,6 @@ const SidebarSimple: React.FC<SidebarProps> = ({
           </div>
         </div>
       )}
-      
-      <div className="p-4 border-t border-[#e5e5ea] dark:border-[#2c2c2e]">
-        <ThemeToggle size="md" />
-      </div>
     </div>
   );
 };

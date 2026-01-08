@@ -1,14 +1,14 @@
-# SoulCast - KOL Social Intent Prediction Market
+# KOL Market - KOL Social Intent Prediction Market
 
 <div align="center">
-<img width="1200" height="475" alt="SoulCast Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" height="475" alt="KOL Market Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
 A decentralized KOL (Key Opinion Leader) social intent prediction market platform where predicted intents are incorporated into AI avatars (digital souls) and can be injected into robots. Users can predict, discover, and bet on KOL intentions across multiple categories.
 
 ## 🌟 Vision
 
-SoulCast bridges the gap between social prediction markets and AI avatar technology:
+KOL Market bridges the gap between social prediction markets and AI avatar technology:
 - **Predict KOL Intent**: Bet on what influencers will do next
 - **AI Avatar Creation**: Generate digital souls from KOL prediction data
 - **Robot Integration**: Inject AI avatars into physical robots
@@ -25,9 +25,9 @@ Comprehensive project documentation is available in the [`docs/`](./docs/) direc
 
 ## 🌐 Live Deployment
 
-- **Production Frontend**: https://51218b34.socialbet.pages.dev
-- **Backend API**: https://socialbet-api.dappweb.workers.dev
-- **API Health Check**: https://socialbet-api.dappweb.workers.dev/api/health
+- **Production Frontend**: https://kolmarket.ai
+- **Backend API**: https://api.kolmarket.ai
+- **API Health Check**: https://api.kolmarket.ai/health
 
 ### Smart Contracts (Sepolia Testnet)
 - **SOUL Token Contract**: `0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66`
@@ -51,7 +51,7 @@ Comprehensive project documentation is available in the [`docs/`](./docs/) direc
    VITE_DEFAULT_CHAIN=sepolia
    VITE_SEPOLIA_RPC_URL=https://rpc.sepolia.org
    VITE_SOUL_TOKEN_SEPOLIA=0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66
-   VITE_API_URL=https://socialbet-api.dappweb.workers.dev
+   VITE_API_URL=https://api.kolmarket.ai
    VITE_WEB3AUTH_CLIENT_ID=your_web3auth_client_id
    GEMINI_API_KEY=your_api_key_here
    ```
@@ -75,11 +75,13 @@ Comprehensive project documentation is available in the [`docs/`](./docs/) direc
 
 ## 🛠️ Technology Stack
 
-- **Frontend:** React 18.3.1 + TypeScript 5.8.2
-- **Build Tool:** Vite 6.2.0
-- **Styling:** Tailwind CSS 4.1.17
-- **AI Integration:** Google Gemini API
-- **Icons:** Lucide React
+- **Frontend:** React 18.3.1 + TypeScript 5.9.3
+- **Build Tool:** Vite 7.3.1
+- **Styling:** Tailwind CSS 4.1.18
+- **AI Integration:** Google Gemini API 1.34.0
+- **Icons:** Lucide React 0.562.0
+- **Web3:** Wagmi 3.2.0 + Viem 2.43.5
+- **Solana:** @solana/web3.js 1.98.4 + @coral-xyz/anchor 0.32.1
 
 ## 📁 Project Structure
 

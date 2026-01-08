@@ -7,7 +7,7 @@
 
 ## 📊 API Performance Metrics
 
-### Backend API: https://socialbet-api.dappweb.workers.dev
+### Backend API: https://api.kolmarket.ai
 
 #### Response Times
 | Endpoint | Response Time | Status |

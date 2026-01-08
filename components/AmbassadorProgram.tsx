@@ -200,7 +200,7 @@ const AmbassadorProgram: React.FC = memo(() => {
           <div>
             <h1 className="text-3xl font-bold mb-2">Ambassador Program</h1>
             <p className="text-white/90">
-              Become a SoulCast ambassador and earn rewards while growing the community
+              Become a KOL Market ambassador and earn rewards while growing the community
             </p>
           </div>
           <Crown size={48} className="text-white/80" />
@@ -401,7 +401,7 @@ const AmbassadorProgram: React.FC = memo(() => {
                   Not an Ambassador Yet
                 </h3>
                 <p className="text-[#86868b] mb-6">
-                  Apply to become a SoulCast ambassador and start earning rewards!
+                  Apply to become a KOL Market ambassador and start earning rewards!
                 </p>
                 <button
                   onClick={() => setActiveTab('apply')}
@@ -644,7 +644,7 @@ const AmbassadorProgram: React.FC = memo(() => {
                   onChange={(e) => setApplicationForm({...applicationForm, motivation: e.target.value})}
                   className="w-full p-3 border border-[#e5e5ea] dark:border-[#38383a] rounded-lg bg-white dark:bg-[#0a0a0a] text-[#1d1d1f] dark:text-white"
                   rows={3}
-                  placeholder="Why do you want to become a SoulCast ambassador?"
+                  placeholder="Why do you want to become a KOL Market ambassador?"
                 />
               </div>
               

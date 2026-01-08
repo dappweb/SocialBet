@@ -163,9 +163,9 @@
 ## 🔗 Quick Links
 
 ### Production URLs
-- **Frontend**: https://51218b34.socialbet.pages.dev
-- **Backend API**: https://socialbet-api.dappweb.workers.dev
-- **API Health**: https://socialbet-api.dappweb.workers.dev/api/health
+- **Frontend**: https://kolmarket.ai
+- **Backend API**: https://api.kolmarket.ai
+- **API Health**: https://api.kolmarket.ai/health
 
 ### Smart Contracts
 - **Contract Address**: `0x0D6A6F6B15512cc9bf37621D9E5A4A4e1f41ef66`

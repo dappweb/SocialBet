@@ -148,7 +148,7 @@ const FeedOptimized: React.FC<FeedOptimizedProps> = ({ markets: initialMarkets =
         {/* Mobile Header */}
         <div className="sm:hidden px-4 py-3 flex items-center justify-between">
           <div className="w-8 h-8 bg-[#ffd700] rounded-xl flex items-center justify-center font-bold text-[#1d1d1f] text-sm shadow-md shadow-[#ffd700]/20">SB</div>
-          <span className="font-semibold text-lg text-[#1d1d1f] dark:text-white">SoulCast</span>
+          <span className="font-semibold text-lg text-[#1d1d1f] dark:text-white">KOL Market</span>
           <div className="w-8"></div>
         </div>
 
@@ -157,7 +157,7 @@ const FeedOptimized: React.FC<FeedOptimizedProps> = ({ markets: initialMarkets =
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#ffd700] rounded-xl flex items-center justify-center font-bold text-[#1d1d1f] shadow-md shadow-[#ffd700]/20">SB</div>
             <div>
-              <h1 className="text-2xl font-bold text-[#1d1d1f] dark:text-white">SoulCast</h1>
+              <h1 className="text-2xl font-bold text-[#1d1d1f] dark:text-white">KOL Market</h1>
               <p className="text-xs text-[#86868b] dark:text-[#a1a1a6">KOL Intent Prediction Markets</p>
             </div>
           </div>

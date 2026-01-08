@@ -6,7 +6,7 @@ import AIPredictionSuggestion from './AIPredictionSuggestion';
 
 const ChatInterface: React.FC = memo(() => {
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([
-    { role: 'assistant', text: "Hello! I'm your SoulCast AI assistant powered by Cloudflare AI. Ask me anything about KOL intent predictions, markets, or trending topics! I can also generate prediction markets for you - just ask me to create one!" }
+    { role: 'assistant', text: "Hello! I'm your KOL Market AI assistant powered by Cloudflare AI. Ask me anything about KOL intent predictions, markets, or trending topics! I can also generate prediction markets for you - just ask me to create one!" }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);

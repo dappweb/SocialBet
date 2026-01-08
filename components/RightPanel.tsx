@@ -169,7 +169,7 @@ const RightPanel = memo(({ onTradeClick, onStakeClick, onTokenSaleClick }: Right
 
       <div className="mt-6 text-xs text-[#86868b] px-4 leading-relaxed">
         Terms of Service • Privacy Policy • Cookie Policy • Accessibility • Ads info • More<br />
-        © 2025 SoulCast, Inc.
+        © 2025 KOL Market, Inc.
       </div>
     </div>
   );

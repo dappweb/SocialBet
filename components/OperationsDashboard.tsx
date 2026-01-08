@@ -23,7 +23,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Operations Dashboard Component
- * Comprehensive operations and management system for Soulcast
+ * Comprehensive operations and management system for KOL Market
  * Only accessible to contract owner/admin
  */
 const OperationsDashboard: React.FC = () => {
@@ -81,7 +81,7 @@ const OperationsDashboard: React.FC = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `soulcast-transactions-${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `kolmarket-transactions-${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -93,7 +93,7 @@ const OperationsDashboard: React.FC = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `soulcast-transactions-${new Date().toISOString().split('T')[0]}.json`);
+      link.setAttribute('download', `kolmarket-transactions-${new Date().toISOString().split('T')[0]}.json`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();

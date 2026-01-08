@@ -59,7 +59,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
               SB
             </button>
             <span className="font-semibold text-lg text-[#1d1d1f] dark:text-white">
-              SoulCast
+              KOL Market
             </span>
           </div>
 
@@ -151,7 +151,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
                   SB
                 </div>
                 <span className="font-semibold text-lg text-[#1d1d1f] dark:text-white">
-                  SoulCast
+                  KOL Market
                 </span>
               </div>
               <button

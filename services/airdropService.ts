@@ -93,7 +93,7 @@ export async function getAirdropCampaigns(): Promise<AirdropCampaign[]> {
           current: 1,
           completed: true,
           platform: 'Twitter',
-          link: 'https://twitter.com/soulcast',
+          link: 'https://twitter.com/kolmarket',
         },
         {
           type: 'join_discord',
@@ -102,7 +102,7 @@ export async function getAirdropCampaigns(): Promise<AirdropCampaign[]> {
           current: 0,
           completed: false,
           platform: 'Discord',
-          link: 'https://discord.gg/soulcast',
+          link: 'https://discord.gg/kolmarket',
         },
         {
           type: 'make_prediction',
@@ -174,7 +174,7 @@ export async function getAirdropCampaigns(): Promise<AirdropCampaign[]> {
         },
         {
           type: 'social_share',
-          description: 'Share 3 posts about SoulCast',
+          description: 'Share 3 posts about KOL Market',
           target: 3,
           current: 1,
           completed: false,
@@ -268,11 +268,11 @@ export async function getUserAirdropTasks(userId: string): Promise<AirdropTask[]
       id: 'task_5',
       type: 'daily',
       title: 'Share on Social Media',
-      description: 'Share SoulCast on social media',
+      description: 'Share KOL Market on social media',
       points: 15,
       completed: false,
       expiresAt: Date.now() + 22 * 60 * 60 * 1000,
-      actionUrl: 'https://twitter.com/intent/tweet?text=Check+out+SoulCast!',
+      actionUrl: 'https://twitter.com/intent/tweet?text=Check+out+KOL+Market!',
     },
   ];
 }
@@ -413,7 +413,7 @@ export async function checkTaskEligibility(
 
 // Generate shareable link for airdrop
 export function generateAirdropLink(campaignId: string): string {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://soulcast.app';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://kolmarket.ai';
   return `${baseUrl}/airdrop/${campaignId}`;
 }
 

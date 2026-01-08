@@ -12,9 +12,9 @@ const AppDownload: React.FC<AppDownloadProps> = memo(({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const appStoreUrl = 'https://apps.apple.com/app/soulcast';
-  const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.soulcast.app';
-  const apkDownloadUrl = '/downloads/soulcast-latest.apk';
+  const appStoreUrl = 'https://apps.apple.com/app/kolmarket';
+  const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.kolmarket.app';
+  const apkDownloadUrl = '/downloads/kolmarket-latest.apk';
 
   const handleDownload = (platform: 'ios' | 'android' | 'apk') => {
     switch (platform) {
@@ -52,7 +52,7 @@ const AppDownload: React.FC<AppDownloadProps> = memo(({ isOpen, onClose }) => {
           <div className="w-20 h-20 mx-auto bg-white rounded-2xl shadow-lg flex items-center justify-center mb-4">
             <span className="text-3xl font-bold text-[#1d1d1f]">SB</span>
           </div>
-          <h2 className="text-2xl font-bold text-[#1d1d1f] mb-1">Download SoulCast</h2>
+          <h2 className="text-2xl font-bold text-[#1d1d1f] mb-1">Download KOL Market</h2>
           <p className="text-sm text-[#1d1d1f]/70">Get the full experience on mobile</p>
         </div>
 

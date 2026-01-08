@@ -67,7 +67,7 @@ VITE_WEB3AUTH_CLIENT_ID=your_client_id
 VITE_WEB3AUTH_NETWORK=sapphire_devnet
 
 # API Configuration
-VITE_API_URL=https://socialbet-api.dappweb.workers.dev
+VITE_API_URL=https://api.kolmarket.ai
 
 # Optional: Gemini AI
 GEMINI_API_KEY=your_gemini_key
@@ -111,7 +111,7 @@ ETHERSCAN_API_KEY=your_etherscan_key  # For contract verification
   ```
 
 - [ ] **Verify Deployment:**
-  - [ ] Test health endpoint: `https://socialbet-api.dappweb.workers.dev/api/health`
+  - [ ] Test health endpoint: `https://api.kolmarket.ai/health`
   - [ ] Test API endpoints
   - [ ] Verify CORS configuration
 
